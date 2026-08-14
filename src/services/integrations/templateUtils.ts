@@ -335,7 +335,7 @@ export function buildSimpleTemplate(kind: MediaKind, fields: string[]): string {
         if (set.has('poster')) lines.push('poster: "{{VALUE:Poster}}"');
         if (set.has('posterHorizontal')) lines.push('poster_b: "{{VALUE:PosterHorizontal}}"');
         if (set.has('plot')) lines.push('plot: "{{VALUE:Plot}}"');
-        if (set.has('gameSeries')) lines.push('gameSeries:');
+        if (set.has('gameSeries')) lines.push('gameSeries: "{{VALUE:gameSeries}}"');
         if (set.has('genres')) lines.push('genres: "{{VALUE:genres}}"');
         if (set.has('platforms')) lines.push('platforms: "{{VALUE:platforms}}"');
         if (set.has('year')) lines.push('year: {{VALUE:Year}}');

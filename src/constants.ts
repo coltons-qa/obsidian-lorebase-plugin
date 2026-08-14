@@ -200,7 +200,7 @@ type: "game"
 name: "{{VALUE:name}}"
 poster: "{{VALUE:Poster}}"
 poster_b: "{{VALUE:PosterHorizontal}}"
-gameSeries:
+gameSeries: "{{VALUE:gameSeries}}"
 genres:
   - "{{VALUE:genres}}"
 plot: "{{VALUE:Plot}}"

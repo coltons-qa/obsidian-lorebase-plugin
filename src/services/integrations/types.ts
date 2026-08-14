@@ -34,6 +34,7 @@ export interface GameDetails {
     platforms: string[];
     developers: string[];
     publishers: string[];
+    gameSeries?: string;
     rating: string;
     metacritic: string;
     released: string;

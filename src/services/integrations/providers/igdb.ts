@@ -166,6 +166,7 @@ export async function getIgdbDetails(
     const body = [
         'fields name,summary,storyline,first_release_date,total_rating,total_rating_count,aggregated_rating,aggregated_rating_count,rating,rating_count,',
         'cover.image_id,screenshots.image_id,genres.name,platforms.name,',
+        'collections.name,franchises.name,',
         'involved_companies.developer,involved_companies.publisher,involved_companies.company.name,websites.url;',
         `where id = ${numericId};`,
         'limit 1;',
@@ -190,6 +191,11 @@ export async function getIgdbDetails(
     const firstScreenshot = asObject(screenshots[0]);
     const websites = getArray(item, 'websites');
     const firstWebsiteUrl = getString(asObject(websites[0]), 'url');
+    // IGDB exposes the series as `collections` and the broader IP as
+    // `franchises` (the singular forms are accepted but always return empty).
+    // Prefer the specific series, fall back to the franchise.
+    const gameSeries = getString(asObject(getArray(item, 'collections')[0]), 'name')
+        || getString(asObject(getArray(item, 'franchises')[0]), 'name');
 
     return {
         kind: 'game',
@@ -201,6 +207,7 @@ export async function getIgdbDetails(
         platforms: mapStringList(getArray(item, 'platforms'), (entry) => getString(asObject(entry), 'name')),
         developers,
         publishers,
+        gameSeries,
         rating: toStringSafe(item.total_rating || item.rating),
         metacritic: toStringSafe(item.aggregated_rating),
         released: formatDate(released),

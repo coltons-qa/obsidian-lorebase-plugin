@@ -59,6 +59,8 @@ describe('IGDB provider', () => {
                     { publisher: true, company: { name: 'Electronic Arts' } },
                 ],
                 websites: [{ url: 'https://example.com/portal' }],
+                collections: [{ name: 'Portal' }],
+                franchises: [{ name: 'Half-Life' }],
             }];
         };
 
@@ -67,6 +69,7 @@ describe('IGDB provider', () => {
         expect(details).toMatchObject({
             kind: 'game',
             name: 'Portal',
+            gameSeries: 'Portal',
             description: 'Puzzle game.',
             poster: 'https://images.igdb.com/igdb/image/upload/t_cover_big_2x/cover-id.jpg',
             posterHorizontal: 'https://images.igdb.com/igdb/image/upload/t_screenshot_huge/screen-id.jpg',
@@ -80,6 +83,38 @@ describe('IGDB provider', () => {
             released: '2007-10-26',
             url: 'https://example.com/portal',
         });
+    });
+
+    it('requests the plural series fields and falls back to franchise', async () => {
+        // IGDB accepts the singular `collection`/`franchise` fields but always
+        // returns them empty, so the query must use the plural forms.
+        const bodies: string[] = [];
+        const fetchJson: JsonFetcher = async (url, _headers, _method, body) => {
+            if (url.includes('oauth2/token')) return { access_token: 'token' };
+            bodies.push(body ?? '');
+            return [{
+                id: 1,
+                name: 'Fallout Tactics',
+                franchises: [{ name: 'Fallout' }],
+            }];
+        };
+
+        const details = await getIgdbDetails(fetchJson, '1', 'client', 'secret');
+
+        expect(bodies[0]).toContain('collections.name');
+        expect(bodies[0]).toContain('franchises.name');
+        expect(details).toMatchObject({ gameSeries: 'Fallout' });
+    });
+
+    it('leaves gameSeries empty when neither collection nor franchise exists', async () => {
+        const fetchJson: JsonFetcher = async (url) => {
+            if (url.includes('oauth2/token')) return { access_token: 'token' };
+            return [{ id: 1, name: 'Standalone Game' }];
+        };
+
+        const details = await getIgdbDetails(fetchJson, '1', 'client', 'secret');
+
+        expect(details?.gameSeries).toBe('');
     });
 
     it('combines and deduplicates DLC and expansion records', async () => {
