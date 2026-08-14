@@ -4,6 +4,17 @@ import { JsonFetcher, asObject, getArray, getString, mapStringList, stripHtml, t
 
 const TWITCH_TOKEN_URL = 'https://id.twitch.tv/oauth2/token';
 const IGDB_GAMES_URL = 'https://api.igdb.com/v4/games';
+const IGDB_EXTERNAL_GAMES_URL = 'https://api.igdb.com/v4/external_games';
+// `external_game_source` 1 is Steam. IGDB retired the older `external_games.category`
+// field: the query parser still accepts it, but it matches zero rows, so a stale
+// filter fails silently with an empty result rather than an error.
+const IGDB_EXTERNAL_GAME_SOURCE_STEAM = 1;
+const IGDB_MAX_LIMIT = 500;
+// Kept below IGDB_MAX_LIMIT on purpose. One appid normally maps to a single
+// external_games row, but asking for exactly `limit` rows leaves no headroom: if
+// any appid ever returned two rows, the overflow would be dropped silently with
+// no error, and those games would lose their series.
+const IGDB_EXTERNAL_GAMES_CHUNK = 400;
 
 interface SearchPageOptions {
     page?: number;
@@ -91,8 +102,9 @@ async function getAccessToken(fetchJson: JsonFetcher, clientId: string, clientSe
     return getString(token, 'access_token');
 }
 
-async function fetchIgdbGames(
+async function fetchIgdbEndpoint(
     fetchJson: JsonFetcher,
+    url: string,
     clientId: string,
     clientSecret: string,
     body: string
@@ -101,7 +113,7 @@ async function fetchIgdbGames(
     if (!token) return [];
 
     const result: unknown = await fetchJson(
-        IGDB_GAMES_URL,
+        url,
         {
             'Accept': 'application/json',
             'Authorization': `Bearer ${token}`,
@@ -113,6 +125,26 @@ async function fetchIgdbGames(
     );
 
     return Array.isArray(result) ? (result as unknown[]) : [];
+}
+
+function fetchIgdbGames(
+    fetchJson: JsonFetcher,
+    clientId: string,
+    clientSecret: string,
+    body: string
+): Promise<unknown[]> {
+    return fetchIgdbEndpoint(fetchJson, IGDB_GAMES_URL, clientId, clientSecret, body);
+}
+
+/**
+ * IGDB exposes the specific series as `collections` and the broader IP as
+ * `franchises`. The singular `collection`/`franchise` fields are still accepted
+ * by the API but always return empty. Prefer the specific series, fall back to
+ * the franchise.
+ */
+function pickGameSeries(game: Record<string, unknown> | null): string {
+    return getString(asObject(getArray(game, 'collections')[0]), 'name')
+        || getString(asObject(getArray(game, 'franchises')[0]), 'name');
 }
 
 export async function searchIgdb(
@@ -191,11 +223,7 @@ export async function getIgdbDetails(
     const firstScreenshot = asObject(screenshots[0]);
     const websites = getArray(item, 'websites');
     const firstWebsiteUrl = getString(asObject(websites[0]), 'url');
-    // IGDB exposes the series as `collections` and the broader IP as
-    // `franchises` (the singular forms are accepted but always return empty).
-    // Prefer the specific series, fall back to the franchise.
-    const gameSeries = getString(asObject(getArray(item, 'collections')[0]), 'name')
-        || getString(asObject(getArray(item, 'franchises')[0]), 'name');
+    const gameSeries = pickGameSeries(item);
 
     return {
         kind: 'game',
@@ -220,6 +248,74 @@ export async function getIgdbDetails(
             ?? getNumber(item, 'aggregated_rating_count')
         ),
     };
+}
+
+export interface IgdbSeriesLookupOptions {
+    /**
+     * Called when a single chunk fails. The remaining chunks still run, so this
+     * reports a partial result rather than an aborted lookup.
+     */
+    onChunkFailure?: (error: unknown) => void;
+    /**
+     * Awaited before each chunk, so a long multi-chunk lookup can be paused or
+     * stopped. Returning false stops early and keeps what was resolved so far.
+     */
+    beforeChunk?: () => Promise<boolean> | boolean;
+}
+
+/**
+ * Resolves Steam appids to their series names via IGDB's `external_games`
+ * mapping, which links a Steam appid to an IGDB game exactly (no name matching).
+ *
+ * Steam itself has no usable series data: the storefront API omits the field
+ * entirely, and the store page's "Franchise:" row is publisher-authored and
+ * missing for roughly half of all games. Batching keeps a whole library to one
+ * request per 500 appids.
+ *
+ * Games with no collection and no franchise are left out of the map, so callers
+ * can distinguish "IGDB has no series" from "not looked up".
+ */
+export async function getIgdbSeriesBySteamAppIds(
+    fetchJson: JsonFetcher,
+    appIds: string[],
+    clientId: string,
+    clientSecret: string,
+    options: IgdbSeriesLookupOptions = {}
+): Promise<Map<string, string>> {
+    const series = new Map<string, string>();
+    const uniqueIds = Array.from(new Set(appIds.map((appId) => appId.trim()).filter(Boolean)));
+    if (!uniqueIds.length) return series;
+
+    for (let offset = 0; offset < uniqueIds.length; offset += IGDB_EXTERNAL_GAMES_CHUNK) {
+        if (options.beforeChunk && (await options.beforeChunk()) === false) break;
+
+        const chunk = uniqueIds.slice(offset, offset + IGDB_EXTERNAL_GAMES_CHUNK);
+        const uidList = chunk.map((appId) => `"${escapeIgdbString(appId)}"`).join(',');
+        const body = [
+            'fields uid,game.collections.name,game.franchises.name;',
+            `where uid = (${uidList}) & external_game_source = ${IGDB_EXTERNAL_GAME_SOURCE_STEAM};`,
+            `limit ${IGDB_MAX_LIMIT};`,
+        ].join('\n');
+
+        let rows: unknown[];
+        try {
+            rows = await fetchIgdbEndpoint(fetchJson, IGDB_EXTERNAL_GAMES_URL, clientId, clientSecret, body);
+        } catch (error) {
+            // Keep the series already resolved by earlier chunks. Throwing here
+            // would discard every successful chunk along with the failed one.
+            options.onChunkFailure?.(error);
+            continue;
+        }
+
+        for (const row of rows) {
+            const record = asObject(row);
+            const uid = getString(record, 'uid');
+            const name = pickGameSeries(asObject(record?.game));
+            if (uid && name) series.set(uid, name);
+        }
+    }
+
+    return series;
 }
 
 export async function getIgdbDlcForGame(

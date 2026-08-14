@@ -4,6 +4,7 @@ import type { GameStatus, LorebaseSettings, SteamSyncSettings } from '../types';
 import { ChoiceModal } from '../modals/IntegrationModals';
 import type { GameDetails } from './integrations/types';
 import { getSteamDetails } from './integrations/providers/steam';
+import { getIgdbSeriesBySteamAppIds } from './integrations/providers/igdb';
 import { buildSimpleTemplate, getDefaultTemplateFields, getEffectiveSimpleTemplateFields, renderTemplate, sanitizeFileName } from './integrations/templateUtils';
 import { extractYear } from './integrations/providers/common';
 import type { JsonFetcher } from './integrations/providers/common';
@@ -20,6 +21,7 @@ import {
     shouldLoadHowLongToBeat,
 } from './integrations/shared';
 import { recordIntegrationDiagnostic } from './integrations/diagnostics';
+import { isEmptyIncoming, mergeProviderMetadata } from './integrations/enrichment';
 
 export interface SteamOwnedGame {
     appId: number;
@@ -147,7 +149,9 @@ export class SteamSyncService {
     private app: App;
     private metadataService: MetadataService;
     private jsonFetcher: JsonFetcher;
+    private igdbFetcher: JsonFetcher;
     private detailsCache = new Map<number, GameDetails | null>();
+    private seriesByAppId = new Map<number, string>();
     private warnings: string[] = [];
 
     constructor(app: App, metadataService: MetadataService) {
@@ -156,6 +160,12 @@ export class SteamSyncService {
         this.jsonFetcher = getJsonFetcher((url, headers, method, body) => fetchJson(url, headers, method, body, {
             rateLimitMessage: 'Steam request was rate limited.',
             htmlJsonMessage: 'Steam returned HTML instead of JSON.',
+        }));
+        // The series lookup goes to IGDB, so it needs its own failure messages:
+        // reusing the Steam fetcher would report an IGDB outage as a Steam error.
+        this.igdbFetcher = getJsonFetcher((url, headers, method, body) => fetchJson(url, headers, method, body, {
+            rateLimitMessage: 'IGDB request was rate limited.',
+            htmlJsonMessage: 'IGDB returned HTML instead of JSON.',
         }));
     }
 
@@ -289,7 +299,13 @@ export class SteamSyncService {
             ? allCandidates.filter((candidate) => options.selectedAppIds?.has(candidate.appId))
             : allCandidates;
         const existingIndex = this.indexExistingGames(settings.games.folderPath);
-        const duplicateCount = candidates.filter((candidate) => this.findDuplicate(candidate, existingIndex) !== null).length;
+        // Resolved once and shared with the series prefetch. The main loop below
+        // deliberately re-resolves per candidate instead of reusing this, because
+        // notes created during the run are added to the index as it goes.
+        const duplicatesBeforeRun = new Map<number, TFile | null>(
+            candidates.map((candidate) => [candidate.appId, this.findDuplicate(candidate, existingIndex)])
+        );
+        const duplicateCount = Array.from(duplicatesBeforeRun.values()).filter((file) => file !== null).length;
         let updateDuplicates = steamSettings.duplicateMode === 'update';
 
         if (steamSettings.duplicateMode === 'ask' && duplicateCount > 0) {
@@ -297,6 +313,8 @@ export class SteamSyncService {
                 ? await options.confirmDuplicateUpdate(duplicateCount)
                 : await this.confirmDuplicateUpdate(duplicateCount);
         }
+
+        await this.prefetchGameSeries(candidates, settings, duplicatesBeforeRun, updateDuplicates, options);
 
         const template = this.getGameTemplate(settings);
         await ensureFolder(this.app, settings.games.folderPath);
@@ -641,6 +659,81 @@ export class SteamSyncService {
         }
     }
 
+    /**
+     * Resolves gameSeries for the whole import in one batched IGDB request.
+     *
+     * Steam has no usable series field of its own, so this is the only source.
+     * It is best-effort in every direction: no IGDB credentials, nothing to fill,
+     * or a failed request all leave the field blank rather than failing the sync.
+     */
+    private async prefetchGameSeries(
+        candidates: SteamImportCandidate[],
+        settings: LorebaseSettings,
+        duplicates: Map<number, TFile | null>,
+        updateDuplicates: boolean,
+        options: SteamSyncOptions
+    ): Promise<void> {
+        this.seriesByAppId.clear();
+
+        const igdb = settings.integrations?.providers.igdb;
+        const clientId = igdb?.apiKey?.trim() ?? '';
+        const clientSecret = igdb?.clientSecret?.trim() ?? '';
+        if (!settings.integrations?.enabled || !igdb?.enabled || !clientId || !clientSecret) return;
+
+        // Only look up games that can actually receive a value: new notes, and
+        // existing ones whose series is still blank. A note the user already
+        // filled in is never overwritten, so there is nothing to fetch for it.
+        const pending = candidates.filter((candidate) => {
+            const duplicate = duplicates.get(candidate.appId) ?? null;
+            if (!duplicate) return true;
+            if (!updateDuplicates) return false;
+            return !this.hasExistingGameSeries(duplicate);
+        });
+        if (!pending.length) return;
+
+        options.onProgress?.('Loading game series...');
+        let failed = false;
+        const series = await getIgdbSeriesBySteamAppIds(
+            this.igdbFetcher,
+            pending.map((candidate) => String(candidate.appId)),
+            clientId,
+            clientSecret,
+            {
+                onChunkFailure: (error) => {
+                    failed = true;
+                    console.warn('[Steam Sync] Game series lookup failed for one batch.', error);
+                },
+                // Long libraries span several requests, so honour the same pause
+                // and cancel controls the import loop respects.
+                beforeChunk: async () => {
+                    if (options.control?.isCancelled()) return false;
+                    await options.control?.waitIfPaused();
+                    return !options.control?.isCancelled();
+                },
+            }
+        );
+
+        for (const [appId, name] of series) {
+            const numericAppId = Number(appId);
+            if (Number.isFinite(numericAppId)) {
+                this.seriesByAppId.set(numericAppId, name);
+            }
+        }
+        if (failed) {
+            this.warnings.push('Some game series could not be loaded from IGDB.');
+        }
+    }
+
+    /**
+     * Whether a note already carries a series. Delegates emptiness to the same
+     * helper the enrichment merge uses, so a `gameSeries` the user switched to a
+     * List property counts as filled instead of reading as blank.
+     */
+    private hasExistingGameSeries(file: TFile): boolean {
+        const value = this.app.metadataCache.getFileCache(file)?.frontmatter?.gameSeries;
+        return !isEmptyIncoming(value);
+    }
+
     private toSyncGame(candidate: SteamImportCandidate, details: GameDetails, settings: SteamSyncSettings): SteamSyncGame {
         const status = candidate.source === 'wishlist'
             ? this.mapWishlistStatus(settings)
@@ -708,6 +801,7 @@ export class SteamSyncService {
             platforms: details.platforms,
             developers: details.developers,
             publishers: details.publishers,
+            gameSeries: this.seriesByAppId.get(game.appId) ?? '',
             rating: this.toNumber(details.rating),
             userRating: 0,
             metacritic: details.metacritic,
@@ -731,6 +825,15 @@ export class SteamSyncService {
             steamAppId: game.appId,
             url: game.details.url || `https://store.steampowered.com/app/${game.appId}/`,
         };
+
+        // Backfill only. A series the user curated by hand outranks IGDB's, and
+        // mergeProviderMetadata already encodes exactly that rule -- it fills a
+        // field only when the existing value is empty, and resolves aliases.
+        const series = this.seriesByAppId.get(game.appId);
+        if (series) {
+            const current = this.app.metadataCache.getFileCache(file)?.frontmatter ?? {};
+            Object.assign(updates, mergeProviderMetadata(current, { gameSeries: series }).patch);
+        }
 
         if (settings.fields.playtime) {
             updates.playtime = game.playtimeForever;

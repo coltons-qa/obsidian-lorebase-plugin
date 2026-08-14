@@ -263,7 +263,7 @@ function findExistingAlias(current: Record<string, unknown>, key: string): strin
     return entries.find((candidate) => lowerAliases.has(candidate.toLowerCase())) ?? null;
 }
 
-function isEmptyIncoming(value: unknown): boolean {
+export function isEmptyIncoming(value: unknown): boolean {
     return value === undefined
         || value === null
         || (typeof value === 'string' && !value.trim())
