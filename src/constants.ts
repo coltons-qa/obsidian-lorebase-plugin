@@ -3,7 +3,7 @@
  * Default values, configurations, and static data
  */
 
-import { LorebaseSettings, MediaStatus, CardSize, CardOrientation, CardStyle, NoteImportFieldMapping } from './types';
+import { LorebaseSettings, MediaStatus, CardSize, CardOrientation, CardStyle, NoteImportFieldMapping, UserRatingValue } from './types';
 import type { TranslationKey } from './localization';
 
 // =============================================================================
@@ -825,29 +825,44 @@ export const FILTER_ICON_MAP = {
 // RATING CONFIGURATION
 // =============================================================================
 
-/** Rating configuration with emojis and labels */
-const EMOJI_AWESOME = '\u{1F60D}';
-const EMOJI_GOOD = '\u{1F642}';
-const EMOJI_OKAY = '\u{1F610}';
-const EMOJI_WEAK = '\u{1F615}';
-const EMOJI_BAD = '\u{1F922}';
+/**
+ * Highest selectable user rating. The scale is 1..MAX_USER_RATING, so star
+ * loops and range checks should derive from this rather than hard-coding a
+ * bound.
+ */
+export const MAX_USER_RATING = 7;
 
-export const RATING_CONFIG: Array<{ value: 1 | 2 | 3 | 4 | 5; emoji: string; labelKey: TranslationKey; color: string }> = [
-    { value: 5, emoji: EMOJI_AWESOME, labelKey: 'ratingAwesome', color: '#4caf50' },
-    { value: 4, emoji: EMOJI_GOOD, labelKey: 'ratingGood', color: '#8bc34a' },
-    { value: 3, emoji: EMOJI_OKAY, labelKey: 'ratingOkay', color: '#ffc107' },
-    { value: 2, emoji: EMOJI_WEAK, labelKey: 'ratingWeak', color: '#ff9800' },
-    { value: 1, emoji: EMOJI_BAD, labelKey: 'ratingBad', color: '#ff4444' },
+/** Rating configuration with emojis and labels */
+const EMOJI_MASTERPIECE = '\u{1F92F}';
+const EMOJI_EXCELLENT = '\u{1F929}';
+const EMOJI_GOOD = '\u{1F642}';
+const EMOJI_PASSABLE = '\u{1F9D0}';
+const EMOJI_BAD = '\u{1F971}';
+const EMOJI_ATROCIOUS = '\u{1F922}';
+const EMOJI_EVIL = '\u{1F92C}';
+
+export const RATING_CONFIG: Array<{ value: UserRatingValue; emoji: string; labelKey: TranslationKey; color: string }> = [
+    { value: 7, emoji: EMOJI_MASTERPIECE, labelKey: 'ratingMasterpiece', color: '#2e9e4f' },
+    { value: 6, emoji: EMOJI_EXCELLENT, labelKey: 'ratingExcellent', color: '#4caf50' },
+    { value: 5, emoji: EMOJI_GOOD, labelKey: 'ratingGood', color: '#8bc34a' },
+    { value: 4, emoji: EMOJI_PASSABLE, labelKey: 'ratingPassable', color: '#ffc107' },
+    { value: 3, emoji: EMOJI_BAD, labelKey: 'ratingBad', color: '#ff9800' },
+    { value: 2, emoji: EMOJI_ATROCIOUS, labelKey: 'ratingAtrocious', color: '#ff4444' },
+    { value: 1, emoji: EMOJI_EVIL, labelKey: 'ratingEvil', color: '#b71c1c' },
 ];
 
 /** Rating emoji map for quick lookup */
-export const RATING_EMOJI: Record<number, string> = {
-    1: EMOJI_BAD,
-    2: EMOJI_WEAK,
-    3: EMOJI_OKAY,
-    4: EMOJI_GOOD,
-    5: EMOJI_AWESOME,
-};
+export const RATING_EMOJI: Record<number, string> = Object.fromEntries(
+    RATING_CONFIG.map((entry) => [entry.value, entry.emoji])
+);
+
+/**
+ * Zeroed bucket per rung of the scale. Stats builders must seed their
+ * distribution from this rather than an object literal, otherwise ratings
+ * added to the scale later land on an absent key.
+ */
+export const createRatingDistribution = (): Record<number, number> =>
+    Object.fromEntries(RATING_CONFIG.map((entry) => [entry.value, 0]));
 
 // =============================================================================
 // CARD SIZE CONFIGURATION

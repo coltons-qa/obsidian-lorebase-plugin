@@ -1,5 +1,5 @@
 import { App, Menu, Modal, setIcon, TFile } from 'obsidian';
-import { DEFAULT_COVER, STATUS_CONFIG } from '../constants';
+import { DEFAULT_COVER, MAX_USER_RATING, STATUS_CONFIG } from '../constants';
 import { i18n, t } from '../localization';
 import { BookItem, MangaItem, MangaPart, ReadingItem, ReadingStatus, RelatedMediaLink, UserRating } from '../types';
 import { GenreEditModal } from './GenreEditModal';
@@ -298,7 +298,7 @@ export class ReadingEditModal extends Modal {
                                 </div>
                                 <div class="lorebase-editmode-stars" data-role="stars"></div>
                                 <div class="lorebase-editmode-rating-meta">
-                                    <span class="lorebase-editmode-rating-value" data-role="rating-value">0.0 / 5.0</span>
+                                    <span class="lorebase-editmode-rating-value" data-role="rating-value">0.0 / ${MAX_USER_RATING}.0</span>
                                     <span class="lorebase-editmode-rating-hint">${t('editRatingHint')}</span>
                                 </div>
                                 <div class="lorebase-editmode-rating-line"><span class="lorebase-editmode-rating-line-fill" data-role="rating-line"></span></div>
@@ -723,7 +723,7 @@ export class ReadingEditModal extends Modal {
         const stars = this.qs<HTMLElement>(root, '[data-role="stars"]');
         if (!stars) return;
         stars.empty();
-        for (let rawValue = 1; rawValue <= 5; rawValue++) {
+        for (let rawValue = 1; rawValue <= MAX_USER_RATING; rawValue++) {
             const value = rawValue as Exclude<UserRating, null>;
             const button = stars.createEl('button', {
                 cls: 'lorebase-editmode-star',
@@ -818,9 +818,9 @@ export class ReadingEditModal extends Modal {
             btn.toggleClass('is-active', this.selectedRating !== null && value <= this.selectedRating);
         });
         const numeric = this.selectedRating ?? 0;
-        this.setText(root, '[data-role="rating-value"]', `${numeric.toFixed(1)} / 5.0`);
+        this.setText(root, '[data-role="rating-value"]', `${numeric.toFixed(1)} / ${MAX_USER_RATING}.0`);
         const line = this.qs<HTMLElement>(root, '[data-role="rating-line"]');
-        if (line) line.style.width = `${Math.round((numeric / 5) * 100)}%`;
+        if (line) line.style.width = `${Math.round((numeric / MAX_USER_RATING) * 100)}%`;
     }
 
     private updateDates(root: HTMLElement): void {

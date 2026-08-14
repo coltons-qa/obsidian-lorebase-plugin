@@ -1,5 +1,5 @@
 import { Setting, SliderComponent, ToggleComponent, setIcon } from 'obsidian';
-import { CARD_SIZES, COLOR_PRESETS, DEFAULT_COVER, DEFAULT_GAME_TAG_PRESETS, DEFAULT_SETTINGS, HORIZONTAL_CARD_SIZES, PARTICLE_INTENSITY_MAX, PARTICLE_INTENSITY_MIN, RATING_EMOJI, STATUS_CONFIG } from '../../constants';
+import { CARD_SIZES, COLOR_PRESETS, DEFAULT_COVER, DEFAULT_GAME_TAG_PRESETS, DEFAULT_SETTINGS, HORIZONTAL_CARD_SIZES, PARTICLE_INTENSITY_MAX, PARTICLE_INTENSITY_MIN, MAX_USER_RATING, RATING_EMOJI, STATUS_CONFIG } from '../../constants';
 import { i18n, t } from '../../localization';
 import type { BadgePosition, CardClickAction, CardStyle, CompletionDateBadgeFormat, Language, LorebaseSettings, ParticleEffect, RatingBadgeMode, TagPreset } from '../../types';
 import { ICON_CARD_CUSTOMIZATION, ICON_GENERAL, LABEL_RU, LABEL_UK } from './constants';
@@ -1311,9 +1311,9 @@ function renderBadgesEditor(context: SettingsSectionContext, container: HTMLElem
             const ratingBadge = createDiv({ cls: 'lorebase-card-rating' });
             if (activeBadges.rating.mode === 'emoji') {
                 ratingBadge.classList.add('is-emoji');
-                ratingBadge.textContent = RATING_EMOJI[4];
+                ratingBadge.textContent = RATING_EMOJI[MAX_USER_RATING];
             } else {
-                ratingBadge.textContent = '\u26054';
+                ratingBadge.textContent = `\u2605${MAX_USER_RATING}`;
             }
             badge.appendChild(ratingBadge);
             return;

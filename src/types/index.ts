@@ -125,8 +125,11 @@ export interface RelatedMediaLink {
     imageUrl?: string | null;
 }
 
-/** User rating from 1-5 */
-export type UserRating = 1 | 2 | 3 | 4 | 5 | null;
+/** A set user rating from 1-7 (see MAX_USER_RATING) */
+export type UserRatingValue = 1 | 2 | 3 | 4 | 5 | 6 | 7;
+
+/** User rating from 1-7, or null when unrated */
+export type UserRating = UserRatingValue | null;
 
 /** Provider/community score stored in note frontmatter */
 export interface CommunityRating {
@@ -318,7 +321,7 @@ interface BaseMediaItem {
     year: number | null;
     /** Description/plot */
     description: string;
-    /** User rating 1-5 */
+    /** User rating 1-7 (see MAX_USER_RATING) */
     userRating: UserRating;
     /** Is favorite */
     favorite: boolean;

@@ -5,7 +5,7 @@
 
 import { App, Menu, Modal, Notice, TFile, setIcon } from 'obsidian';
 import { GameDlc, GameItem, GameStatus, RelatedMediaLink, TagPreset, UserRating } from '../types';
-import { DEFAULT_COVER, DEFAULT_GAME_TAG_PRESETS, STATUS_CONFIG } from '../constants';
+import { DEFAULT_COVER, DEFAULT_GAME_TAG_PRESETS, MAX_USER_RATING, STATUS_CONFIG } from '../constants';
 import { i18n, t } from '../localization';
 import { GenreEditModal } from './GenreEditModal';
 import { CommunityRatingRefresh, renderCommunityRatingPanel } from './CommunityRatingPanel';
@@ -329,7 +329,7 @@ export class EditModal extends Modal {
                                 </div>
                                 <div class="lorebase-editmode-stars" data-role="stars"></div>
                                 <div class="lorebase-editmode-rating-meta">
-                                    <span class="lorebase-editmode-rating-value" data-role="rating-value">0.0 / 5.0</span>
+                                    <span class="lorebase-editmode-rating-value" data-role="rating-value">0.0 / ${MAX_USER_RATING}.0</span>
                                     <span class="lorebase-editmode-rating-hint">${t('editRatingHint')}</span>
                                 </div>
                                 <div class="lorebase-editmode-rating-line"><span class="lorebase-editmode-rating-line-fill" data-role="rating-line"></span></div>
@@ -608,7 +608,7 @@ export class EditModal extends Modal {
     private bindRating(root: HTMLElement): void {
         const stars = this.qs<HTMLElement>(root, '[data-role="stars"]');
         if (stars) {
-            for (let i = 1; i <= 5; i++) {
+            for (let i = 1; i <= MAX_USER_RATING; i++) {
                 const btn = stars.createEl('button', {
                     cls: 'lorebase-editmode-star',
                     attr: { type: 'button', 'aria-label': `${t('editRating')} ${i}` }
@@ -1250,7 +1250,7 @@ export class EditModal extends Modal {
             });
 
             const rating = row.createDiv({ cls: 'lorebase-editmode-dlc-rating', attr: { 'aria-label': t('editPersonalRating') } });
-            for (let value = 1; value <= 5; value++) {
+            for (let value = 1; value <= MAX_USER_RATING; value++) {
                 const star = rating.createEl('button', {
                     cls: 'lorebase-editmode-dlc-star',
                     text: String.fromCharCode(9733),
@@ -1373,8 +1373,8 @@ export class EditModal extends Modal {
         const ratingLine = this.qs<HTMLElement>(root, '[data-role="rating-line"]');
 
         const numeric = this.selectedRating ?? 0;
-        const pct = Math.round((numeric / 5) * 100);
-        if (ratingValue) ratingValue.textContent = `${numeric.toFixed(1)} / 5.0`;
+        const pct = Math.round((numeric / MAX_USER_RATING) * 100);
+        if (ratingValue) ratingValue.textContent = `${numeric.toFixed(1)} / ${MAX_USER_RATING}.0`;
         if (ratingLine) ratingLine.style.width = `${pct}%`;
     }
 

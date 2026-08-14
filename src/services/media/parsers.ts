@@ -1,4 +1,5 @@
 import type { RelatedMediaLink, UserRating } from '../../types';
+import { MAX_USER_RATING } from '../../constants';
 
 export function parseNumber(value: unknown): number | null {
     if (value === null || value === undefined || value === '') return null;
@@ -22,7 +23,7 @@ export function parseUserRating(value: unknown): UserRating {
     const parsed = parseNumber(value);
     if (parsed === null) return null;
     const rating = Math.trunc(parsed);
-    return rating >= 1 && rating <= 5 ? rating as UserRating : null;
+    return rating >= 1 && rating <= MAX_USER_RATING ? rating as UserRating : null;
 }
 
 export function parseRelatedMedia(raw: unknown): RelatedMediaLink[] {

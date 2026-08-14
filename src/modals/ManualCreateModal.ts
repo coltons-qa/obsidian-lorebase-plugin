@@ -1,5 +1,6 @@
 import { App, Modal, Notice, setIcon } from 'obsidian';
 import { t } from '../localization';
+import { MAX_USER_RATING } from '../constants';
 import { createLorebaseDropdown } from '../components/LorebaseDropdown';
 import type { AnimeFormat, AnimePart, AnimeStatus, GameStatus, UserRating } from '../types';
 import type { MediaKind } from '../services/integrations/types';
@@ -331,7 +332,7 @@ export class ManualCreateModal extends Modal {
         const row = field.createDiv({ cls: 'lorebase-editmode-stars lorebase-manual-stars' });
         const render = (): void => {
             row.empty();
-            for (let i = 1; i <= 5; i++) {
+            for (let i = 1; i <= MAX_USER_RATING; i++) {
                 const button = row.createEl('button', {
                     cls: 'lorebase-editmode-star',
                     text: String.fromCharCode(9733),

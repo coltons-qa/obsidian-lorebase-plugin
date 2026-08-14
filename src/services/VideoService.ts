@@ -1,6 +1,6 @@
 import { App, TFile, TFolder } from 'obsidian';
 import { FilterState, MovieItem, SeriesItem, SortField, SortOrder, VideoPart, VideoStats, VideoStatus } from '../types';
-import { DEFAULT_COVER } from '../constants';
+import { createRatingDistribution, DEFAULT_COVER } from '../constants';
 import { MetadataService } from './MetadataService';
 import { filterAndSortMedia } from './media/filtering';
 import { extractSimpleFrontmatter } from './media/libraryViewState';
@@ -164,7 +164,7 @@ export class VideoService {
             favorite: 0,
             withRating: 0,
             avgRating: 0,
-            ratingDistribution: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 },
+            ratingDistribution: createRatingDistribution(),
             statusPercentages: {},
         };
 

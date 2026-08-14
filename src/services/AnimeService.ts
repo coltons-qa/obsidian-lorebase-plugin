@@ -6,7 +6,7 @@
 import { App, TFile, TFolder } from 'obsidian';
 import { AnimeFormat, AnimeItem, AnimePart, AnimeStatus, AnimeStats, FilterState, SortField, SortOrder } from '../types';
 import { MetadataService } from './MetadataService';
-import { DEFAULT_COVER } from '../constants';
+import { createRatingDistribution, DEFAULT_COVER } from '../constants';
 import { filterAndSortMedia } from './media/filtering';
 import { extractSimpleFrontmatter } from './media/libraryViewState';
 import { getRandomItem, parseNumber, parseRelatedMedia, parseUserRating, parseYear, serializeRelatedMedia } from './media/parsers';
@@ -512,7 +512,7 @@ export class AnimeService {
             favorite: 0,
             withRating: 0,
             avgRating: 0,
-            ratingDistribution: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 },
+            ratingDistribution: createRatingDistribution(),
             statusPercentages: {},
         };
 
@@ -534,7 +534,7 @@ export class AnimeService {
             if (item.userRating) {
                 stats.withRating++;
                 ratingSum += item.userRating;
-                stats.ratingDistribution[item.userRating]++;
+                stats.ratingDistribution[item.userRating] = (stats.ratingDistribution[item.userRating] || 0) + 1;
             }
         }
 

@@ -146,7 +146,8 @@ export type TranslationKey =
     | 'statsSeries' | 'statsCustomPosters' | 'statsAdultContent'
     | 'statsRated' | 'statsCompletionPercent'
     // Ratings
-    | 'ratingAwesome' | 'ratingGood' | 'ratingOkay' | 'ratingWeak' | 'ratingBad'
+    | 'ratingMasterpiece' | 'ratingExcellent' | 'ratingGood' | 'ratingPassable'
+    | 'ratingBad' | 'ratingAtrocious' | 'ratingEvil'
     // Misc
     | 'year' | 'yearNotSpecified' | 'noDescription' | 'noSeries'
     | 'randomGame' | 'noGamesFound' | 'noAnimeFound' | 'noMoviesFound' | 'noSeriesFound' | 'noBooksFound' | 'noMangaFound'
@@ -614,11 +615,13 @@ const EN: Record<TranslationKey, string> = {
     statsCompletionPercent: 'Completion',
 
     // Ratings
-    ratingAwesome: 'Awesome',
+    ratingMasterpiece: 'Masterpiece',
+    ratingExcellent: 'Excellent',
     ratingGood: 'Good',
-    ratingOkay: 'Okay',
-    ratingWeak: 'Weak',
+    ratingPassable: 'Passable',
     ratingBad: 'Bad',
+    ratingAtrocious: 'Atrocious',
+    ratingEvil: 'Evil',
 
     // Misc
     year: 'Year',
@@ -1276,11 +1279,13 @@ const RU: Record<TranslationKey, string> = {
     statsCompletionPercent: 'Процент прохождения',
 
     // Ratings
-    ratingAwesome: 'Отлично',
+    ratingMasterpiece: 'Шедевр',
+    ratingExcellent: 'Отлично',
     ratingGood: 'Хорошо',
-    ratingOkay: 'Нормально',
-    ratingWeak: 'Слабо',
+    ratingPassable: 'Сносно',
     ratingBad: 'Плохо',
+    ratingAtrocious: 'Отвратительно',
+    ratingEvil: 'Ужасно',
 
     // Misc
     year: 'Год',
@@ -1940,11 +1945,13 @@ const UK: Record<TranslationKey, string> = {
     statsAdultContent: '18+ контент',
     statsRated: 'Оцінено',
     statsCompletionPercent: 'Завершення',
-    ratingAwesome: 'Чудово',
+    ratingMasterpiece: 'Шедевр',
+    ratingExcellent: 'Чудово',
     ratingGood: 'Добре',
-    ratingOkay: 'Нормально',
-    ratingWeak: 'Слабко',
+    ratingPassable: 'Стерпно',
     ratingBad: 'Погано',
+    ratingAtrocious: 'Огидно',
+    ratingEvil: 'Жахливо',
     year: 'Рік',
     yearNotSpecified: 'Рік не вказано',
     noDescription: 'Опису немає',

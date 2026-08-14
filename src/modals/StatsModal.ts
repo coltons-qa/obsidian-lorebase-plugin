@@ -6,7 +6,7 @@
 import { Modal, App } from 'obsidian';
 import { GameStats, AnimeStats, MediaType } from '../types';
 import { t } from '../localization';
-import { RATING_CONFIG } from '../constants';
+import { MAX_USER_RATING, RATING_CONFIG } from '../constants';
 
 // =============================================================================
 // STATS MODAL
@@ -98,7 +98,7 @@ export class StatsModal extends Modal {
             icon: '\u{2B50}',
             label: t('statsAvgRating'),
             value: stats.avgRating,
-            subtext: `${t('statsOf')} 5.0`,
+            subtext: `${t('statsOf')} ${MAX_USER_RATING}.0`,
             color: 'pink'
         });
 

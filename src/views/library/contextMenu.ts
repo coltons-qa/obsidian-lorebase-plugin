@@ -33,13 +33,11 @@ export function showMediaContextMenu(item: MediaItem, x: number, y: number, deps
         submenuHost.setTitle(t('contextChangeRating')).setIcon('star');
         const sub = submenuHost.setSubmenu();
 
-        const ratings: Array<{ value: 1 | 2 | 3 | 4 | 5; label: string }> = [
-            { value: 5, label: t('ratingAwesome') },
-            { value: 4, label: t('ratingGood') },
-            { value: 3, label: t('ratingOkay') },
-            { value: 2, label: t('ratingWeak') },
-            { value: 1, label: t('ratingBad') },
-        ];
+        // Derived from RATING_CONFIG so the scale only has to change in one place.
+        const ratings = RATING_CONFIG.map((entry) => ({
+            value: entry.value,
+            label: t(entry.labelKey),
+        }));
 
         for (const rating of ratings) {
             sub.addItem((subItem: MenuItem) => {
