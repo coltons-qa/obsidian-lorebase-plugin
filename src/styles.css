@@ -7,10 +7,33 @@
    CSS VARIABLES - Exact match to original
    ============================================================================= */
 
+/* Values that do not depend on the active theme. Safe on :root. */
 :root {
-    --lorebase-font-default: var(--font-text);
     --lorebase-font-normal: 400;
     --lorebase-font-bold: 600;
+    --lorebase-accent: #e4a47e;
+    --lorebase-accent-hover: #ff8c40;
+    --lorebase-favorite-color: #ff5f6d;
+    --lorebase-adult-color: #ff6fb1;
+    --lorebase-wishlist-color: #a78bfa;
+    --lorebase-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+}
+
+/*
+ * Theme-derived aliases MUST be declared on `body`, not `:root`.
+ *
+ * Obsidian and every community theme declare their palette on `body`. A custom
+ * property is substituted at computed-value time against the element it is
+ * declared on, so a `:root` alias looks up --text-normal on <html>, does not
+ * find it, and permanently freezes to the fallback below. Those fallbacks are
+ * dark-mode colours, which is why light themes rendered white text on a light
+ * background. The fallbacks are now only a safety net for a theme that omits a
+ * variable entirely; `body` makes the live theme value win.
+ *
+ * Covered by tests/themeVariableScope.test.ts.
+ */
+body {
+    --lorebase-font-default: var(--font-text);
     --lorebase-bg-primary: var(--background-primary, #141414);
     --lorebase-bg-secondary: var(--background-secondary, #262637);
     --lorebase-bg-tertiary: var(--background-modifier-form-field, #252525);
@@ -18,12 +41,6 @@
     --lorebase-text-muted: var(--text-muted, #b3b3b3);
     --lorebase-text-faint: var(--text-faint, #808080);
     --lorebase-border: var(--background-modifier-border, #3a3a3a);
-    --lorebase-accent: #e4a47e;
-    --lorebase-accent-hover: #ff8c40;
-    --lorebase-favorite-color: #ff5f6d;
-    --lorebase-adult-color: #ff6fb1;
-    --lorebase-wishlist-color: #a78bfa;
-    --lorebase-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
 }
 
 /* =============================================================================
@@ -1919,7 +1936,9 @@
 .lorebase-existing-file-primary {
     padding-inline: 16px;
     border-color: color-mix(in srgb, var(--interactive-accent) 72%, var(--background-modifier-border));
-    color: #ffffff;
+    /* Inherits .lorebase-btn's form-field background, which follows the theme;
+       the accent border and shadow carry the "primary" emphasis. */
+    color: var(--lorebase-text-normal);
     box-shadow: 0 8px 18px color-mix(in srgb, var(--interactive-accent) 18%, transparent);
 }
 
@@ -5235,7 +5254,7 @@
 
 .lorebase-stats-rating-percent {
     font-size: 0.8em;
-    color: rgba(255, 255, 255, 0.6);
+    color: var(--lorebase-text-muted);
 }
 
 .lorebase-stats-extra-grid {
@@ -9988,7 +10007,7 @@ a.lorebase-about-meta-value:hover {
     right: 20px;
     background: transparent;
     border: none;
-    color: rgba(255, 255, 255, 0.5);
+    color: var(--lorebase-text-muted);
     font-size: 24px;
     cursor: pointer;
     transition: all 0.2s ease;
@@ -10003,8 +10022,8 @@ a.lorebase-about-meta-value:hover {
 
 
 .lorebase-stats-close:hover {
-    background: rgba(255, 255, 255, 0.1);
-    color: #fff;
+    background: color-mix(in srgb, var(--lorebase-text-normal) 10%, transparent);
+    color: var(--lorebase-text-normal);
     transform: scale(1.1);
 }
 
@@ -10049,7 +10068,7 @@ a.lorebase-about-meta-value:hover {
     font-size: 2em;
     /* Larger title */
     font-weight: var(--lorebase-font-bold);
-    color: #ffffff;
+    color: var(--lorebase-text-normal);
     text-shadow: none;
 }
 
