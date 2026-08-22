@@ -1,11 +1,90 @@
-import { describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
 import {
     getIgdbDetails,
     getIgdbDlcForGame,
     getIgdbSeriesBySteamAppIds,
+    resetIgdbTokenCache,
     searchIgdb,
 } from '../src/services/integrations/providers/igdb';
 import type { JsonFetcher } from '../src/services/integrations/providers/common';
+
+// The token is cached at module scope, so it would otherwise leak between tests
+// and shift the call indices these assertions rely on.
+beforeEach(() => {
+    resetIgdbTokenCache();
+});
+
+describe('IGDB access token cache', () => {
+    function createFetcher(expiresIn: number = 5_000_000): {
+        fetchJson: JsonFetcher;
+        tokenCalls: () => number;
+    } {
+        let tokenCalls = 0;
+        const fetchJson: JsonFetcher = async (url) => {
+            if (url.includes('oauth2/token')) {
+                tokenCalls++;
+                return { access_token: `token-${tokenCalls}`, expires_in: expiresIn };
+            }
+            return [];
+        };
+        return { fetchJson, tokenCalls: () => tokenCalls };
+    }
+
+    it('authenticates once across multiple requests', async () => {
+        const { fetchJson, tokenCalls } = createFetcher();
+
+        await getIgdbDetails(fetchJson, '1', 'client', 'secret');
+        await getIgdbDetails(fetchJson, '2', 'client', 'secret');
+        await getIgdbDlcForGame(fetchJson, '1', 'client', 'secret');
+
+        expect(tokenCalls()).toBe(1);
+    });
+
+    it('reuses the token across a multi-chunk series lookup', async () => {
+        const { fetchJson, tokenCalls } = createFetcher();
+        const appIds = Array.from({ length: 900 }, (_, index) => String(index + 1));
+
+        await getIgdbSeriesBySteamAppIds(fetchJson, appIds, 'client', 'secret');
+
+        // 900 ids over a 400 id chunk size is three chunks, previously three tokens.
+        expect(tokenCalls()).toBe(1);
+    });
+
+    it('re-authenticates when the credentials change', async () => {
+        const { fetchJson, tokenCalls } = createFetcher();
+
+        await getIgdbDetails(fetchJson, '1', 'client', 'secret');
+        await getIgdbDetails(fetchJson, '1', 'other-client', 'secret');
+        await getIgdbDetails(fetchJson, '1', 'other-client', 'rotated-secret');
+
+        expect(tokenCalls()).toBe(3);
+    });
+
+    it('re-authenticates once the token has expired', async () => {
+        const { fetchJson, tokenCalls } = createFetcher(1);
+
+        await getIgdbDetails(fetchJson, '1', 'client', 'secret');
+        await getIgdbDetails(fetchJson, '2', 'client', 'secret');
+
+        expect(tokenCalls()).toBe(2);
+    });
+
+    it('does not cache a failed authentication', async () => {
+        let tokenCalls = 0;
+        const fetchJson: JsonFetcher = async (url) => {
+            if (url.includes('oauth2/token')) {
+                tokenCalls++;
+                return tokenCalls === 1 ? {} : { access_token: 'token-ok', expires_in: 5_000_000 };
+            }
+            return [];
+        };
+
+        await getIgdbDetails(fetchJson, '1', 'client', 'secret');
+        await getIgdbDetails(fetchJson, '2', 'client', 'secret');
+
+        expect(tokenCalls).toBe(2);
+    });
+});
 
 describe('IGDB provider', () => {
     it('authenticates with Twitch and maps paged search results', async () => {
