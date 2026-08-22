@@ -1,4 +1,4 @@
-import { Setting, SliderComponent, ToggleComponent, setIcon } from 'obsidian';
+import { Platform, Setting, SliderComponent, ToggleComponent, setIcon } from 'obsidian';
 import { CARD_SIZES, COLOR_PRESETS, DEFAULT_COVER, DEFAULT_GAME_TAG_PRESETS, DEFAULT_SETTINGS, HORIZONTAL_CARD_SIZES, PARTICLE_INTENSITY_MAX, PARTICLE_INTENSITY_MIN, MAX_USER_RATING, RATING_EMOJI, STATUS_CONFIG } from '../../constants';
 import { i18n, t } from '../../localization';
 import type { BadgePosition, CardClickAction, CardStyle, CompletionDateBadgeFormat, Language, LorebaseSettings, ParticleEffect, RatingBadgeMode, TagPreset } from '../../types';
@@ -144,13 +144,14 @@ export function renderGeneralSettings(context: SettingsSectionContext, container
         });
     addModeSetting.settingEl.addClass('lorebase-add-mode-choice-setting');
 
+    const modKeyLabel = Platform.isMacOS ? 'Cmd' : 'Ctrl';
     const cardClickSetting = new Setting(container)
         .setName(i18n.getLanguage() === 'ru' ? 'Клик по карточке' : i18n.getLanguage() === 'uk' ? 'Клік по картці' : 'Card click')
         .setDesc(i18n.getLanguage() === 'ru'
-            ? 'Что делать при обычном клике по карточке в библиотеке.'
+            ? `Что делать при обычном клике по карточке в библиотеке. ${modKeyLabel} + клик выполняет другое действие.`
             : i18n.getLanguage() === 'uk'
-                ? 'Що робити при звичайному кліку по картці в бібліотеці.'
-                : 'Choose what a normal click on a library card does.');
+                ? `Що робити при звичайному кліку по картці в бібліотеці. ${modKeyLabel} + клік виконує іншу дію.`
+                : `Choose what a normal click on a library card does. ${modKeyLabel} + click does the other one.`);
     addLorebaseDropdown<CardClickAction>(
         cardClickSetting,
         [

@@ -19,7 +19,7 @@ import {
 // =============================================================================
 
 export interface CardCallbacks {
-    onClick: (game: MediaItem) => void;
+    onClick: (game: MediaItem, event: MouseEvent) => void;
     onContextMenu: (game: MediaItem, x: number, y: number) => void;
 }
 
@@ -242,7 +242,7 @@ export class GameCard {
 
         this.container.addEventListener('click', (e) => {
             e.preventDefault();
-            this.callbacks.onClick(this.game);
+            this.callbacks.onClick(this.game, e);
         }, { signal });
 
         this.container.addEventListener('contextmenu', (e) => {

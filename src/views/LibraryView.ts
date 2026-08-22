@@ -3,7 +3,7 @@
  * Main view for displaying the game library with virtualized rendering
  */
 
-import { ItemView, WorkspaceLeaf, TFile, TAbstractFile } from 'obsidian';
+import { ItemView, Keymap, WorkspaceLeaf, TFile, TAbstractFile } from 'obsidian';
 import { AnimeItem, FieldDefinition, GameItem, LibraryViewState, MangaItem, MediaItem, MediaStatus, MediaType, FilterState, LorebaseSettings, LorebasePluginInterface, MovieItem, ReadingItem, SeriesItem, ViewMode, SortField } from '../types';
 import { GameService } from '../services/GameService';
 import { AnimeService } from '../services/AnimeService';
@@ -1127,8 +1127,8 @@ export class LibraryView extends ItemView {
             parent,
             game,
             {
-                onClick: (g) => {
-                    void this.handleCardClick(g);
+                onClick: (g, event) => {
+                    void this.handleCardClick(g, event);
                 },
                 onContextMenu: (g, x, y) => this.showContextMenu(g, x, y),
             },
@@ -1353,8 +1353,12 @@ export class LibraryView extends ItemView {
         await this.app.workspace.openLinkText(game.filePath, '', false);
     }
 
-    private async handleCardClick(game: MediaItem): Promise<void> {
-        if (this.plugin.settings.cardClickAction === 'edit') {
+    private async handleCardClick(game: MediaItem, event?: MouseEvent): Promise<void> {
+        const opensEditor = this.plugin.settings.cardClickAction === 'edit';
+        // Mod-click (Cmd on macOS, Ctrl elsewhere) performs whichever action a plain click doesn't,
+        // so the note is always reachable without the context menu.
+        const modHeld = event ? Keymap.isModifier(event, 'Mod') : false;
+        if (modHeld ? !opensEditor : opensEditor) {
             this.openEditModal(game);
             return;
         }
