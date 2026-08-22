@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { TFolder } from 'obsidian';
 import { extractMarkdownSection, GameService, upsertMarkdownSection } from '../src/services/GameService';
 import type { GameItem } from '../src/types';
 import { DEFAULT_SETTINGS } from '../src/constants';
@@ -515,5 +516,50 @@ describe('GameService', () => {
         });
 
         expect(frontmatter.platform).toEqual(['Windows PC', 'Xbox Series X|S']);
+    });
+
+    describe('getSeriesList', () => {
+        function createServiceWithLibrary(): GameService {
+            const bg3 = createMockFile('Library/Baldur\'s Gate III.md', 'Baldur\'s Gate III');
+            const bg2 = createMockFile('Library/Baldur\'s Gate II.md', 'Baldur\'s Gate II');
+            const halo = createMockFile('Library/Halo.md', 'Halo');
+            const orphan = createMockFile('Library/Untitled Goose Game.md', 'Untitled Goose Game');
+            const app = createMockApp({
+                [bg3.path]: { frontmatter: { type: 'game', name: 'Baldur\'s Gate III', gameSeries: 'Baldur\'s Gate' } },
+                [bg2.path]: { frontmatter: { type: 'game', name: 'Baldur\'s Gate II', gameSeries: 'Baldur\'s Gate' } },
+                [halo.path]: { frontmatter: { type: 'game', name: 'Halo', gameSeries: 'Halo' } },
+                [orphan.path]: { frontmatter: { type: 'game', name: 'Untitled Goose Game' } },
+            });
+            const folder = new TFolder('Library', [bg3, bg2, halo, orphan]);
+            app.vault.getAbstractFileByPath = () => folder;
+
+            const service = new GameService(app, createMetadataService(app));
+            service.setFolderPath('Library');
+            return service;
+        }
+
+        it('returns de-duplicated, sorted series from the loaded library', async () => {
+            const service = createServiceWithLibrary();
+            await service.loadGames();
+
+            expect(service.getSeriesList()).toEqual(['Baldur\'s Gate', 'Halo']);
+        });
+
+        it('still returns series after the cache is invalidated by an unrelated vault edit', async () => {
+            const service = createServiceWithLibrary();
+            await service.loadGames();
+
+            // Any metadata change in the vault invalidates the cache, which happens
+            // constantly. The already-loaded games are still fine as a suggestion list.
+            service.invalidateCache();
+
+            expect(service.getSeriesList()).toEqual(['Baldur\'s Gate', 'Halo']);
+        });
+
+        it('returns nothing when no games have been loaded', () => {
+            const service = createServiceWithLibrary();
+
+            expect(service.getSeriesList()).toEqual([]);
+        });
     });
 });

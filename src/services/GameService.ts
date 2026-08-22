@@ -69,7 +69,10 @@ export class GameService {
     }
 
     getSeriesList(): string[] {
-        if (!this.cacheValid || this.cache.length === 0) return [];
+        // Deliberately ignores cacheValid. Any metadata change in the vault invalidates
+        // the cache without clearing it, so gating on the flag made this return nothing
+        // for the rest of the session. Slightly stale names are fine for a suggestion list.
+        if (this.cache.length === 0) return [];
 
         const seriesSet = new Set<string>();
         for (const game of this.cache) {

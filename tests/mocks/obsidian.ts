@@ -19,10 +19,12 @@ export class TFile {
 export class TFolder {
     path: string;
     name: string;
+    children: (TFile | TFolder)[];
 
-    constructor(path: string = '') {
+    constructor(path: string = '', children: (TFile | TFolder)[] = []) {
         this.path = path;
         this.name = path.split('/').pop() ?? path;
+        this.children = children;
     }
 }
 

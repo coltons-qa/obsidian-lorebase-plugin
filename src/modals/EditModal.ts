@@ -977,10 +977,14 @@ export class EditModal extends Modal {
             close();
         };
 
-        const renderOptions = (): void => {
+        // Only filter while the user is actively typing. Opening the panel always lists
+        // everything, otherwise a field that already holds a series filters the list down
+        // to that one entry and the rest of the library looks missing.
+        const renderOptions = (query = ''): void => {
             panel.empty();
-            const query = input.value.trim().toLowerCase();
-            const values = uniqueSeries.filter((series) => series.toLowerCase().includes(query));
+            const values = query
+                ? uniqueSeries.filter((series) => series.toLowerCase().includes(query))
+                : uniqueSeries;
             const clear = panel.createDiv({
                 cls: 'lorebase-settings-dropdown-option',
                 attr: {
@@ -1028,7 +1032,7 @@ export class EditModal extends Modal {
 
         input.addEventListener('input', () => {
             this.gameSeries = input.value.trim();
-            renderOptions();
+            renderOptions(this.gameSeries.toLowerCase());
             open();
         });
         input.addEventListener('focus', () => {
