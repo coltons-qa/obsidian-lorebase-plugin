@@ -41,6 +41,7 @@ import { parseRelatedMedia } from './services/media/parsers';
 import type { MediaKind, MediaSourceSelection } from './services/integrations/types';
 import { buildSimpleTemplate, getDefaultTemplateFields, getEffectiveSimpleTemplateFields } from './services/integrations/templateUtils';
 import { mediaTypeToKind, synchronizeProviderMetadata } from './services/integrations/enrichment';
+import { isFileInFolder } from './services/media/serviceUtils';
 
 // =============================================================================
 // LOREBASE PLUGIN
@@ -1300,10 +1301,7 @@ export default class LorebasePlugin extends Plugin {
     }
 
     private isFileInFolder(filePath: string, folderPath: string): boolean {
-        const normalizedFolder = folderPath.trim().replace(/\\/g, '/').replace(/^\/+|\/+$/g, '');
-        const normalizedFile = filePath.replace(/\\/g, '/');
-        if (!normalizedFolder) return true;
-        return normalizedFile.startsWith(`${normalizedFolder}/`);
+        return isFileInFolder(filePath, folderPath);
     }
 
     /**
@@ -1667,11 +1665,13 @@ export default class LorebasePlugin extends Plugin {
 
                 item.setIcon(option.icon)
                     .onClick(() => {
+                        // Open the view unconditionally. Returning early when the type was
+                        // unchanged meant the already-selected type could never be opened
+                        // from the ribbon, which hit games first since it is the default.
                         const changed = this.mediaType !== option.type;
-                        if (!changed) return;
                         this.mediaType = option.type;
                         void this.activateView();
-                        this.refreshViews();
+                        if (changed) this.refreshViews();
                     });
             });
         }

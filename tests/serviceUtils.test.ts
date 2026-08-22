@@ -1,5 +1,44 @@
 import { describe, expect, it } from 'vitest';
-import { mapInFrameBatches } from '../src/services/media/serviceUtils';
+import { isFileInFolder, mapInFrameBatches } from '../src/services/media/serviceUtils';
+
+describe('isFileInFolder', () => {
+    it('matches files directly inside the folder', () => {
+        expect(isFileInFolder('Library/Baldur\'s Gate III.md', 'Library')).toBe(true);
+    });
+
+    it('matches files in nested subfolders', () => {
+        expect(isFileInFolder('Library/RPG/Baldur\'s Gate III.md', 'Library')).toBe(true);
+    });
+
+    it('does not match a sibling file whose name starts with the folder name', () => {
+        // A root note called "Library Notes.md" used to read as living in "Library",
+        // which pushed it into the library view as a phantom card.
+        expect(isFileInFolder('Library Notes.md', 'Library')).toBe(false);
+    });
+
+    it('does not match a sibling folder whose name starts with the folder name', () => {
+        expect(isFileInFolder('Library Archive/Old.md', 'Library')).toBe(false);
+    });
+
+    it('does not match a file named exactly like the folder', () => {
+        expect(isFileInFolder('Library.md', 'Library')).toBe(false);
+    });
+
+    it('treats an empty folder path as the whole vault', () => {
+        expect(isFileInFolder('Anywhere/Note.md', '')).toBe(true);
+        expect(isFileInFolder('Note.md', '   ')).toBe(true);
+    });
+
+    it('normalizes surrounding slashes and backslashes', () => {
+        expect(isFileInFolder('Library/Halo.md', '/Library/')).toBe(true);
+        expect(isFileInFolder('Library\\Halo.md', 'Library')).toBe(true);
+    });
+
+    it('matches a nested folder path', () => {
+        expect(isFileInFolder('Media/Games/Halo.md', 'Media/Games')).toBe(true);
+        expect(isFileInFolder('Media/Games Archive/Halo.md', 'Media/Games')).toBe(false);
+    });
+});
 
 describe('mapInFrameBatches', () => {
     it('preserves order and filters null results across batches', async () => {

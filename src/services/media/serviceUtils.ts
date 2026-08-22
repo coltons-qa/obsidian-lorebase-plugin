@@ -7,6 +7,18 @@ export function getAllMarkdownFiles(folder: TFolder): TFile[] {
     return files;
 }
 
+/**
+ * True when the file sits inside the folder. An empty folder path means the whole vault.
+ * Compares against a `/`-terminated prefix so a sibling like `Library Notes.md` is not
+ * treated as living in `Library`.
+ */
+export function isFileInFolder(filePath: string, folderPath: string): boolean {
+    const normalizedFolder = folderPath.trim().replace(/\\/g, '/').replace(/^\/+|\/+$/g, '');
+    const normalizedFile = filePath.replace(/\\/g, '/');
+    if (!normalizedFolder) return true;
+    return normalizedFile.startsWith(`${normalizedFolder}/`);
+}
+
 export async function mapInFrameBatches<TInput, TOutput>(
     items: readonly TInput[],
     mapper: (item: TInput) => TOutput | null,

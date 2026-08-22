@@ -10,6 +10,7 @@ import { AnimeService } from '../services/AnimeService';
 import { VideoService } from '../services/VideoService';
 import { ReadingService } from '../services/ReadingService';
 import { MetadataService } from '../services/MetadataService';
+import { isFileInFolder } from '../services/media/serviceUtils';
 import { Toolbar, ToolbarCallbacks } from '../components/Toolbar';
 import { GameCard } from '../components/GameCard';
 import { VIEW_TYPE_LIBRARY, VIRTUALIZATION_BUFFER, LOREBASE_ICON_ID, SERIES_COLORS, STATUS_CONFIG, RATING_EMOJI, DEFAULT_GAME_TAG_PRESETS, DEFAULT_SETTINGS } from '../constants';
@@ -296,7 +297,7 @@ export class LibraryView extends ItemView {
 
         const existingIndex = this.gameIndex.get(oldPath);
         const activeSettings = this.getActiveSettings();
-        const isInLibraryFolder = file.path.startsWith(activeSettings.folderPath) && file.extension === 'md';
+        const isInLibraryFolder = isFileInFolder(file.path, activeSettings.folderPath) && file.extension === 'md';
         const parsedItem = this.parseActiveItemFromCache(file);
 
         if (existingIndex !== undefined) {
@@ -325,12 +326,19 @@ export class LibraryView extends ItemView {
     private handleMetadataChange(file: TFile): void {
         // Don't process if view is destroyed
         if (this.isDestroyed) return;
-        this.invalidateActiveServiceCache();
 
         // Check if this file is in our games list (O(1) lookup)
         const existingIndex = this.gameIndex.get(file.path);
         const activeSettings = this.getActiveSettings();
-        const isInLibraryFolder = file.path.startsWith(activeSettings.folderPath) && file.extension === 'md';
+        const isInLibraryFolder = isFileInFolder(file.path, activeSettings.folderPath) && file.extension === 'md';
+
+        // Obsidian fires this for every metadata change in the vault, so bail before
+        // touching the cache when the file is neither tracked nor in the library folder.
+        // Invalidating unconditionally left the service cache invalid for the whole
+        // session after any unrelated note was edited, and also parsed every such note.
+        if (existingIndex === undefined && !isInLibraryFolder) return;
+
+        this.invalidateActiveServiceCache();
         const parsedItem = this.parseActiveItemFromCache(file);
 
         if (existingIndex !== undefined) {
