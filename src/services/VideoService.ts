@@ -5,7 +5,7 @@ import { MetadataService } from './MetadataService';
 import { filterAndSortMedia } from './media/filtering';
 import { extractSimpleFrontmatter } from './media/libraryViewState';
 import { getRandomItem, parseNumber, parseRelatedMedia, parseUserRating, parseYear, serializeRelatedMedia } from './media/parsers';
-import { collectFieldTags, collectTags, getAllMarkdownFiles, isTruthy, mapInFrameBatches } from './media/serviceUtils';
+import { collectFieldTags, collectTags, getAllMarkdownFiles, isTruthy, mapInFrameBatches, readFrontmatterValue } from './media/serviceUtils';
 import { upsertMarkdownSection } from './markdownSections';
 
 export type VideoMediaType = 'movie' | 'series';
@@ -62,18 +62,20 @@ export class VideoService {
             if (rawType && rawType !== this.mediaType) return null;
 
             const title = this.readText(metadata, ['title', 'name']) || file.basename?.trim() || 'Untitled';
-            const description = this.readText(metadata, ['plot', 'summary', 'description']) || '';
+            const description = this.readText(metadata, ['synopsis', 'plot', 'summary', 'description']) || '';
             const poster = this.readText(metadata, ['poster', 'image']) || null;
-            const horizontal = this.readText(metadata, ['poster_b', 'image_b', 'horizontal_poster']) || poster;
+            const horizontal = this.readText(metadata, ['poster-b', 'poster_b', 'image_b', 'horizontal_poster']) || poster;
             const verticalImageUrl = this.metadataService.getImageUrl(metadata.poster ?? metadata.image, metadata.cm_poster);
             const horizontalImageUrl = this.metadataService.getImageUrl(
-                metadata.poster_b ?? metadata.image_b ?? metadata.horizontal_poster,
+                readFrontmatterValue(metadata, ['poster-b', 'poster_b', 'image_b', 'horizontal_poster']),
                 metadata.cm_poster
             );
             const status = this.getStatus(this.readText(metadata, ['status']) || '') ?? 'planned';
-            const partsKey = this.mediaType === 'series' ? 'series_parts' : 'movie_parts';
-            const parts = this.parseParts(metadata[partsKey]);
-            const activePartId = this.readText(metadata, ['active_part_id']) || parts[0]?.id || null;
+            const parts = this.parseParts(readFrontmatterValue(
+                metadata,
+                this.mediaType === 'series' ? ['season-data', 'series_parts'] : ['movie_parts']
+            ));
+            const activePartId = this.readText(metadata, ['season-id-current', 'active_part_id']) || parts[0]?.id || null;
             const activePart = parts.find((part) => part.id === activePartId) ?? parts[0] ?? null;
 
             const base = {
@@ -83,7 +85,7 @@ export class VideoService {
                 year: parseYear(metadata.year),
                 description,
                 summary: description,
-                userRating: parseUserRating(metadata.userRating ?? metadata.rating_user),
+                userRating: parseUserRating(readFrontmatterValue(metadata, ['user-rating', 'userRating', 'rating_user'])),
                 favorite: isTruthy(metadata.favorite),
                 poster,
                 imageUrl: verticalImageUrl || poster || DEFAULT_COVER,
@@ -96,15 +98,15 @@ export class VideoService {
                 sourceUrl: this.readText(metadata, ['url', 'source_url']),
                 started: this.readDateText(metadata, ['started', 'dateStarted', 'start_date']),
                 finished: this.readDateText(metadata, ['finished', 'dateFinished', 'finish_date', 'dateWatched', 'watched']),
-                integrationProvider: this.normalizeProvider(this.readText(metadata, ['integration_provider'])),
-                integrationId: this.readText(metadata, ['integration_id']),
+                integrationProvider: this.normalizeProvider(this.readText(metadata, ['integration-provider', 'integration_provider'])),
+                integrationId: this.readText(metadata, ['integration-id', 'integration_id']),
                 parts,
                 activePartId,
-                relatedMedia: parseRelatedMedia(metadata.related_media),
+                relatedMedia: parseRelatedMedia(readFrontmatterValue(metadata, ['related-media', 'related_media'])),
                 rating: this.readText(metadata, ['rating', 'scoreImdb', 'imdbRating']) || '',
-                communityRating: parseNumber(metadata.communityRating ?? metadata.community_rating),
-                communityVotes: parseNumber(metadata.communityVotes ?? metadata.community_votes),
-                communityRatingProvider: this.readText(metadata, ['communityRatingProvider', 'community_rating_provider']) || null,
+                communityRating: parseNumber(readFrontmatterValue(metadata, ['community-rating', 'communityRating', 'community_rating'])),
+                communityVotes: parseNumber(readFrontmatterValue(metadata, ['community-votes', 'communityVotes', 'community_votes'])),
+                communityRatingProvider: this.readText(metadata, ['community-rating-provider', 'communityRatingProvider', 'community_rating_provider']) || null,
                 rawFields: extractSimpleFrontmatter(metadata),
             };
 
@@ -114,11 +116,11 @@ export class VideoService {
                     type: 'series',
                     releaseDate: this.readDateText(metadata, ['released', 'release_date']) || null,
                     runtime: this.readText(metadata, ['runtime']) || '',
-                    director: this.readText(metadata, ['director', 'directors']) || '',
-                    actors: this.readText(metadata, ['actors', 'cast']) || '',
+                    director: this.readText(metadata, ['author', 'director', 'directors']) || '',
+                    actors: this.readText(metadata, ['cast', 'actors']) || '',
                     seasons: (parseNumber(metadata.seasons) ?? parts.length) || null,
-                    episodeCurrent: activePart?.episodeCurrent ?? parseNumber(metadata.episode_current),
-                    episodeTotal: activePart?.episodeTotal ?? parseNumber(metadata.episode_total),
+                    episodeCurrent: activePart?.episodeCurrent ?? parseNumber(readFrontmatterValue(metadata, ['episode-current', 'episode_current'])),
+                    episodeTotal: activePart?.episodeTotal ?? parseNumber(readFrontmatterValue(metadata, ['episodes', 'episode_total'])),
                     networks: this.toStringArray(metadata.networks),
                     studios: this.toStringArray(metadata.studios),
                 };
@@ -129,8 +131,8 @@ export class VideoService {
                 type: 'movie',
                 releaseDate: this.readDateText(metadata, ['released', 'release_date']) || null,
                 runtime: this.readText(metadata, ['runtime']) || '',
-                director: this.readText(metadata, ['director', 'directors']) || '',
-                actors: this.readText(metadata, ['actors', 'cast']) || '',
+                director: this.readText(metadata, ['author', 'director', 'directors']) || '',
+                actors: this.readText(metadata, ['cast', 'actors']) || '',
             };
         } catch (error) {
             console.error(`Error parsing ${this.mediaType}:`, error);
@@ -276,14 +278,14 @@ export class VideoService {
         return raw.map((entry, index) => {
             const source = entry && typeof entry === 'object' ? entry as Record<string, unknown> : {};
             const kind = this.mediaType === 'series' ? 'season' : 'movie';
-            const seasonNumber = parseNumber(source.seasonNumber ?? source.season ?? source.season_number);
+            const seasonNumber = parseNumber(readFrontmatterValue(source, ['season-number', 'seasonNumber', 'season', 'season_number']));
             return {
                 id: this.readText(source, ['id']) || `${kind}-${index + 1}`,
                 kind,
                 title: this.readText(source, ['title', 'name']) || (kind === 'season' ? `Season ${seasonNumber ?? index + 1}` : `Part ${index + 1}`),
                 seasonNumber,
-                episodeCurrent: parseNumber(source.episodeCurrent ?? source.episode_current ?? source.current),
-                episodeTotal: parseNumber(source.episodeTotal ?? source.episode_total ?? source.total),
+                episodeCurrent: parseNumber(readFrontmatterValue(source, ['episode-current', 'episodeCurrent', 'episode_current', 'current'])),
+                episodeTotal: parseNumber(readFrontmatterValue(source, ['episodes', 'episodeTotal', 'episode_total', 'total'])),
                 status: this.getStatus(this.readText(source, ['status']) || '') ?? 'planned',
             };
         });

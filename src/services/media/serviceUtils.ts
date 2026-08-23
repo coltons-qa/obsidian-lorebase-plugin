@@ -8,6 +8,26 @@ export function getAllMarkdownFiles(folder: TFolder): TFile[] {
 }
 
 /**
+ * Returns the raw value of the first key present in the frontmatter, so a reader can
+ * accept a canonical key plus its legacy spellings without flattening the value to text.
+ * Use this for lists, booleans, and structured values; the per-service `read*Text`
+ * helpers already handle the text cases.
+ *
+ * Key order is priority order: canonical (kebab-case) first, legacy spellings after.
+ * Stage 5 of the frontmatter migration retires the legacy entries.
+ */
+export function readFrontmatterValue(
+    frontmatter: Record<string, unknown>,
+    keys: string[]
+): unknown {
+    for (const key of keys) {
+        const value = frontmatter[key];
+        if (value !== undefined && value !== null) return value;
+    }
+    return undefined;
+}
+
+/**
  * True when the file sits inside the folder. An empty folder path means the whole vault.
  * Compares against a `/`-terminated prefix so a sibling like `Library Notes.md` is not
  * treated as living in `Library`.

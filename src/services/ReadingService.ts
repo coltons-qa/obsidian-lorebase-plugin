@@ -5,7 +5,7 @@ import { MetadataService } from './MetadataService';
 import { filterAndSortMedia } from './media/filtering';
 import { extractSimpleFrontmatter } from './media/libraryViewState';
 import { getRandomItem, parseNumber, parseRelatedMedia, parseUserRating, parseYear, serializeRelatedMedia } from './media/parsers';
-import { collectFieldTags, collectTags, getAllMarkdownFiles, isTruthy, mapInFrameBatches } from './media/serviceUtils';
+import { collectFieldTags, collectTags, getAllMarkdownFiles, isTruthy, mapInFrameBatches, readFrontmatterValue } from './media/serviceUtils';
 import { upsertMarkdownSection } from './markdownSections';
 
 export type ReadingMediaType = 'book' | 'manga';
@@ -62,11 +62,11 @@ export class ReadingService {
             if (rawType && rawType !== this.mediaType) return null;
 
             const title = this.readText(metadata, ['title', 'name']) || file.basename?.trim() || 'Untitled';
-            const description = this.readText(metadata, ['plot', 'summary', 'description']) || '';
+            const description = this.readText(metadata, ['synopsis', 'plot', 'summary', 'description']) || '';
             const poster = this.readText(metadata, ['poster', 'image']) || null;
-            const horizontal = this.readText(metadata, ['poster_b', 'image_b', 'horizontal_poster']) || poster;
+            const horizontal = this.readText(metadata, ['poster-b', 'poster_b', 'image_b', 'horizontal_poster']) || poster;
             const verticalImageUrl = this.metadataService.getImageUrl(metadata.poster ?? metadata.image, metadata.cm_poster);
-            const horizontalImageUrl = this.metadataService.getImageUrl(metadata.poster_b ?? metadata.image_b ?? metadata.horizontal_poster, metadata.cm_poster);
+            const horizontalImageUrl = this.metadataService.getImageUrl(readFrontmatterValue(metadata, ['poster-b', 'poster_b', 'image_b', 'horizontal_poster']), metadata.cm_poster);
             const status = this.getStatus(this.readText(metadata, ['status']) || '') ?? 'planned';
             const genres = collectFieldTags(metadata, ['genres', 'genre', 'subjects', 'subject']);
             const explicitAdult = metadata.Sex18 ?? metadata.sex18 ?? metadata.adult ?? metadata.isAdult;
@@ -79,7 +79,7 @@ export class ReadingService {
                 year: parseYear(metadata.year ?? metadata.first_publish_year),
                 description,
                 summary: description,
-                userRating: parseUserRating(metadata.userRating ?? metadata.rating_user ?? metadata.rating),
+                userRating: parseUserRating(readFrontmatterValue(metadata, ['user-rating', 'userRating', 'rating_user', 'rating'])),
                 favorite: isTruthy(metadata.favorite),
                 poster,
                 imageUrl: verticalImageUrl || poster || DEFAULT_COVER,
@@ -95,12 +95,12 @@ export class ReadingService {
                 sourceUrl: this.readText(metadata, ['url', 'source_url']) || null,
                 started: this.readDateText(metadata, ['started', 'dateStarted', 'start_date']),
                 finished: this.readDateText(metadata, ['finished', 'dateFinished', 'finish_date', 'dateRead', 'readDate', 'completedDate']),
-                integrationProvider: this.normalizeProvider(this.readText(metadata, ['integration_provider'])),
-                integrationId: this.readText(metadata, ['integration_id']) || null,
-                relatedMedia: parseRelatedMedia(metadata.related_media),
-                communityRating: parseNumber(metadata.communityRating ?? metadata.community_rating),
-                communityVotes: parseNumber(metadata.communityVotes ?? metadata.community_votes),
-                communityRatingProvider: this.readText(metadata, ['communityRatingProvider', 'community_rating_provider']) || null,
+                integrationProvider: this.normalizeProvider(this.readText(metadata, ['integration-provider', 'integration_provider'])),
+                integrationId: this.readText(metadata, ['integration-id', 'integration_id']) || null,
+                relatedMedia: parseRelatedMedia(readFrontmatterValue(metadata, ['related-media', 'related_media'])),
+                communityRating: parseNumber(readFrontmatterValue(metadata, ['community-rating', 'communityRating', 'community_rating'])),
+                communityVotes: parseNumber(readFrontmatterValue(metadata, ['community-votes', 'communityVotes', 'community_votes'])),
+                communityRatingProvider: this.readText(metadata, ['community-rating-provider', 'communityRatingProvider', 'community_rating_provider']) || null,
                 rawFields: extractSimpleFrontmatter(metadata),
             };
 
@@ -108,13 +108,13 @@ export class ReadingService {
                 return {
                     ...base,
                     type: 'book',
-                    authors: this.toStringArray(metadata.authors ?? metadata.author ?? metadata.author_name),
+                    authors: this.toStringArray(readFrontmatterValue(metadata, ['author', 'authors', 'author_name'])),
                     publisher: this.readText(metadata, ['publisher', 'publishers']) || '',
                     releaseDate: this.readDateText(metadata, ['released', 'release_date', 'publishedDate', 'publish_date']),
-                    pageCurrent: parseNumber(metadata.page_current ?? metadata.pageCurrent),
-                    pageTotal: parseNumber(metadata.page_total ?? metadata.pageTotal ?? metadata.pages ?? metadata.pageCount ?? metadata.number_of_pages),
-                    chapterCurrent: parseNumber(metadata.chapter_current ?? metadata.chapterCurrent),
-                    chapterTotal: parseNumber(metadata.chapter_total ?? metadata.chapterTotal ?? metadata.chapters),
+                    pageCurrent: parseNumber(readFrontmatterValue(metadata, ['page-current', 'page_current', 'pageCurrent'])),
+                    pageTotal: parseNumber(readFrontmatterValue(metadata, ['page-total', 'page_total', 'pageTotal', 'pages', 'pageCount', 'number_of_pages'])),
+                    chapterCurrent: parseNumber(readFrontmatterValue(metadata, ['chapter-current', 'chapter_current', 'chapterCurrent'])),
+                    chapterTotal: parseNumber(readFrontmatterValue(metadata, ['chapter-total', 'chapter_total', 'chapterTotal', 'chapters'])),
                     integrationProvider: base.integrationProvider === 'hardcover' || base.integrationProvider === 'googlebooks'
                         ? base.integrationProvider
                         : null,

@@ -299,4 +299,81 @@ describe('ReadingService', () => {
         expect(items).toHaveLength(1);
         expect(items[0]).toMatchObject({ type: 'book', displayName: 'Folder Note' });
     });
+
+    describe('kebab-case frontmatter (migration stage 1)', () => {
+        // Stage 1 of the frontmatter migration: readers must accept the new kebab-case
+        // keys so the bulk data rewrite in stage 2 cannot break the library. Manga is
+        // intentionally out of scope for the migration, so only book keys are covered.
+        function parseBook(frontmatter: Record<string, unknown>) {
+            const file = createMockFile('Library/Dune.md', 'Dune');
+            const app = createMockApp({ [file.path]: { frontmatter } });
+            const service = new ReadingService(app, 'book', 'Library', createMetadataService(app));
+            return service.parseFromCache(file);
+        }
+
+        it('reads renamed book keys in their new spelling', () => {
+            const book = parseBook({
+                type: 'book',
+                title: 'Dune',
+                'poster-b': 'https://cdn.example/dune-wide.jpg',
+                synopsis: 'Spice and sandworms.',
+                author: 'Frank Herbert',
+                publisher: 'Chilton Books',
+                'user-rating': 7,
+                'community-rating': 91.3,
+                'community-votes': 4100,
+                'community-rating-provider': 'Hardcover',
+                'integration-provider': 'hardcover',
+                'integration-id': '4242',
+                'page-current': 120,
+                'page-total': 412,
+                'chapter-current': 8,
+                'chapter-total': 48,
+                'related-media': [{ type: 'movie', path: 'Library/Dune Movie.md', title: 'Dune' }],
+            });
+
+            expect(book?.displayName).toBe('Dune');
+            expect(book?.description).toBe('Spice and sandworms.');
+            expect(book?.type === 'book' && book.authors).toEqual(['Frank Herbert']);
+            expect(book?.type === 'book' && book.publisher).toBe('Chilton Books');
+            expect(book?.userRating).toBe(7);
+            expect(book?.communityRating).toBe(91.3);
+            expect(book?.communityVotes).toBe(4100);
+            expect(book?.communityRatingProvider).toBe('Hardcover');
+            expect(book?.integrationProvider).toBe('hardcover');
+            expect(book?.integrationId).toBe('4242');
+            expect(book?.type === 'book' && book.pageCurrent).toBe(120);
+            expect(book?.type === 'book' && book.pageTotal).toBe(412);
+            expect(book?.type === 'book' && book.chapterCurrent).toBe(8);
+            expect(book?.type === 'book' && book.chapterTotal).toBe(48);
+            expect(book?.horizontalImageUrl).toBe('https://cdn.example/dune-wide.jpg');
+            expect(book?.relatedMedia?.[0]?.path).toBe('Library/Dune Movie.md');
+        });
+
+        it('still reads legacy keys, so unmigrated notes keep working', () => {
+            const book = parseBook({
+                type: 'book',
+                name: 'Dune',
+                poster_b: 'https://cdn.example/dune-wide.jpg',
+                plot: 'Spice and sandworms.',
+                authors: ['Frank Herbert'],
+                publisher: 'Chilton Books',
+                userRating: 7,
+                communityRating: 91.3,
+                integration_provider: 'hardcover',
+                page_current: 120,
+                page_total: 412,
+                chapter_current: 8,
+                chapter_total: 48,
+            });
+
+            expect(book?.displayName).toBe('Dune');
+            expect(book?.description).toBe('Spice and sandworms.');
+            expect(book?.type === 'book' && book.authors).toEqual(['Frank Herbert']);
+            expect(book?.userRating).toBe(7);
+            expect(book?.communityRating).toBe(91.3);
+            expect(book?.type === 'book' && book.pageCurrent).toBe(120);
+            expect(book?.type === 'book' && book.chapterTotal).toBe(48);
+        });
+    });
 });

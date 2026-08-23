@@ -518,6 +518,130 @@ describe('GameService', () => {
         expect(frontmatter.platform).toEqual(['Windows PC', 'Xbox Series X|S']);
     });
 
+    describe('kebab-case frontmatter (migration stage 1)', () => {
+        // Stage 1 of the frontmatter migration: readers must accept the new kebab-case
+        // keys so the bulk data rewrite in stage 2 cannot break the library. Legacy
+        // spellings stay readable until stage 5 retires them.
+        const legacyFrontmatter = {
+            type: 'game',
+            name: 'Mass Effect',
+            poster: 'https://cdn.example/me.jpg',
+            poster_b: 'https://cdn.example/me-wide.jpg',
+            plot: 'Sci-fi RPG',
+            gameSeries: 'Mass Effect',
+            developers: 'BioWare',
+            publishers: 'EA',
+            userRating: 5,
+            communityRating: 86.2,
+            communityVotes: 1774,
+            communityRatingProvider: 'IGDB',
+            integration_provider: 'igdb',
+            integration_id: '15',
+            steamAppId: '17460',
+            releaseDate: '2007-11-20',
+            related_media: [{ type: 'book', path: 'Library/Revelation.md', title: 'Revelation' }],
+        };
+
+        const kebabFrontmatter = {
+            type: 'game',
+            title: 'Mass Effect',
+            poster: 'https://cdn.example/me.jpg',
+            'poster-b': 'https://cdn.example/me-wide.jpg',
+            synopsis: 'Sci-fi RPG',
+            series: 'Mass Effect',
+            author: 'BioWare',
+            publishers: 'EA',
+            'user-rating': 5,
+            'community-rating': 86.2,
+            'community-votes': 1774,
+            'community-rating-provider': 'IGDB',
+            'integration-provider': 'igdb',
+            'integration-id': '15',
+            'steam-app-id': '17460',
+            released: '2007-11-20',
+            'related-media': [{ type: 'book', path: 'Library/Revelation.md', title: 'Revelation' }],
+        };
+
+        function parse(frontmatter: Record<string, unknown>): GameItem | null {
+            const file = createMockFile('Library/Mass Effect.md', 'Mass Effect');
+            const app = createMockApp({ [file.path]: { frontmatter } });
+            return new GameService(app, createMetadataService(app)).parseGameFromCache(file);
+        }
+
+        it('parses a fully kebab-case note identically to its legacy-case twin', () => {
+            const legacy = parse(legacyFrontmatter);
+            const kebab = parse(kebabFrontmatter);
+
+            expect(legacy).not.toBeNull();
+            expect(kebab).not.toBeNull();
+
+            // rawFields is a deliberate passthrough of the literal note keys, feeding the
+            // custom YAML filter rules in the view. It reflects whatever the note actually
+            // says, so it is expected to differ between the two spellings.
+            const { rawFields: _legacyRaw, ...legacyRest } = legacy!;
+            const { rawFields: _kebabRaw, ...kebabRest } = kebab!;
+            expect(kebabRest).toEqual(legacyRest);
+        });
+
+        it('passes the literal note keys through to rawFields', () => {
+            // Documents the coupling that makes custom `yaml:<key>` filter rules
+            // migration-sensitive: a rule saved against `yaml:gameSeries` will not match
+            // once the note says `series`. See the migration plan's settings check.
+            const kebab = parse(kebabFrontmatter);
+
+            expect(kebab?.rawFields).toHaveProperty('series');
+            expect(kebab?.rawFields).not.toHaveProperty('gameSeries');
+        });
+
+        it('reads each renamed key in its new spelling', () => {
+            const game = parse(kebabFrontmatter);
+
+            expect(game?.displayName).toBe('Mass Effect');
+            expect(game?.description).toBe('Sci-fi RPG');
+            expect(game?.gameSeries).toBe('Mass Effect');
+            expect(game?.developer).toBe('BioWare');
+            expect(game?.publisher).toBe('EA');
+            expect(game?.userRating).toBe(5);
+            expect(game?.communityRating).toBe(86.2);
+            expect(game?.communityVotes).toBe(1774);
+            expect(game?.communityRatingProvider).toBe('IGDB');
+            expect(game?.integrationProvider).toBe('igdb');
+            expect(game?.integrationId).toBe('15');
+            expect(game?.steamAppId).toBe('17460');
+            expect(game?.releaseDate).toBe('2007-11-20');
+            expect(game?.horizontalImageUrl).toBe('https://cdn.example/me-wide.jpg');
+            expect(game?.relatedMedia?.[0]?.path).toBe('Library/Revelation.md');
+        });
+
+        it('still reads legacy keys, so unmigrated notes keep working', () => {
+            const game = parse(legacyFrontmatter);
+
+            expect(game?.displayName).toBe('Mass Effect');
+            expect(game?.description).toBe('Sci-fi RPG');
+            expect(game?.gameSeries).toBe('Mass Effect');
+            expect(game?.developer).toBe('BioWare');
+            expect(game?.userRating).toBe(5);
+            expect(game?.steamAppId).toBe('17460');
+            expect(game?.relatedMedia?.[0]?.path).toBe('Library/Revelation.md');
+        });
+
+        it('prefers the kebab key when a note carries both spellings', () => {
+            const game = parse({
+                type: 'game',
+                name: 'Legacy Title',
+                title: 'Kebab Title',
+                plot: 'legacy synopsis',
+                synopsis: 'kebab synopsis',
+                gameSeries: 'Legacy Series',
+                series: 'Kebab Series',
+            });
+
+            expect(game?.displayName).toBe('Kebab Title');
+            expect(game?.description).toBe('kebab synopsis');
+            expect(game?.gameSeries).toBe('Kebab Series');
+        });
+    });
+
     describe('getSeriesList', () => {
         function createServiceWithLibrary(): GameService {
             const bg3 = createMockFile('Library/Baldur\'s Gate III.md', 'Baldur\'s Gate III');

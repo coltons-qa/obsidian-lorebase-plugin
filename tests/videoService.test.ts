@@ -287,4 +287,126 @@ describe('VideoService', () => {
         expect(trashedFile).toBe(file);
         expect(deleteCalled).toBe(false);
     });
+
+    describe('kebab-case frontmatter (migration stage 1)', () => {
+        // Stage 1 of the frontmatter migration: readers must accept the new kebab-case
+        // keys so the bulk data rewrite in stage 2 cannot break the library.
+        function parseSeries(frontmatter: Record<string, unknown>): SeriesItem | null {
+            const file = createMockFile('Library/Severance.md', 'Severance');
+            const app = createMockApp({ [file.path]: { frontmatter } });
+            const service = new VideoService(app, 'series', 'Library', createMetadataService(app));
+            return service.parseFromCache(file) as SeriesItem | null;
+        }
+
+        function parseMovie(frontmatter: Record<string, unknown>): MovieItem | null {
+            const file = createMockFile('Library/Arrival.md', 'Arrival');
+            const app = createMockApp({ [file.path]: { frontmatter } });
+            const service = new VideoService(app, 'movie', 'Library', createMetadataService(app));
+            return service.parseFromCache(file) as MovieItem | null;
+        }
+
+        it('reads renamed series keys in their new spelling', () => {
+            const series = parseSeries({
+                type: 'series',
+                title: 'Severance',
+                'poster-b': 'https://cdn.example/severance-wide.jpg',
+                synopsis: 'Work life balance, literally.',
+                author: 'Dan Erickson',
+                cast: 'Adam Scott, Britt Lower',
+                'user-rating': 6,
+                'community-rating': 88.4,
+                'community-votes': 2200,
+                'community-rating-provider': 'TMDB',
+                'integration-provider': 'tmdb',
+                'integration-id': '95396',
+                seasons: 2,
+                'episode-current': 5,
+                episodes: 10,
+            });
+
+            expect(series?.displayName).toBe('Severance');
+            expect(series?.description).toBe('Work life balance, literally.');
+            expect(series?.director).toBe('Dan Erickson');
+            expect(series?.actors).toBe('Adam Scott, Britt Lower');
+            expect(series?.userRating).toBe(6);
+            expect(series?.communityRating).toBe(88.4);
+            expect(series?.communityVotes).toBe(2200);
+            expect(series?.communityRatingProvider).toBe('TMDB');
+            expect(series?.integrationProvider).toBe('tmdb');
+            expect(series?.integrationId).toBe('95396');
+            expect(series?.seasons).toBe(2);
+            expect(series?.episodeCurrent).toBe(5);
+            expect(series?.episodeTotal).toBe(10);
+            expect(series?.horizontalImageUrl).toBe('https://cdn.example/severance-wide.jpg');
+        });
+
+        it('reads season-data with kebab nested keys, driven by season-id-current', () => {
+            const series = parseSeries({
+                type: 'series',
+                title: 'Severance',
+                'season-data': [
+                    { id: 'season-1', title: 'Season 1', 'season-number': 1, 'episode-current': 9, episodes: 9, status: 'completed' },
+                    { id: 'season-2', title: 'Season 2', 'season-number': 2, 'episode-current': 4, episodes: 10, status: 'watching' },
+                ],
+                'season-id-current': 'season-2',
+            });
+
+            expect(series?.parts).toHaveLength(2);
+            expect(series?.activePartId).toBe('season-2');
+            // Top-level progress mirrors the active season, not the first one.
+            expect(series?.episodeCurrent).toBe(4);
+            expect(series?.episodeTotal).toBe(10);
+            expect(series?.parts?.[1]?.seasonNumber).toBe(2);
+        });
+
+        it('reads renamed movie keys in their new spelling', () => {
+            const movie = parseMovie({
+                type: 'movie',
+                title: 'Arrival',
+                'poster-b': 'https://cdn.example/arrival-wide.jpg',
+                synopsis: 'Linguistics and time.',
+                author: 'Denis Villeneuve',
+                cast: 'Amy Adams, Jeremy Renner',
+                'user-rating': 7,
+                'integration-provider': 'tmdb',
+                'integration-id': '329865',
+            });
+
+            expect(movie?.displayName).toBe('Arrival');
+            expect(movie?.description).toBe('Linguistics and time.');
+            expect(movie?.director).toBe('Denis Villeneuve');
+            expect(movie?.actors).toBe('Amy Adams, Jeremy Renner');
+            expect(movie?.userRating).toBe(7);
+            expect(movie?.integrationProvider).toBe('tmdb');
+            expect(movie?.integrationId).toBe('329865');
+        });
+
+        it('still reads legacy keys, so unmigrated notes keep working', () => {
+            const series = parseSeries({
+                type: 'series',
+                title: 'Severance',
+                poster_b: 'https://cdn.example/severance-wide.jpg',
+                plot: 'Work life balance, literally.',
+                director: 'Dan Erickson',
+                actors: 'Adam Scott',
+                userRating: 6,
+                communityRating: 88.4,
+                integration_provider: 'tmdb',
+                episode_current: 5,
+                episode_total: 10,
+                series_parts: [
+                    { id: 'season-1', title: 'Season 1', season_number: 1, episode_current: 9, episode_total: 9, status: 'completed' },
+                ],
+                active_part_id: 'season-1',
+            });
+
+            expect(series?.description).toBe('Work life balance, literally.');
+            expect(series?.director).toBe('Dan Erickson');
+            expect(series?.userRating).toBe(6);
+            expect(series?.communityRating).toBe(88.4);
+            expect(series?.parts).toHaveLength(1);
+            expect(series?.activePartId).toBe('season-1');
+            expect(series?.episodeCurrent).toBe(9);
+        });
+    });
 });
