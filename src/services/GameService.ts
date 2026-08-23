@@ -484,6 +484,10 @@ export class GameService {
                 integrationProvider,
                 integrationId: this.readFrontmatterText(metadata, ['integration-id', 'integration_id']) ?? steamAppId,
                 steamAppId,
+                owned: this.readFrontmatterText(metadata, ['owned']),
+                count: this.readFrontmatterNumber(metadata, ['count']),
+                repeatable: isTruthy(metadata.repeatable),
+                myPlatform: this.readFrontmatterText(metadata, ['my-platform']) ?? '',
                 dlc: this.parseDlcList(metadata.dlc),
                 relatedMedia: parseRelatedMedia(readFrontmatterValue(metadata, ['related-media', 'related_media'])),
                 rawFields: extractSimpleFrontmatter(metadata),
@@ -685,6 +689,10 @@ export class GameService {
             frontmatterUpdates['steam-app-id'] = updates.steamAppId;
             if (this.hasFrontmatterKey(frontmatter, 'steamAppId')) frontmatterUpdates.steamAppId = null;
         }
+        if ('owned' in updates) frontmatterUpdates.owned = updates.owned || null;
+        if ('count' in updates) frontmatterUpdates.count = updates.count ?? null;
+        if ('repeatable' in updates) frontmatterUpdates.repeatable = updates.repeatable ?? false;
+        if ('myPlatform' in updates) frontmatterUpdates['my-platform'] = updates.myPlatform || null;
         if ('dlc' in updates) frontmatterUpdates.dlc = this.serializeDlcList(updates.dlc);
         if ('relatedMedia' in updates) {
             frontmatterUpdates['related-media'] = serializeRelatedMedia(updates.relatedMedia);

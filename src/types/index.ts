@@ -339,6 +339,12 @@ interface BaseMediaItem {
     communityVotes?: number | null;
     /** Provider label for community rating */
     communityRatingProvider?: string | null;
+    /** Ownership: 'no' | 'physical' | 'digital'. Free text, no provider source. */
+    owned?: string | null;
+    /** How many times this has been replayed / rewatched / reread. */
+    count?: number | null;
+    /** Whether this is worth going back to. */
+    repeatable?: boolean;
     /** Markdown body section stored under ## My Notes */
     myNotes?: string;
     /** Date started in YYYY-MM-DD form */
@@ -382,6 +388,8 @@ export interface GameItem extends BaseMediaItem {
     integrationId?: string | null;
     /** Steam app id from Steam Sync or integration metadata */
     steamAppId?: string | null;
+    /** Which platform you personally play on, distinct from `platforms`. */
+    myPlatform?: string;
     /** Downloadable content attached to this game */
     dlc?: GameDlc[];
     /** Locally linked media notes */
@@ -486,6 +494,7 @@ export interface BookItem extends BaseMediaItem {
     status: ReadingStatus;
     summary: string;
     authors: string[];
+    illustrator?: string;
     publisher?: string;
     releaseDate?: string | null;
     pageCurrent: number | null;

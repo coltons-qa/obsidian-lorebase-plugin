@@ -106,6 +106,9 @@ export class VideoService {
                 communityRating: parseNumber(readFrontmatterValue(metadata, ['community-rating', 'communityRating', 'community_rating'])),
                 communityVotes: parseNumber(readFrontmatterValue(metadata, ['community-votes', 'communityVotes', 'community_votes'])),
                 communityRatingProvider: this.readText(metadata, ['community-rating-provider', 'communityRatingProvider', 'community_rating_provider']) || null,
+                owned: this.readText(metadata, ['owned']) || null,
+                count: parseNumber(readFrontmatterValue(metadata, ['count'])),
+                repeatable: isTruthy(metadata.repeatable),
                 rawFields: extractSimpleFrontmatter(metadata),
             };
 
@@ -232,6 +235,9 @@ export class VideoService {
             frontmatterUpdates.cast = cast.length > 0 ? cast : null;
             if (this.hasKey(frontmatter, 'actors')) frontmatterUpdates.actors = null;
         }
+        if ('owned' in updates) frontmatterUpdates.owned = updates.owned || null;
+        if ('count' in updates) frontmatterUpdates.count = updates.count ?? null;
+        if ('repeatable' in updates) frontmatterUpdates.repeatable = updates.repeatable ?? false;
         if ('seasons' in updates) frontmatterUpdates.seasons = updates.seasons;
         if ('networks' in updates) this.updateListField(frontmatterUpdates, frontmatter, ['networks', 'network'], updates.networks);
         if ('parts' in updates) {

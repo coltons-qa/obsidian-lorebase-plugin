@@ -47,6 +47,10 @@ export class EditModal extends Modal {
     private releaseDate: string;
     private publisher: string;
     private developer: string;
+    private owned: string;
+    private count: number | null;
+    private repeatable: boolean;
+    private myPlatform: string;
     private tags: string[];
     private genres: string[];
     private platforms: string[];
@@ -110,6 +114,10 @@ export class EditModal extends Modal {
         this.releaseDate = this.normalizeDateInput(game.releaseDate);
         this.publisher = game.publisher ?? '';
         this.developer = game.developer ?? '';
+        this.owned = game.owned ?? 'no';
+        this.count = game.count ?? null;
+        this.repeatable = game.repeatable ?? false;
+        this.myPlatform = game.myPlatform ?? '';
         this.tags = this.normalizeTags(game.tags ?? []);
         this.genres = this.normalizeGenres(game.genres ?? []);
         this.platforms = this.normalizePlatforms(game.platforms ?? []);
@@ -407,6 +415,11 @@ export class EditModal extends Modal {
                                 <label class="lorebase-editmode-field"><span class="lorebase-editmode-field-label">${t('editReleaseDate')}</span><input class="lorebase-editmode-input" data-field="release-date" type="date" /></label>
                                 <label class="lorebase-editmode-field"><span class="lorebase-editmode-field-label">${t('editPublisher')}</span><input class="lorebase-editmode-input" data-field="publisher" type="text" placeholder="${t('editPublisher')}" /></label>
                                 <label class="lorebase-editmode-field"><span class="lorebase-editmode-field-label">${t('editDeveloper')}</span><input class="lorebase-editmode-input" data-field="developer" type="text" placeholder="${t('editDeveloper')}" /></label>
+                                <label class="lorebase-editmode-field"><span class="lorebase-editmode-field-label">${t('templateFieldMyPlatform')}</span><input class="lorebase-editmode-input" data-field="my-platform" type="text" placeholder="${t('templateFieldMyPlatform')}" /></label>
+                                <label class="lorebase-editmode-field"><span class="lorebase-editmode-field-label">${t('templateFieldOwned')}</span><input class="lorebase-editmode-input" data-field="owned" type="text" placeholder="no / physical / digital" list="lorebase-owned-options" /></label>
+                                <datalist id="lorebase-owned-options"><option value="no"></option><option value="physical"></option><option value="digital"></option></datalist>
+                                <label class="lorebase-editmode-field"><span class="lorebase-editmode-field-label">${t('templateFieldCount')}</span><input class="lorebase-editmode-input" data-field="count" type="number" min="0" step="1" /></label>
+                                <label class="lorebase-editmode-field"><span class="lorebase-editmode-field-label">${t('editRepeatGame')}</span><input class="lorebase-editmode-input" data-field="repeatable" type="checkbox" /></label>
                                 <div class="lorebase-editmode-path-row">
                                     <span class="lorebase-editmode-field-label">${t('editLocalPath')}</span>
                                     <code class="lorebase-editmode-local-path" data-role="local-path"></code>
@@ -494,6 +507,15 @@ export class EditModal extends Modal {
             publisherInput.value = publisherValue;
             this.publisher = publisherValue;
         }
+
+        const myPlatformField = this.qs<HTMLInputElement>(root, '[data-field="my-platform"]');
+        if (myPlatformField) myPlatformField.value = this.myPlatform;
+        const ownedField = this.qs<HTMLInputElement>(root, '[data-field="owned"]');
+        if (ownedField) ownedField.value = this.owned;
+        const countField = this.qs<HTMLInputElement>(root, '[data-field="count"]');
+        if (countField) countField.value = this.count === null ? '' : String(this.count);
+        const repeatableInput = this.qs<HTMLInputElement>(root, '[data-field="repeatable"]');
+        if (repeatableInput) repeatableInput.checked = this.repeatable;
 
         const developerInput = this.qs<HTMLInputElement>(root, '[data-field="developer"]');
         if (developerInput) {
@@ -891,6 +913,21 @@ export class EditModal extends Modal {
         developerInput?.addEventListener('input', () => {
             this.developer = developerInput.value;
         });
+
+        const myPlatformInput = this.qs<HTMLInputElement>(root, '[data-field="my-platform"]');
+        myPlatformInput?.addEventListener('input', () => { this.myPlatform = myPlatformInput.value; });
+
+        const ownedInput = this.qs<HTMLInputElement>(root, '[data-field="owned"]');
+        ownedInput?.addEventListener('input', () => { this.owned = ownedInput.value; });
+
+        const countInput = this.qs<HTMLInputElement>(root, '[data-field="count"]');
+        countInput?.addEventListener('input', () => {
+            const parsed = Number.parseInt(countInput.value, 10);
+            this.count = Number.isFinite(parsed) ? parsed : null;
+        });
+
+        const repeatableToggle = this.qs<HTMLInputElement>(root, '[data-field="repeatable"]');
+        repeatableToggle?.addEventListener('change', () => { this.repeatable = repeatableToggle.checked; });
 
         const platformInput = this.qs<HTMLInputElement>(root, '[data-field="new-platform"]');
         const addPlatform = (): void => {
@@ -1517,6 +1554,10 @@ export class EditModal extends Modal {
             finished: this.finished || null,
             publisher: this.publisher.trim(),
             developer: this.developer.trim(),
+            owned: this.owned.trim() || null,
+            count: this.count,
+            repeatable: this.repeatable,
+            myPlatform: this.myPlatform.trim(),
             dlc: this.dlc,
             relatedMedia: this.relatedMediaEditor.getValue(),
             myNotes: this.myNotes,

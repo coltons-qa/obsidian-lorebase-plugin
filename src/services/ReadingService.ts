@@ -96,6 +96,9 @@ export class ReadingService {
                 communityRating: parseNumber(readFrontmatterValue(metadata, ['community-rating', 'communityRating', 'community_rating'])),
                 communityVotes: parseNumber(readFrontmatterValue(metadata, ['community-votes', 'communityVotes', 'community_votes'])),
                 communityRatingProvider: this.readText(metadata, ['community-rating-provider', 'communityRatingProvider', 'community_rating_provider']) || null,
+                owned: this.readText(metadata, ['owned']) || null,
+                count: parseNumber(readFrontmatterValue(metadata, ['count'])),
+                repeatable: isTruthy(metadata.repeatable),
                 rawFields: extractSimpleFrontmatter(metadata),
             };
 
@@ -104,6 +107,7 @@ export class ReadingService {
                     ...base,
                     type: 'book',
                     authors: this.toStringArray(readFrontmatterValue(metadata, ['author', 'authors', 'author_name'])),
+                    illustrator: this.readText(metadata, ['illustrator']) || '',
                     publisher: this.readText(metadata, ['publisher', 'publishers']) || '',
                     releaseDate: this.readDateText(metadata, ['released', 'release_date', 'publishedDate', 'publish_date']),
                     pageCurrent: parseNumber(readFrontmatterValue(metadata, ['page-current', 'page_current', 'pageCurrent'])),
@@ -232,6 +236,9 @@ export class ReadingService {
             if (this.hasKey(frontmatter, 'rating')) frontmatterUpdates.rating = null;
         }
         if ('favorite' in updates) frontmatterUpdates.favorite = updates.favorite;
+        if ('owned' in updates) frontmatterUpdates.owned = updates.owned || null;
+        if ('count' in updates) frontmatterUpdates.count = updates.count ?? null;
+        if ('repeatable' in updates) frontmatterUpdates.repeatable = updates.repeatable ?? false;
         if ('sourceUrl' in updates) this.updateTextField(frontmatterUpdates, frontmatter, ['url', 'source_url'], updates.sourceUrl);
         if ('started' in updates) frontmatterUpdates.started = this.normalizeDateString(String(updates.started ?? '')) || null;
         if ('finished' in updates) frontmatterUpdates.finished = this.normalizeDateString(String(updates.finished ?? '')) || null;

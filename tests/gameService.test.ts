@@ -511,6 +511,61 @@ describe('GameService', () => {
         expect(frontmatter.platform).toEqual(['Windows PC', 'Xbox Series X|S']);
     });
 
+    describe('new manual fields (migration stage 4c)', () => {
+        function parse(frontmatter: Record<string, unknown>) {
+            const file = createMockFile('Library/Halo.md', 'Halo');
+            const app = createMockApp({ [file.path]: { frontmatter } });
+            return new GameService(app, createMetadataService(app)).parseGameFromCache(file);
+        }
+
+        it('reads owned, count, repeatable and my-platform', () => {
+            const game = parse({
+                type: 'game',
+                title: 'Halo',
+                owned: 'physical',
+                count: 3,
+                repeatable: true,
+                'my-platform': 'Xbox Series X',
+            });
+
+            expect(game?.owned).toBe('physical');
+            expect(game?.count).toBe(3);
+            expect(game?.repeatable).toBe(true);
+            expect(game?.myPlatform).toBe('Xbox Series X');
+        });
+
+        it('defaults cleanly when the keys are absent', () => {
+            const game = parse({ type: 'game', title: 'Halo' });
+
+            expect(game?.owned).toBeNull();
+            expect(game?.count).toBeNull();
+            expect(game?.repeatable).toBe(false);
+            expect(game?.myPlatform).toBe('');
+        });
+
+        it('writes them back under their canonical keys', async () => {
+            const file = createMockFile('Library/Halo.md', 'Halo');
+            const frontmatter: Record<string, unknown> = { type: 'game', title: 'Halo' };
+            const app = createMockApp({ [file.path]: { frontmatter } });
+            app.vault.getAbstractFileByPath = () => file;
+            app.fileManager.processFrontMatter = async (_file, handler) => { handler(frontmatter); };
+
+            const service = new GameService(app, createMetadataService(app));
+            const game = service.parseGameFromCache(file);
+            await service.updateGame(game!, {
+                owned: 'digital',
+                count: 2,
+                repeatable: true,
+                myPlatform: 'PC',
+            });
+
+            expect(frontmatter.owned).toBe('digital');
+            expect(frontmatter.count).toBe(2);
+            expect(frontmatter.repeatable).toBe(true);
+            expect(frontmatter['my-platform']).toBe('PC');
+        });
+    });
+
     describe('kebab-case frontmatter (migration stage 1)', () => {
         // Stage 1 of the frontmatter migration: readers must accept the new kebab-case
         // keys so the bulk data rewrite in stage 2 cannot break the library. Legacy

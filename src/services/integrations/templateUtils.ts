@@ -24,6 +24,10 @@ export function getDefaultTemplateFields(kind: MediaKind): string[] {
             'communityRatingProvider',
             'status',
             'favorite',
+            'owned',
+            'count',
+            'repeatable',
+            'myPlatform',
             'integrationSource',
             'url',
         ];
@@ -69,7 +73,9 @@ export function getDefaultTemplateFields(kind: MediaKind): string[] {
             'communityRatingProvider',
             'status',
             'favorite',
-            'movieParts',
+            'owned',
+            'count',
+            'repeatable',
             'integrationSource',
             'url',
         ];
@@ -98,6 +104,10 @@ export function getDefaultTemplateFields(kind: MediaKind): string[] {
             'communityRatingProvider',
             'status',
             'favorite',
+            'owned',
+            'count',
+            'repeatable',
+            'illustrator',
             'integrationSource',
             'url',
         ];
@@ -153,6 +163,9 @@ export function getDefaultTemplateFields(kind: MediaKind): string[] {
         'communityRatingProvider',
         'status',
         'favorite',
+        'owned',
+        'count',
+        'repeatable',
         'integrationSource',
         'url',
     ];
@@ -200,6 +213,9 @@ function getTemplateFieldForYamlKey(kind: MediaKind, yamlKey: string): string | 
         communityRating: 'communityRating',
         communityVotes: 'communityVotes',
         communityRatingProvider: 'communityRatingProvider',
+        owned: 'owned',
+        count: 'count',
+        repeatable: 'repeatable',
         url: 'url',
     };
     const fieldsByKind: Record<MediaKind, Record<string, string>> = {
@@ -225,6 +241,7 @@ function getTemplateFieldForYamlKey(kind: MediaKind, yamlKey: string): string | 
             main: 'main',
             main_plus_sides: 'main_plus_sides',
             perfectionist: 'perfectionist',
+            'my-platform': 'myPlatform',
         },
         anime: {
             title: 'name',
@@ -287,6 +304,7 @@ function getTemplateFieldForYamlKey(kind: MediaKind, yamlKey: string): string | 
             genres: 'genres',
             tags: 'tags',
             released: 'released',
+            illustrator: 'illustrator',
             'page-current': 'pageCurrent',
             'page-total': 'pageTotal',
             'chapter-current': 'chapterCurrent',
@@ -371,6 +389,16 @@ function appendIntegrationSourceFields(lines: string[], kebab: boolean): void {
     lines.push(`${kebab ? 'integration-id' : 'integration_id'}: "{{VALUE:integrationId}}"`);
 }
 
+/**
+ * Manual fields with no provider source. Emitted with defaults so a freshly imported
+ * note shows the full property set in Obsidian rather than growing keys on first edit.
+ */
+function appendManualFields(set: Set<string>, lines: string[]): void {
+    if (set.has('owned')) lines.push('owned: "no"');
+    if (set.has('count')) lines.push('count: 0');
+    if (set.has('repeatable')) lines.push('repeatable: false');
+}
+
 export function buildSimpleTemplate(kind: MediaKind, fields: string[]): string {
     const set = new Set(fields);
     const lines: string[] = ['---'];
@@ -396,6 +424,8 @@ export function buildSimpleTemplate(kind: MediaKind, fields: string[]): string {
         appendCommunityRatingFields(set, lines, kebab);
         if (set.has('status')) lines.push('status: "{{VALUE:status}}"');
         if (set.has('favorite')) lines.push('favorite: false');
+        appendManualFields(set, lines);
+        if (set.has('myPlatform')) lines.push('my-platform: ""');
         if (set.has('integrationSource')) appendIntegrationSourceFields(lines, kebab);
         if (set.has('url')) lines.push('url: "{{VALUE:url}}"');
         if (set.has('main')) lines.push('hltb-main: {{VALUE:main}}');
@@ -460,6 +490,7 @@ export function buildSimpleTemplate(kind: MediaKind, fields: string[]): string {
         appendCommunityRatingFields(set, lines, kebab);
         if (set.has('status')) lines.push('status: "{{VALUE:status}}"');
         if (set.has('favorite')) lines.push('favorite: false');
+        appendManualFields(set, lines);
         if (set.has('integrationSource')) appendIntegrationSourceFields(lines, kebab);
         if (set.has('url')) lines.push('url: "{{VALUE:url}}"');
     } else {
@@ -495,6 +526,10 @@ export function buildSimpleTemplate(kind: MediaKind, fields: string[]): string {
         appendCommunityRatingFields(set, lines, kebab);
         if (set.has('status')) lines.push('status: "{{VALUE:status}}"');
         if (set.has('favorite')) lines.push('favorite: false');
+        if (kind === 'books') {
+            appendManualFields(set, lines);
+            if (set.has('illustrator')) lines.push('illustrator: ""');
+        }
         if (set.has('integrationSource')) appendIntegrationSourceFields(lines, kebab);
         if (set.has('url')) lines.push('url: "{{VALUE:url}}"');
     }

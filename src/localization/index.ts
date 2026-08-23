@@ -174,7 +174,10 @@ export type TranslationKey =
     | 'editSource' | 'editSourceConnected' | 'editSourceNotConnected'
     | 'editSourceLink' | 'editSourceRefresh' | 'editSourceChange'
     | 'editPersonalRating' | 'editRatingHint' | 'editSaved' | 'editUnsavedChanges'
-    | 'editCharsShort' | 'editReleaseDate' | 'editPublisher' | 'editDeveloper'
+    | 'editCharsShort' | 'editReleaseDate' | 'editPublisher' | 'editDeveloper' | 'editCreator'
+    | 'templateFieldOwned' | 'templateFieldCount' | 'templateFieldRepeatable'
+    | 'templateFieldMyPlatform' | 'templateFieldIllustrator'
+    | 'editRepeatGame' | 'editRepeatVideo' | 'editRepeatBook'
     | 'editPlatformPlaceholder' | 'editAddPlatform' | 'editNoPlatforms'
     | 'editLocalPath' | 'editOpen' | 'editTagPlaceholder'
     | 'editStarted' | 'editFinished' | 'editToday' | 'editMyNotes'
@@ -562,6 +565,14 @@ const EN: Record<TranslationKey, string> = {
     templateFieldReleased: 'Release date',
     templateFieldRuntime: 'Runtime',
     templateFieldDirector: 'Director',
+    templateFieldOwned: 'Owned',
+    templateFieldCount: 'Count',
+    templateFieldRepeatable: 'Repeatable',
+    templateFieldMyPlatform: 'My platform',
+    templateFieldIllustrator: 'Illustrator',
+    editRepeatGame: 'Replay?',
+    editRepeatVideo: 'Rewatch?',
+    editRepeatBook: 'Reread?',
     templateFieldActors: 'Actors',
     templateFieldMovieParts: 'Movie parts',
     templateFieldSeriesParts: 'Series seasons',
@@ -717,6 +728,7 @@ const EN: Record<TranslationKey, string> = {
     editReleaseDate: 'Release date',
     editPublisher: 'Publisher',
     editDeveloper: 'Developer',
+    editCreator: 'Creator',
     editPlatformPlaceholder: 'Add a platform...',
     editAddPlatform: 'Add platform',
     editNoPlatforms: 'No platforms specified',
@@ -1226,6 +1238,14 @@ const RU: Record<TranslationKey, string> = {
     templateFieldReleased: 'Дата релиза',
     templateFieldRuntime: 'Длительность',
     templateFieldDirector: 'Режиссёр',
+    templateFieldOwned: 'В наличии',
+    templateFieldCount: 'Счётчик',
+    templateFieldRepeatable: 'Повторить',
+    templateFieldMyPlatform: 'Моя платформа',
+    templateFieldIllustrator: 'Иллюстратор',
+    editRepeatGame: 'Переиграть?',
+    editRepeatVideo: 'Пересмотреть?',
+    editRepeatBook: 'Перечитать?',
     templateFieldActors: 'Актёры',
     templateFieldMovieParts: 'Части фильма',
     templateFieldSeriesParts: 'Сезоны сериала',
@@ -1381,6 +1401,7 @@ const RU: Record<TranslationKey, string> = {
     editReleaseDate: 'Дата релиза',
     editPublisher: 'Издатель',
     editDeveloper: 'Разработчик',
+    editCreator: 'Создатель',
     editPlatformPlaceholder: 'Добавить платформу...',
     editAddPlatform: 'Добавить платформу',
     editNoPlatforms: 'Платформы не указаны',
@@ -1895,6 +1916,14 @@ const UK: Record<TranslationKey, string> = {
     templateFieldReleased: 'Дата релізу',
     templateFieldRuntime: 'Тривалість',
     templateFieldDirector: 'Режисер',
+    templateFieldOwned: 'У наявності',
+    templateFieldCount: 'Лічильник',
+    templateFieldRepeatable: 'Повторити',
+    templateFieldMyPlatform: 'Моя платформа',
+    templateFieldIllustrator: 'Ілюстратор',
+    editRepeatGame: 'Переграти?',
+    editRepeatVideo: 'Передивитися?',
+    editRepeatBook: 'Перечитати?',
     templateFieldActors: 'Актори',
     templateFieldMovieParts: 'Частини фільму',
     templateFieldSeriesParts: 'Сезони серіалу',
@@ -2043,6 +2072,7 @@ const UK: Record<TranslationKey, string> = {
     editReleaseDate: 'Дата релізу',
     editPublisher: 'Видавець',
     editDeveloper: 'Розробник',
+    editCreator: 'Творець',
     editPlatformPlaceholder: 'Додати платформу...',
     editAddPlatform: 'Додати платформу',
     editNoPlatforms: 'Платформи не вказані',

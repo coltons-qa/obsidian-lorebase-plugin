@@ -45,6 +45,9 @@ export class VideoEditModal extends Modal {
     private actors: string;
     private seasons: number | null;
     private networks: string[];
+    private owned: string;
+    private count: number | null;
+    private repeatable: boolean;
     private parts: PartDraft[];
     private activePartId: string | null;
     private relatedMedia: RelatedMediaLink[];
@@ -104,6 +107,9 @@ export class VideoEditModal extends Modal {
         this.actors = item.actors ?? '';
         this.seasons = item.type === 'series' ? item.seasons : null;
         this.networks = item.type === 'series' ? this.normalizeList(item.networks ?? []) : [];
+        this.owned = item.owned ?? 'no';
+        this.count = item.count ?? null;
+        this.repeatable = item.repeatable ?? false;
         this.parts = this.normalizeParts(item);
         this.relatedMedia = this.normalizeRelatedMedia(item.relatedMedia ?? []);
         this.relatedCandidates = relatedCandidates.filter((candidate) => candidate.path !== item.filePath);
@@ -394,6 +400,10 @@ export class VideoEditModal extends Modal {
             <label class="lorebase-editmode-field"><span class="lorebase-editmode-field-label">${t('templateFieldRuntime')}</span><input class="lorebase-editmode-input" data-field="runtime" type="text" /></label>
             <label class="lorebase-editmode-field"><span class="lorebase-editmode-field-label">${t('templateFieldDirector')}</span><input class="lorebase-editmode-input" data-field="director" type="text" placeholder="Director A, Director B" /></label>
             <label class="lorebase-editmode-field"><span class="lorebase-editmode-field-label">${t('templateFieldActors')}</span><input class="lorebase-editmode-input" data-field="actors" type="text" placeholder="Actor A, Actor B" /></label>
+            <label class="lorebase-editmode-field"><span class="lorebase-editmode-field-label">${t('templateFieldOwned')}</span><input class="lorebase-editmode-input" data-field="owned" type="text" placeholder="no / physical / digital" list="lorebase-video-owned-options" /></label>
+            <datalist id="lorebase-video-owned-options"><option value="no"></option><option value="physical"></option><option value="digital"></option></datalist>
+            <label class="lorebase-editmode-field"><span class="lorebase-editmode-field-label">${t('templateFieldCount')}</span><input class="lorebase-editmode-input" data-field="count" type="number" min="0" step="1" /></label>
+            <label class="lorebase-editmode-field"><span class="lorebase-editmode-field-label">${t('editRepeatVideo')}</span><input class="lorebase-editmode-input" data-field="repeatable" type="checkbox" /></label>
         `;
     }
 
@@ -401,8 +411,12 @@ export class VideoEditModal extends Modal {
         return `
             ${this.buildReleaseDateField()}
             <label class="lorebase-editmode-field"><span class="lorebase-editmode-field-label">${t('templateFieldRuntime')}</span><input class="lorebase-editmode-input" data-field="runtime" type="text" /></label>
-            <label class="lorebase-editmode-field"><span class="lorebase-editmode-field-label">${t('templateFieldDirector')}</span><input class="lorebase-editmode-input" data-field="director" type="text" placeholder="Director A, Director B" /></label>
+            <label class="lorebase-editmode-field"><span class="lorebase-editmode-field-label">${t('editCreator')}</span><input class="lorebase-editmode-input" data-field="director" type="text" placeholder="Creator A, Creator B" /></label>
             <label class="lorebase-editmode-field"><span class="lorebase-editmode-field-label">${t('templateFieldActors')}</span><input class="lorebase-editmode-input" data-field="actors" type="text" placeholder="Actor A, Actor B" /></label>
+            <label class="lorebase-editmode-field"><span class="lorebase-editmode-field-label">${t('templateFieldOwned')}</span><input class="lorebase-editmode-input" data-field="owned" type="text" placeholder="no / physical / digital" list="lorebase-video-owned-options" /></label>
+            <datalist id="lorebase-video-owned-options"><option value="no"></option><option value="physical"></option><option value="digital"></option></datalist>
+            <label class="lorebase-editmode-field"><span class="lorebase-editmode-field-label">${t('templateFieldCount')}</span><input class="lorebase-editmode-input" data-field="count" type="number" min="0" step="1" /></label>
+            <label class="lorebase-editmode-field"><span class="lorebase-editmode-field-label">${t('editRepeatVideo')}</span><input class="lorebase-editmode-input" data-field="repeatable" type="checkbox" /></label>
         `;
     }
 
@@ -443,6 +457,10 @@ export class VideoEditModal extends Modal {
         this.setInput(root, '[data-field="released"]', this.releaseDate);
         this.setInput(root, '[data-field="runtime"]', this.runtime);
         this.setInput(root, '[data-field="director"]', this.director);
+        this.setInput(root, '[data-field="owned"]', this.owned);
+        this.setInput(root, '[data-field="count"]', this.count);
+        const repeatableInput = this.qs<HTMLInputElement>(root, '[data-field="repeatable"]');
+        if (repeatableInput) repeatableInput.checked = this.repeatable;
         this.setInput(root, '[data-field="actors"]', this.actors);
         this.setInput(root, '[data-field="seasons"]', this.seasons);
         this.setInput(root, '[data-field="episode-current"]', this.item.type === 'series' ? this.item.episodeCurrent : null);
@@ -520,6 +538,14 @@ export class VideoEditModal extends Modal {
         this.bindText(root, '[data-field="source-url"]', (value) => { this.sourceUrl = value; });
         this.bindText(root, '[data-field="runtime"]', (value) => { this.runtime = value; });
         this.bindText(root, '[data-field="director"]', (value) => { this.director = value; });
+        this.bindText(root, '[data-field="owned"]', (value) => { this.owned = value; });
+        this.bindText(root, '[data-field="count"]', (value) => {
+            const parsed = Number.parseInt(value, 10);
+            this.count = Number.isFinite(parsed) ? parsed : null;
+        });
+        this.qs<HTMLInputElement>(root, '[data-field="repeatable"]')?.addEventListener('change', (event) => {
+            this.repeatable = (event.currentTarget as HTMLInputElement).checked;
+        });
         this.bindText(root, '[data-field="actors"]', (value) => { this.actors = value; });
 
         this.qs<HTMLInputElement>(root, '[data-field="year"]')?.addEventListener('input', (event) => {
@@ -1299,6 +1325,9 @@ export class VideoEditModal extends Modal {
             finished: this.finished || null,
             relatedMedia: this.relatedMedia,
             myNotes: this.myNotes,
+            owned: this.owned.trim() || null,
+            count: this.count,
+            repeatable: this.repeatable,
         };
 
         if (this.item.type === 'movie') {
