@@ -583,6 +583,55 @@ describe('GameService', () => {
             expect(kebabRest).toEqual(legacyRest);
         });
 
+        it('reads kebab-case DLC entries and round-trips them (stage 3c)', () => {
+            const file = createMockFile('Library/Fallout 3.md', 'Fallout 3');
+            const frontmatter: Record<string, unknown> = {
+                type: 'game',
+                title: 'Fallout 3',
+                dlc: [
+                    {
+                        id: '22370',
+                        provider: 'steam',
+                        title: 'Operation Anchorage',
+                        image: 'https://cdn.example/anchorage.jpg',
+                        url: 'https://store.steampowered.com/app/22370/',
+                        'user-rating': 4,
+                        owned: true,
+                    },
+                ],
+            };
+            const app = createMockApp({ [file.path]: { frontmatter } });
+            const service = new GameService(app, createMetadataService(app));
+            const game = service.parseGameFromCache(file);
+
+            expect(game?.dlc).toHaveLength(1);
+            expect(game?.dlc?.[0]).toMatchObject({
+                id: '22370',
+                title: 'Operation Anchorage',
+                imageUrl: 'https://cdn.example/anchorage.jpg',
+                userRating: 4,
+                owned: true,
+            });
+        });
+
+        it('still reads legacy DLC entries', () => {
+            const file = createMockFile('Library/Fallout 3.md', 'Fallout 3');
+            const app = createMockApp({
+                [file.path]: {
+                    frontmatter: {
+                        type: 'game',
+                        title: 'Fallout 3',
+                        dlc: [
+                            { id: '22370', title: 'Operation Anchorage', image: 'https://cdn.example/a.jpg', userRating: 4, owned: true },
+                        ],
+                    },
+                },
+            });
+            const game = new GameService(app, createMetadataService(app)).parseGameFromCache(file);
+
+            expect(game?.dlc?.[0]).toMatchObject({ userRating: 4, owned: true, imageUrl: 'https://cdn.example/a.jpg' });
+        });
+
         it('passes the literal note keys through to rawFields', () => {
             // Documents the coupling that makes custom `yaml:<key>` filter rules
             // migration-sensitive: a rule saved against `yaml:gameSeries` will not match

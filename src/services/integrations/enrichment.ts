@@ -29,13 +29,24 @@ export interface ProviderSourceSnapshot {
     lists: Record<string, unknown[]>;
 }
 
-export const SOURCE_SNAPSHOT_FIELD = 'lorebase_source_snapshot';
+export const SOURCE_SNAPSHOT_FIELD = 'lorebase-source-snapshot';
+/** Pre-migration spelling, still read so existing snapshots are not orphaned. */
+export const LEGACY_SOURCE_SNAPSHOT_FIELD = 'lorebase_source_snapshot';
 
+function readSnapshotField(current: Record<string, unknown>): unknown {
+    return current[SOURCE_SNAPSHOT_FIELD] ?? current[LEGACY_SOURCE_SNAPSHOT_FIELD];
+}
+
+// Keys here are provider field names (the shape IntegrationService emits); values are
+// the note YAML spellings to look for, in priority order. The kebab entries exist
+// because the vault was migrated to lower-kebab-case: without them findExistingAlias
+// matches nothing and the merge falls back to writing the provider field name, which
+// silently adds a duplicate legacy property beside every migrated one.
 const FIELD_ALIASES: Record<string, string[]> = {
     name: ['name', 'Name', 'title', 'Title'],
     poster: ['poster', 'image', 'cover', 'thumbnail'],
-    poster_b: ['poster_b', 'image_b', 'horizontal_poster', 'backdrop', 'banner'],
-    plot: ['plot', 'summary', 'description'],
+    poster_b: ['poster-b', 'poster_b', 'image_b', 'horizontal_poster', 'backdrop', 'banner'],
+    plot: ['synopsis', 'plot', 'summary', 'description'],
     genres: ['genres', 'genre', 'Genre'],
     tags: ['tags', 'tag', 'Tags'],
     platforms: ['platforms', 'platform', 'Platform'],
@@ -44,21 +55,31 @@ const FIELD_ALIASES: Record<string, string[]> = {
     year: ['year', 'Year'],
     released: ['released', 'releaseDate', 'release_date', 'date'],
     url: ['url', 'source_url', 'source', 'link'],
-    developers: ['developers', 'developer'],
+    developers: ['author', 'developers', 'developer'],
     publishers: ['publishers', 'publisher'],
     publisher: ['publisher', 'publishers'],
-    authors: ['authors', 'author'],
+    authors: ['author', 'authors'],
     artists: ['artists', 'artist'],
-    director: ['director', 'directors'],
-    actors: ['actors', 'cast'],
-    episode_total: ['episode_total', 'episodeTotal'],
+    director: ['author', 'director', 'directors'],
+    actors: ['cast', 'actors'],
+    episode_total: ['episodes', 'episode_total', 'episodeTotal'],
     season_total: ['season_total', 'seasonTotal'],
-    page_total: ['page_total', 'pageTotal', 'pages', 'pageCount', 'number_of_pages'],
-    chapter_total: ['chapter_total', 'chapterTotal', 'chapters'],
+    page_total: ['page-total', 'page_total', 'pageTotal', 'pages', 'pageCount', 'number_of_pages'],
+    chapter_total: ['chapter-total', 'chapter_total', 'chapterTotal', 'chapters'],
     volume_total: ['volume_total', 'volumeTotal', 'volumes'],
-    communityRating: ['communityRating', 'community_rating'],
-    communityVotes: ['communityVotes', 'community_votes'],
-    communityRatingProvider: ['communityRatingProvider', 'community_rating_provider'],
+    communityRating: ['community-rating', 'communityRating', 'community_rating'],
+    communityVotes: ['community-votes', 'communityVotes', 'community_votes'],
+    communityRatingProvider: ['community-rating-provider', 'communityRatingProvider', 'community_rating_provider'],
+    // These had no entry at all before the migration, so they defaulted to their own
+    // name and would have duplicated against the renamed note key.
+    gameSeries: ['series', 'gameSeries'],
+    steamAppId: ['steam-app-id', 'steamAppId', 'steam_appid', 'appid'],
+    main: ['hltb-main', 'main'],
+    main_plus_sides: ['hltb-main-sides', 'main_plus_sides'],
+    perfectionist: ['hltb-perfectionist', 'perfectionist'],
+    series_parts: ['season-data', 'series_parts'],
+    integration_provider: ['integration-provider', 'integration_provider'],
+    integration_id: ['integration-id', 'integration_id'],
 };
 
 const ZERO_IS_EMPTY = new Set([
@@ -105,9 +126,13 @@ export function mergeProviderMetadata(
         if (isEmptyIncoming(value)) continue;
 
         if (IDENTITY_FIELDS.has(key)) {
-            values[key] = value;
-            patch[key] = value;
-            filledFields.push(key);
+            // Resolve to the note's own spelling first. Writing `key` unconditionally
+            // added a duplicate `integration_provider` beside a migrated
+            // `integration-provider`, since this branch skips findExistingAlias.
+            const identityKey = findExistingAlias(current, key) ?? key;
+            values[identityKey] = value;
+            patch[identityKey] = value;
+            filledFields.push(identityKey);
             continue;
         }
 
@@ -185,7 +210,7 @@ export function synchronizeProviderMetadata(
     source: Pick<MediaSourceSelection, 'provider' | 'id'>,
     options: { forceProviderFields?: boolean } = {}
 ): EnrichmentMergeResult {
-    const previousSourceSnapshot = readSourceSnapshot(current[SOURCE_SNAPSHOT_FIELD]);
+    const previousSourceSnapshot = readSourceSnapshot(readSnapshotField(current));
     const result = mergeProviderMetadata(current, incoming, [], {
         overwriteProviderFields: true,
         previousSourceSnapshot,
@@ -193,8 +218,14 @@ export function synchronizeProviderMetadata(
     });
     const nextSnapshot = createSourceSnapshot(incoming, source);
     result.values[SOURCE_SNAPSHOT_FIELD] = nextSnapshot;
-    if (!valuesEqual(current[SOURCE_SNAPSHOT_FIELD], nextSnapshot)) {
+    if (!valuesEqual(readSnapshotField(current), nextSnapshot)) {
         result.patch[SOURCE_SNAPSHOT_FIELD] = nextSnapshot;
+    }
+    // Clear the legacy key when a note still carries it, so the rename does not leave
+    // two snapshot blocks behind. null is how MetadataService deletes a property.
+    if (LEGACY_SOURCE_SNAPSHOT_FIELD in current) {
+        result.values[LEGACY_SOURCE_SNAPSHOT_FIELD] = null;
+        result.patch[LEGACY_SOURCE_SNAPSHOT_FIELD] = null;
     }
     return result;
 }

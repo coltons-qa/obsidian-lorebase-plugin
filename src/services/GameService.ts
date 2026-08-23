@@ -210,14 +210,15 @@ export class GameService {
             const title = String(record.title ?? record.name ?? '').trim();
             if (!id || !title || seen.has(id)) continue;
             seen.add(id);
+            const owned = readFrontmatterValue(record, ['owned']);
             entries.push({
                 id,
                 provider: record.provider === 'igdb' ? 'igdb' : 'steam',
                 title,
-                imageUrl: this.readRecordText(record, ['imageUrl', 'image', 'poster']),
+                imageUrl: this.readRecordText(record, ['image', 'imageUrl', 'poster']),
                 url: this.readRecordText(record, ['url', 'sourceUrl']),
-                userRating: this.parseUserRating(record.userRating ?? record.rating),
-                owned: typeof record.owned === 'boolean' ? record.owned : undefined,
+                userRating: this.parseUserRating(readFrontmatterValue(record, ['user-rating', 'userRating', 'rating'])),
+                owned: typeof owned === 'boolean' ? owned : undefined,
             });
         }
 
@@ -226,13 +227,16 @@ export class GameService {
 
     private serializeDlcList(values: GameDlc[] | undefined): Array<Record<string, unknown>> | null {
         if (!values?.length) return null;
+        // `image` is the canonical key: it is what this method has always written, so
+        // every DLC entry on disk uses it. The reader's `imageUrl` alias is kept for
+        // provider payloads, which use the camelCase spelling.
         return values.map((item) => ({
             id: item.id,
             provider: item.provider,
             title: item.title,
             image: item.imageUrl || null,
             url: item.url || null,
-            userRating: item.userRating ?? null,
+            'user-rating': item.userRating ?? null,
             owned: item.owned ?? null,
         }));
     }

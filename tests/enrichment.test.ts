@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+    LEGACY_SOURCE_SNAPSHOT_FIELD,
     mergeProviderMetadata,
     normalizeCommunityRating,
     SOURCE_SNAPSHOT_FIELD,
@@ -308,5 +309,199 @@ describe('media enrichment merge', () => {
         expect(normalizeCommunityRating('rawg', 4.42)).toBe(88.4);
         expect(normalizeCommunityRating('anilist', 84)).toBe(84);
         expect(normalizeCommunityRating('shikimori', 6.52)).toBe(65.2);
+    });
+
+    describe('kebab-case notes (migration stage 3a)', () => {
+        // findExistingAlias picks which key to write by searching the note for any
+        // spelling listed in FIELD_ALIASES, and falls back to the provider field name
+        // when nothing matches. After the stage 2 rename the aliases no longer matched,
+        // so a refresh from source wrote a duplicate legacy property beside every
+        // migrated one. These lock that shut.
+        const source = { provider: 'igdb' as const, id: '15' };
+
+        // A game note in its post-migration shape.
+        function migratedGame(): Record<string, unknown> {
+            return {
+                type: 'game',
+                title: 'Fallout 3',
+                poster: 'https://cdn.example/fallout3.jpg',
+                'poster-b': 'https://cdn.example/fallout3-wide.jpg',
+                synopsis: 'Post-apocalyptic Washington DC.',
+                series: 'Fallout',
+                author: 'Bethesda Game Studios',
+                publishers: 'Bethesda Softworks',
+                'community-rating': 86.2,
+                'community-votes': 1774,
+                'community-rating-provider': 'IGDB',
+                released: '2008-10-28',
+                year: 2008,
+                url: 'https://example.com/fallout3',
+            };
+        }
+
+        // Keys as IntegrationService actually emits them.
+        function incomingGame(): Record<string, unknown> {
+            return {
+                name: 'Fallout 3',
+                poster: 'https://cdn.example/fallout3.jpg',
+                poster_b: 'https://cdn.example/fallout3-wide-v2.jpg',
+                plot: 'Updated provider description.',
+                gameSeries: 'Fallout',
+                developers: 'Bethesda Game Studios',
+                publishers: 'Bethesda Softworks',
+                communityRating: 87.1,
+                communityVotes: 1801,
+                communityRatingProvider: 'IGDB',
+                released: '2008-10-28',
+                year: 2008,
+                url: 'https://example.com/fallout3',
+            };
+        }
+
+        it('writes no duplicate legacy properties when refreshing a migrated game', () => {
+            const current = migratedGame();
+            const before = new Set(Object.keys(current));
+
+            const result = synchronizeProviderMetadata(current, incomingGame(), source);
+
+            const added = Object.keys(result.values)
+                .filter((key) => !before.has(key) && key !== SOURCE_SNAPSHOT_FIELD);
+
+            expect(added).toEqual([]);
+        });
+
+        it('updates the migrated key in place rather than creating a sibling', () => {
+            const result = synchronizeProviderMetadata(migratedGame(), incomingGame(), source);
+
+            expect(result.values['poster-b']).toBe('https://cdn.example/fallout3-wide-v2.jpg');
+            expect(result.values.synopsis).toBe('Updated provider description.');
+            expect(result.values['community-rating']).toBe(87.1);
+            expect(result.values['community-votes']).toBe(1801);
+
+            expect(result.values).not.toHaveProperty('poster_b');
+            expect(result.values).not.toHaveProperty('plot');
+            expect(result.values).not.toHaveProperty('gameSeries');
+            expect(result.values).not.toHaveProperty('developers');
+            expect(result.values).not.toHaveProperty('communityRating');
+            expect(result.values).not.toHaveProperty('communityVotes');
+            expect(result.values).not.toHaveProperty('communityRatingProvider');
+        });
+
+        it('writes no duplicate legacy properties when refreshing a migrated series', () => {
+            const current: Record<string, unknown> = {
+                type: 'series',
+                title: 'Severance',
+                'poster-b': 'https://cdn.example/severance-wide.jpg',
+                synopsis: 'Work life balance, literally.',
+                author: 'Dan Erickson',
+                cast: 'Adam Scott',
+                episodes: 9,
+                'community-rating': 88.4,
+            };
+            const before = new Set(Object.keys(current));
+
+            const result = synchronizeProviderMetadata(current, {
+                name: 'Severance',
+                poster_b: 'https://cdn.example/severance-wide-v2.jpg',
+                plot: 'Updated description.',
+                director: 'Dan Erickson',
+                actors: 'Adam Scott, Britt Lower',
+                episode_total: 10,
+                communityRating: 89.0,
+            }, { provider: 'tmdb', id: '95396' });
+
+            const added = Object.keys(result.values)
+                .filter((key) => !before.has(key) && key !== SOURCE_SNAPSHOT_FIELD);
+
+            expect(added).toEqual([]);
+        });
+
+        it('writes no duplicate legacy properties when refreshing a migrated book', () => {
+            const current: Record<string, unknown> = {
+                type: 'book',
+                title: 'Dune',
+                'poster-b': 'https://cdn.example/dune-wide.jpg',
+                synopsis: 'Spice and sandworms.',
+                author: ['Frank Herbert'],
+                publisher: 'Chilton Books',
+                'page-total': 412,
+                'chapter-total': 48,
+            };
+            const before = new Set(Object.keys(current));
+
+            const result = synchronizeProviderMetadata(current, {
+                name: 'Dune',
+                poster_b: 'https://cdn.example/dune-wide-v2.jpg',
+                plot: 'Updated description.',
+                authors: ['Frank Herbert'],
+                publisher: 'Chilton Books',
+                page_total: 604,
+                chapter_total: 50,
+            }, { provider: 'hardcover', id: '4242' });
+
+            const added = Object.keys(result.values)
+                .filter((key) => !before.has(key) && key !== SOURCE_SNAPSHOT_FIELD);
+
+            expect(added).toEqual([]);
+        });
+
+        it('reads a legacy snapshot and clears the old key (stage 3b)', () => {
+            const current = migratedGame();
+            current[LEGACY_SOURCE_SNAPSHOT_FIELD] = {
+                version: 1,
+                provider: 'igdb',
+                id: '15',
+                hashes: { name: 'k7xdp9' },
+                lists: {},
+            };
+
+            const result = synchronizeProviderMetadata(current, incomingGame(), source);
+
+            // New snapshot written under the kebab key.
+            expect(result.values[SOURCE_SNAPSHOT_FIELD]).toMatchObject({ provider: 'igdb', id: '15' });
+            // Old key explicitly nulled, which is how MetadataService deletes a property.
+            expect(result.patch[LEGACY_SOURCE_SNAPSHOT_FIELD]).toBeNull();
+        });
+
+        it('does not touch the legacy snapshot key when a note has none', () => {
+            const result = synchronizeProviderMetadata(migratedGame(), incomingGame(), source);
+
+            expect(result.patch).not.toHaveProperty(LEGACY_SOURCE_SNAPSHOT_FIELD);
+        });
+
+        it('still resolves legacy notes, so unmigrated vaults keep working', () => {
+            // Mirrors incomingGame() key for key in the legacy spelling, so anything
+            // added would be a genuine duplicate rather than a legitimately filled gap.
+            const current: Record<string, unknown> = {
+                type: 'game',
+                name: 'Fallout 3',
+                poster: 'https://cdn.example/fallout3.jpg',
+                poster_b: 'https://cdn.example/fallout3-wide.jpg',
+                plot: 'Post-apocalyptic Washington DC.',
+                gameSeries: 'Fallout',
+                developers: 'Bethesda Game Studios',
+                publishers: 'Bethesda Softworks',
+                communityRating: 86.2,
+                communityVotes: 1774,
+                communityRatingProvider: 'IGDB',
+                released: '2008-10-28',
+                year: 2008,
+                url: 'https://example.com/fallout3',
+                integration_provider: 'igdb',
+                integration_id: '15',
+            };
+            const before = new Set(Object.keys(current));
+
+            const result = synchronizeProviderMetadata(current, incomingGame(), source);
+
+            const added = Object.keys(result.values)
+                .filter((key) => !before.has(key) && key !== SOURCE_SNAPSHOT_FIELD);
+
+            expect(added).toEqual([]);
+            expect(result.values.poster_b).toBe('https://cdn.example/fallout3-wide-v2.jpg');
+            expect(result.values.plot).toBe('Updated provider description.');
+            expect(result.values).not.toHaveProperty('synopsis');
+            expect(result.values).not.toHaveProperty('poster-b');
+        });
     });
 });
