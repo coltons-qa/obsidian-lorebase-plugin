@@ -218,36 +218,68 @@ export class VideoService {
             this.normalizeDateString(String(updates.releaseDate ?? ''))
         );
         if ('runtime' in updates) this.updateTextField(frontmatterUpdates, frontmatter, ['runtime'], updates.runtime);
-        if ('director' in updates) this.updateDisplayListField(
-            frontmatterUpdates,
-            frontmatter,
-            'director',
-            'directors',
-            updates.director
-        );
-        if ('actors' in updates) this.updateDisplayListField(
-            frontmatterUpdates,
-            frontmatter,
-            'cast',
-            'actors',
-            updates.actors
-        );
+        if ('director' in updates) {
+            // director/directors consolidated onto a single `author` key.
+            const authors = this.toDisplayList(updates.director);
+            frontmatterUpdates.author = authors.length > 0 ? authors : null;
+            if (this.hasKey(frontmatter, 'director')) frontmatterUpdates.director = null;
+            if (this.hasKey(frontmatter, 'directors')) frontmatterUpdates.directors = null;
+        }
+        if ('actors' in updates) {
+            const cast = this.toDisplayList(updates.actors);
+            frontmatterUpdates.cast = cast.length > 0 ? cast : null;
+            if (this.hasKey(frontmatter, 'actors')) frontmatterUpdates.actors = null;
+        }
         if ('seasons' in updates) frontmatterUpdates.seasons = updates.seasons;
         if ('networks' in updates) this.updateListField(frontmatterUpdates, frontmatter, ['networks', 'network'], updates.networks);
         if ('studios' in updates) this.updateListField(frontmatterUpdates, frontmatter, ['studios', 'studio'], updates.studios);
-        if ('parts' in updates) frontmatterUpdates[this.mediaType === 'series' ? 'series_parts' : 'movie_parts'] = this.serializeParts(updates.parts ?? []);
-        if ('activePartId' in updates) frontmatterUpdates.active_part_id = updates.activePartId;
-        if ('relatedMedia' in updates) frontmatterUpdates.related_media = serializeRelatedMedia(updates.relatedMedia);
-        if ('episodeCurrent' in updates) frontmatterUpdates.episode_current = updates.episodeCurrent;
-        if ('episodeTotal' in updates) frontmatterUpdates.episode_total = updates.episodeTotal;
-        if ('communityRating' in updates) frontmatterUpdates.communityRating = updates.communityRating;
-        if ('communityVotes' in updates) frontmatterUpdates.communityVotes = updates.communityVotes;
-        if ('communityRatingProvider' in updates) frontmatterUpdates.communityRatingProvider = updates.communityRatingProvider;
+        if ('parts' in updates) {
+            if (this.mediaType === 'series') {
+                frontmatterUpdates['season-data'] = this.serializeParts(updates.parts ?? []);
+                if (this.hasKey(frontmatter, 'series_parts')) frontmatterUpdates.series_parts = null;
+            } else {
+                // Movie parts are not a tracked concept; clear rather than rewrite.
+                frontmatterUpdates.movie_parts = null;
+            }
+        }
+        if ('activePartId' in updates) {
+            if (this.mediaType === 'series') {
+                frontmatterUpdates['season-id-current'] = updates.activePartId;
+            }
+            if (this.hasKey(frontmatter, 'active_part_id')) frontmatterUpdates.active_part_id = null;
+        }
+        if ('relatedMedia' in updates) {
+            frontmatterUpdates['related-media'] = serializeRelatedMedia(updates.relatedMedia);
+            if (this.hasKey(frontmatter, 'related_media')) frontmatterUpdates.related_media = null;
+        }
+        if ('episodeCurrent' in updates) {
+            frontmatterUpdates['episode-current'] = updates.episodeCurrent;
+            if (this.hasKey(frontmatter, 'episode_current')) frontmatterUpdates.episode_current = null;
+        }
+        if ('episodeTotal' in updates) {
+            frontmatterUpdates.episodes = updates.episodeTotal;
+            if (this.hasKey(frontmatter, 'episode_total')) frontmatterUpdates.episode_total = null;
+        }
+        if ('communityRating' in updates) {
+            frontmatterUpdates['community-rating'] = updates.communityRating;
+            if (this.hasKey(frontmatter, 'communityRating')) frontmatterUpdates.communityRating = null;
+        }
+        if ('communityVotes' in updates) {
+            frontmatterUpdates['community-votes'] = updates.communityVotes;
+            if (this.hasKey(frontmatter, 'communityVotes')) frontmatterUpdates.communityVotes = null;
+        }
+        if ('communityRatingProvider' in updates) {
+            frontmatterUpdates['community-rating-provider'] = updates.communityRatingProvider;
+            if (this.hasKey(frontmatter, 'communityRatingProvider')) frontmatterUpdates.communityRatingProvider = null;
+        }
         if (this.mediaType === 'series') {
             const activeId = typeof updates.activePartId === 'string' ? updates.activePartId : item.activePartId;
             const parts = Array.isArray(updates.parts) ? updates.parts : item.parts;
             const activePart = parts?.find((part) => part.id === activeId);
-            if (activePart?.seasonNumber !== undefined) frontmatterUpdates.season_current = activePart.seasonNumber;
+            if (activePart?.seasonNumber !== undefined) {
+                frontmatterUpdates['season-current'] = activePart.seasonNumber;
+                if (this.hasKey(frontmatter, 'season_current')) frontmatterUpdates.season_current = null;
+            }
         }
 
         await this.metadataService.updateMetadata(file, frontmatterUpdates);

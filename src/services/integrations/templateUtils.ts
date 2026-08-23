@@ -181,16 +181,24 @@ export function getEffectiveSimpleTemplateFields(
 }
 
 function getTemplateFieldForYamlKey(kind: MediaKind, yamlKey: string): string | undefined {
+    // Both spellings are listed so this keeps resolving during and after the kebab-case
+    // migration: notes and templates may hold either while stages roll out.
     const common: Record<string, string> = {
         type: 'type',
+        synopsis: 'plot',
         plot: 'plot',
         year: 'year',
         rating: kind === 'games' ? 'userRating' : 'rating',
         status: 'status',
         favorite: 'favorite',
         Sex18: 'adult',
+        'integration-provider': 'integrationSource',
+        'integration-id': 'integrationSource',
         integration_provider: 'integrationSource',
         integration_id: 'integrationSource',
+        'community-rating': 'communityRating',
+        'community-votes': 'communityVotes',
+        'community-rating-provider': 'communityRatingProvider',
         communityRating: 'communityRating',
         communityVotes: 'communityVotes',
         communityRatingProvider: 'communityRatingProvider',
@@ -198,16 +206,24 @@ function getTemplateFieldForYamlKey(kind: MediaKind, yamlKey: string): string | 
     };
     const fieldsByKind: Record<MediaKind, Record<string, string>> = {
         games: {
+            title: 'name',
             name: 'name',
             poster: 'poster',
+            'poster-b': 'posterHorizontal',
             poster_b: 'posterHorizontal',
+            series: 'gameSeries',
             gameSeries: 'gameSeries',
             genres: 'genres',
             platforms: 'platforms',
             released: 'released',
+            author: 'developers',
             developers: 'developers',
             publishers: 'publishers',
+            'user-rating': 'userRating',
             userRating: 'userRating',
+            'hltb-main': 'main',
+            'hltb-main-sides': 'main_plus_sides',
+            'hltb-perfectionist': 'perfectionist',
             main: 'main',
             main_plus_sides: 'main_plus_sides',
             perfectionist: 'perfectionist',
@@ -228,11 +244,14 @@ function getTemplateFieldForYamlKey(kind: MediaKind, yamlKey: string): string | 
         movies: {
             title: 'name',
             poster: 'poster',
+            'poster-b': 'posterHorizontal',
             poster_b: 'posterHorizontal',
             genres: 'genres',
             released: 'released',
             runtime: 'runtime',
+            author: 'director',
             director: 'director',
+            cast: 'actors',
             actors: 'actors',
             active_part_id: 'movieParts',
             movie_parts: 'movieParts',
@@ -240,27 +259,40 @@ function getTemplateFieldForYamlKey(kind: MediaKind, yamlKey: string): string | 
         series: {
             title: 'name',
             poster: 'poster',
+            'poster-b': 'posterHorizontal',
             poster_b: 'posterHorizontal',
             genres: 'genres',
             released: 'released',
             runtime: 'runtime',
+            author: 'director',
             director: 'director',
+            cast: 'actors',
             actors: 'actors',
             seasons: 'seasons',
+            'episode-current': 'episodeCurrent',
             episode_current: 'episodeCurrent',
+            episodes: 'episodeTotal',
             episode_total: 'episodeTotal',
+            'season-id-current': 'seriesParts',
+            'season-data': 'seriesParts',
             active_part_id: 'seriesParts',
             series_parts: 'seriesParts',
         },
         books: {
             title: 'name',
             poster: 'poster',
+            'poster-b': 'posterHorizontal',
             poster_b: 'posterHorizontal',
+            author: 'authors',
             authors: 'authors',
             publisher: 'publisher',
             genres: 'genres',
             tags: 'tags',
             released: 'released',
+            'page-current': 'pageCurrent',
+            'page-total': 'pageTotal',
+            'chapter-current': 'chapterCurrent',
+            'chapter-total': 'chapterTotal',
             page_current: 'pageCurrent',
             page_total: 'pageTotal',
             chapter_current: 'chapterCurrent',
@@ -291,7 +323,9 @@ function applySimpleTemplateFieldOrder(kind: MediaKind, fields: string[], lines:
     const blocks: Array<{ field: string; index: number; lines: string[] }> = [];
 
     for (const line of lines) {
-        const match = line.match(/^([A-Za-z0-9_]+)\s*:/);
+        // Hyphens are part of the key: the migrated templates emit kebab-case keys like
+        // `poster-b`, which this would otherwise fail to recognise for ordering.
+        const match = line.match(/^([A-Za-z0-9_-]+)\s*:/);
         const field = match ? getTemplateFieldForYamlKey(kind, match[1]) : undefined;
         if (!field) {
             if (blocks.length && !match) blocks[blocks.length - 1].lines.push(line);
@@ -317,44 +351,59 @@ function applySimpleTemplateFieldOrder(kind: MediaKind, fields: string[], lines:
     return sortedLines;
 }
 
-function appendCommunityRatingFields(set: Set<string>, lines: string[]): void {
-    if (set.has('communityRating')) lines.push('communityRating: {{VALUE:communityRating}}');
-    if (set.has('communityVotes')) lines.push('communityVotes: {{VALUE:communityVotes}}');
+/**
+ * `kebab` is per-kind rather than global: games, movies, series and books were migrated
+ * to lower-kebab-case keys, anime and manga were deliberately left out of that migration
+ * and their services still read only the camelCase spellings.
+ */
+function appendCommunityRatingFields(set: Set<string>, lines: string[], kebab: boolean): void {
+    const rating = kebab ? 'community-rating' : 'communityRating';
+    const votes = kebab ? 'community-votes' : 'communityVotes';
+    const provider = kebab ? 'community-rating-provider' : 'communityRatingProvider';
+    if (set.has('communityRating')) lines.push(`${rating}: {{VALUE:communityRating}}`);
+    if (set.has('communityVotes')) lines.push(`${votes}: {{VALUE:communityVotes}}`);
     if (set.has('communityRatingProvider')) {
-        lines.push('communityRatingProvider: "{{VALUE:communityRatingProvider}}"');
+        lines.push(`${provider}: "{{VALUE:communityRatingProvider}}"`);
     }
+}
+
+/** Emits the integration identity pair in the spelling the kind's service reads. */
+function appendIntegrationSourceFields(lines: string[], kebab: boolean): void {
+    lines.push(`${kebab ? 'integration-provider' : 'integration_provider'}: "{{VALUE:integrationProvider}}"`);
+    lines.push(`${kebab ? 'integration-id' : 'integration_id'}: "{{VALUE:integrationId}}"`);
 }
 
 export function buildSimpleTemplate(kind: MediaKind, fields: string[]): string {
     const set = new Set(fields);
     const lines: string[] = ['---'];
+    // Games, movies, series and books were migrated to lower-kebab-case note keys.
+    // Anime and manga were excluded from that migration and their services still read
+    // only the legacy spellings, so they keep emitting the old keys.
+    const kebab = kind === 'games' || kind === 'movies' || kind === 'series' || kind === 'books';
 
     if (kind === 'games') {
         if (set.has('type')) lines.push('type: "game"');
-        if (set.has('name')) lines.push('name: "{{VALUE:name}}"');
+        if (set.has('name')) lines.push('title: "{{VALUE:name}}"');
         if (set.has('poster')) lines.push('poster: "{{VALUE:Poster}}"');
-        if (set.has('posterHorizontal')) lines.push('poster_b: "{{VALUE:PosterHorizontal}}"');
-        if (set.has('plot')) lines.push('plot: "{{VALUE:Plot}}"');
-        if (set.has('gameSeries')) lines.push('gameSeries: "{{VALUE:gameSeries}}"');
+        if (set.has('posterHorizontal')) lines.push('poster-b: "{{VALUE:PosterHorizontal}}"');
+        if (set.has('plot')) lines.push('synopsis: "{{VALUE:Plot}}"');
+        if (set.has('gameSeries')) lines.push('series: "{{VALUE:gameSeries}}"');
         if (set.has('genres')) lines.push('genres: "{{VALUE:genres}}"');
         if (set.has('platforms')) lines.push('platforms: "{{VALUE:platforms}}"');
         if (set.has('year')) lines.push('year: {{VALUE:Year}}');
         if (set.has('released')) lines.push('released: "{{VALUE:released}}"');
-        if (set.has('developers')) lines.push('developers: "{{VALUE:developers}}"');
+        if (set.has('developers')) lines.push('author: "{{VALUE:developers}}"');
         if (set.has('publishers')) lines.push('publishers: "{{VALUE:publishers}}"');
-        if (set.has('userRating')) lines.push('userRating: {{VALUE:userRating}}');
-        appendCommunityRatingFields(set, lines);
+        if (set.has('userRating')) lines.push('user-rating: {{VALUE:userRating}}');
+        appendCommunityRatingFields(set, lines, kebab);
         if (set.has('status')) lines.push('status: "{{VALUE:status}}"');
         if (set.has('favorite')) lines.push('favorite: false');
-        if (set.has('integrationSource')) {
-            lines.push('integration_provider: "{{VALUE:integrationProvider}}"');
-            lines.push('integration_id: "{{VALUE:integrationId}}"');
-        }
+        if (set.has('integrationSource')) appendIntegrationSourceFields(lines, kebab);
         if (set.has('url')) lines.push('url: "{{VALUE:url}}"');
-        if (set.has('main')) lines.push('main: {{VALUE:main}}');
-        if (set.has('main_plus_sides')) lines.push('main_plus_sides: {{VALUE:main_plus_sides}}');
+        if (set.has('main')) lines.push('hltb-main: {{VALUE:main}}');
+        if (set.has('main_plus_sides')) lines.push('hltb-main-sides: {{VALUE:main_plus_sides}}');
         if (set.has('perfectionist') || set.has('completionist')) {
-            lines.push('perfectionist: {{VALUE:perfectionist}}');
+            lines.push('hltb-perfectionist: {{VALUE:perfectionist}}');
         }
     } else if (kind === 'anime') {
         if (set.has('type')) lines.push('type: "anime"');
@@ -375,62 +424,53 @@ export function buildSimpleTemplate(kind: MediaKind, fields: string[]): string {
             lines.push('{{VALUE:animePartsYaml}}');
         }
         if (set.has('rating')) lines.push('rating: {{VALUE:rating}}');
-        appendCommunityRatingFields(set, lines);
+        appendCommunityRatingFields(set, lines, kebab);
         if (set.has('status')) lines.push('status: "{{VALUE:status}}"');
         if (set.has('favorite')) lines.push('favorite: false');
-        if (set.has('integrationSource')) {
-            lines.push('integration_provider: "{{VALUE:integrationProvider}}"');
-            lines.push('integration_id: "{{VALUE:integrationId}}"');
-        }
+        if (set.has('integrationSource')) appendIntegrationSourceFields(lines, kebab);
         if (set.has('url')) lines.push('url: "{{VALUE:url}}"');
     } else if (kind === 'movies' || kind === 'series') {
         if (set.has('type')) lines.push(`type: "${kind === 'movies' ? 'movie' : 'series'}"`);
         if (set.has('name')) lines.push('title: "{{VALUE:name}}"');
         if (set.has('poster')) lines.push('poster: "{{VALUE:Poster}}"');
-        if (set.has('posterHorizontal')) lines.push('poster_b: "{{VALUE:PosterHorizontal}}"');
-        if (set.has('plot')) lines.push('plot: "{{VALUE:Plot}}"');
+        if (set.has('posterHorizontal')) lines.push('poster-b: "{{VALUE:PosterHorizontal}}"');
+        if (set.has('plot')) lines.push('synopsis: "{{VALUE:Plot}}"');
         if (set.has('genres')) lines.push('genres: "{{VALUE:genres}}"');
         if (set.has('year')) lines.push('year: {{VALUE:Year}}');
         if (kind === 'movies') {
             if (set.has('released')) lines.push('released: {{VALUE:released}}');
             if (set.has('runtime')) lines.push('runtime: {{VALUE:runtime}}');
-            if (set.has('director')) lines.push('directors: "{{VALUE:directors}}"');
-            if (set.has('actors')) lines.push('actors: "{{VALUE:actors}}"');
-            if (set.has('movieParts')) {
-                lines.push('active_part_id: "{{VALUE:activePartId}}"');
-                lines.push('movie_parts:');
-                lines.push('{{VALUE:videoPartsYaml}}');
-            }
+            if (set.has('director')) lines.push('author: "{{VALUE:directors}}"');
+            if (set.has('actors')) lines.push('cast: "{{VALUE:actors}}"');
+            // Movie parts are intentionally not emitted: they were discarded from the
+            // library during the migration and are not a concept in use.
         } else {
             if (set.has('released')) lines.push('released: {{VALUE:released}}');
             if (set.has('runtime')) lines.push('runtime: {{VALUE:runtime}}');
-            if (set.has('director')) lines.push('directors: "{{VALUE:directors}}"');
-            if (set.has('actors')) lines.push('actors: "{{VALUE:actors}}"');
+            if (set.has('director')) lines.push('author: "{{VALUE:directors}}"');
+            if (set.has('actors')) lines.push('cast: "{{VALUE:actors}}"');
             if (set.has('seasons')) lines.push('seasons: {{VALUE:seasons}}');
-            if (set.has('episodeCurrent')) lines.push('episode_current: {{VALUE:episodeCurrent}}');
-            if (set.has('episodeTotal')) lines.push('episode_total: {{VALUE:episodeTotal}}');
+            if (set.has('episodeCurrent')) lines.push('episode-current: {{VALUE:episodeCurrent}}');
+            if (set.has('episodeTotal')) lines.push('episodes: {{VALUE:episodeTotal}}');
             if (set.has('seriesParts')) {
-                lines.push('active_part_id: "{{VALUE:activePartId}}"');
-                lines.push('series_parts:');
+                lines.push('season-id-current: "{{VALUE:activePartId}}"');
+                lines.push('season-data:');
                 lines.push('{{VALUE:videoPartsYaml}}');
             }
         }
         if (set.has('rating')) lines.push('rating: {{VALUE:rating}}');
-        appendCommunityRatingFields(set, lines);
+        appendCommunityRatingFields(set, lines, kebab);
         if (set.has('status')) lines.push('status: "{{VALUE:status}}"');
         if (set.has('favorite')) lines.push('favorite: false');
-        if (set.has('integrationSource')) {
-            lines.push('integration_provider: "{{VALUE:integrationProvider}}"');
-            lines.push('integration_id: "{{VALUE:integrationId}}"');
-        }
+        if (set.has('integrationSource')) appendIntegrationSourceFields(lines, kebab);
         if (set.has('url')) lines.push('url: "{{VALUE:url}}"');
     } else {
         if (set.has('type')) lines.push(`type: "${kind === 'books' ? 'book' : 'manga'}"`);
         if (set.has('name')) lines.push('title: "{{VALUE:name}}"');
         if (set.has('poster')) lines.push('poster: "{{VALUE:Poster}}"');
-        if (set.has('posterHorizontal')) lines.push('poster_b: "{{VALUE:PosterHorizontal}}"');
-        if (set.has('plot')) lines.push('plot: "{{VALUE:Plot}}"');
-        if (set.has('authors')) lines.push('authors: "{{VALUE:authors}}"');
+        if (set.has('posterHorizontal')) lines.push(`${kebab ? 'poster-b' : 'poster_b'}: "{{VALUE:PosterHorizontal}}"`);
+        if (set.has('plot')) lines.push(`${kebab ? 'synopsis' : 'plot'}: "{{VALUE:Plot}}"`);
+        if (set.has('authors')) lines.push(`${kebab ? 'author' : 'authors'}: "{{VALUE:authors}}"`);
         if (kind === 'manga' && set.has('artists')) lines.push('artists: "{{VALUE:artists}}"');
         if (kind === 'books' && set.has('publisher')) lines.push('publisher: "{{VALUE:publisher}}"');
         if (set.has('genres')) lines.push('genres: "{{VALUE:genres}}"');
@@ -438,10 +478,10 @@ export function buildSimpleTemplate(kind: MediaKind, fields: string[]): string {
         if (set.has('year')) lines.push('year: {{VALUE:Year}}');
         if (kind === 'books') {
             if (set.has('released')) lines.push('released: {{VALUE:released}}');
-            if (set.has('pageCurrent')) lines.push('page_current: {{VALUE:pageCurrent}}');
-            if (set.has('pageTotal')) lines.push('page_total: {{VALUE:pageTotal}}');
-            if (set.has('chapterCurrent')) lines.push('chapter_current: {{VALUE:chapterCurrent}}');
-            if (set.has('chapterTotal')) lines.push('chapter_total: {{VALUE:chapterTotal}}');
+            if (set.has('pageCurrent')) lines.push('page-current: {{VALUE:pageCurrent}}');
+            if (set.has('pageTotal')) lines.push('page-total: {{VALUE:pageTotal}}');
+            if (set.has('chapterCurrent')) lines.push('chapter-current: {{VALUE:chapterCurrent}}');
+            if (set.has('chapterTotal')) lines.push('chapter-total: {{VALUE:chapterTotal}}');
         } else {
             if (set.has('chapterCurrent')) lines.push('chapter_current: {{VALUE:chapterCurrent}}');
             if (set.has('chapterTotal')) lines.push('chapter_total: {{VALUE:chapterTotal}}');
@@ -454,14 +494,11 @@ export function buildSimpleTemplate(kind: MediaKind, fields: string[]): string {
             }
         }
         if (set.has('rating')) lines.push('rating: {{VALUE:rating}}');
-        appendCommunityRatingFields(set, lines);
+        appendCommunityRatingFields(set, lines, kebab);
         if (set.has('status')) lines.push('status: "{{VALUE:status}}"');
         if (set.has('favorite')) lines.push('favorite: false');
         if (kind === 'manga' && set.has('adult')) lines.push('Sex18: {{VALUE:isAdult}}');
-        if (set.has('integrationSource')) {
-            lines.push('integration_provider: "{{VALUE:integrationProvider}}"');
-            lines.push('integration_id: "{{VALUE:integrationId}}"');
-        }
+        if (set.has('integrationSource')) appendIntegrationSourceFields(lines, kebab);
         if (set.has('url')) lines.push('url: "{{VALUE:url}}"');
     }
 

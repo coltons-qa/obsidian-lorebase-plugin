@@ -228,35 +228,58 @@ export class ReadingService {
         if ('displayName' in updates) this.updateTextField(frontmatterUpdates, frontmatter, ['title', 'name'], updates.displayName);
         if ('title' in updates) this.updateTextField(frontmatterUpdates, frontmatter, ['title', 'name'], String(updates.title ?? ''));
         if ('year' in updates) frontmatterUpdates.year = updates.year;
-        if ('description' in updates) this.updateTextField(frontmatterUpdates, frontmatter, ['plot', 'summary', 'description'], updates.description);
-        if ('summary' in updates) this.updateTextField(frontmatterUpdates, frontmatter, ['plot', 'summary', 'description'], updates.summary);
+        if ('description' in updates) this.updateTextField(frontmatterUpdates, frontmatter, ['synopsis', 'plot', 'summary', 'description'], updates.description);
+        if ('summary' in updates) this.updateTextField(frontmatterUpdates, frontmatter, ['synopsis', 'plot', 'summary', 'description'], updates.summary);
         if ('poster' in updates) this.updateTextField(frontmatterUpdates, frontmatter, ['poster', 'image'], updates.poster);
         if ('imageUrl' in updates) this.updateTextField(frontmatterUpdates, frontmatter, ['poster', 'image'], updates.imageUrl === DEFAULT_COVER ? '' : updates.imageUrl);
-        if ('horizontalImageUrl' in updates) this.updateTextField(frontmatterUpdates, frontmatter, ['poster_b', 'image_b', 'horizontal_poster'], updates.horizontalImageUrl);
+        if ('horizontalImageUrl' in updates) this.updateTextField(frontmatterUpdates, frontmatter, ['poster-b', 'poster_b', 'image_b', 'horizontal_poster'], updates.horizontalImageUrl);
         if ('genres' in updates) this.updateListField(frontmatterUpdates, frontmatter, ['genres', 'genre'], updates.genres);
         if ('tags' in updates) this.updateListField(frontmatterUpdates, frontmatter, ['tags', 'tag'], updates.tags, true);
         if ('status' in updates) frontmatterUpdates.status = updates.status;
-        if ('userRating' in updates) frontmatterUpdates.rating = updates.userRating ?? null;
+        if ('userRating' in updates) {
+            frontmatterUpdates['user-rating'] = updates.userRating ?? null;
+            // `rating` was the old target and doubles as the provider rating elsewhere,
+            // so only clear it when this note actually carries it.
+            if (this.hasKey(frontmatter, 'rating')) frontmatterUpdates.rating = null;
+        }
         if ('favorite' in updates) frontmatterUpdates.favorite = updates.favorite;
         if (item.type === 'manga' && 'isAdult' in updates) frontmatterUpdates.Sex18 = updates.isAdult;
         if ('sourceUrl' in updates) this.updateTextField(frontmatterUpdates, frontmatter, ['url', 'source_url'], updates.sourceUrl);
         if ('started' in updates) frontmatterUpdates.started = this.normalizeDateString(String(updates.started ?? '')) || null;
         if ('finished' in updates) frontmatterUpdates.finished = this.normalizeDateString(String(updates.finished ?? '')) || null;
-        if ('integrationProvider' in updates) frontmatterUpdates.integration_provider = updates.integrationProvider;
-        if ('integrationId' in updates) frontmatterUpdates.integration_id = updates.integrationId;
-        if ('relatedMedia' in updates) frontmatterUpdates.related_media = serializeRelatedMedia(updates.relatedMedia);
-        if ('communityRating' in updates) frontmatterUpdates.communityRating = updates.communityRating;
-        if ('communityVotes' in updates) frontmatterUpdates.communityVotes = updates.communityVotes;
-        if ('communityRatingProvider' in updates) frontmatterUpdates.communityRatingProvider = updates.communityRatingProvider;
+        if ('integrationProvider' in updates) {
+            frontmatterUpdates['integration-provider'] = updates.integrationProvider;
+            if (this.hasKey(frontmatter, 'integration_provider')) frontmatterUpdates.integration_provider = null;
+        }
+        if ('integrationId' in updates) {
+            frontmatterUpdates['integration-id'] = updates.integrationId;
+            if (this.hasKey(frontmatter, 'integration_id')) frontmatterUpdates.integration_id = null;
+        }
+        if ('relatedMedia' in updates) {
+            frontmatterUpdates['related-media'] = serializeRelatedMedia(updates.relatedMedia);
+            if (this.hasKey(frontmatter, 'related_media')) frontmatterUpdates.related_media = null;
+        }
+        if ('communityRating' in updates) {
+            frontmatterUpdates['community-rating'] = updates.communityRating;
+            if (this.hasKey(frontmatter, 'communityRating')) frontmatterUpdates.communityRating = null;
+        }
+        if ('communityVotes' in updates) {
+            frontmatterUpdates['community-votes'] = updates.communityVotes;
+            if (this.hasKey(frontmatter, 'communityVotes')) frontmatterUpdates.communityVotes = null;
+        }
+        if ('communityRatingProvider' in updates) {
+            frontmatterUpdates['community-rating-provider'] = updates.communityRatingProvider;
+            if (this.hasKey(frontmatter, 'communityRatingProvider')) frontmatterUpdates.communityRatingProvider = null;
+        }
 
         if (item.type === 'book') {
-            if ('authors' in updates) this.updateDisplayListField(
-                frontmatterUpdates,
-                frontmatter,
-                'author',
-                'authors',
-                updates.authors
-            );
+            if ('authors' in updates) {
+                // `author` is the single canonical key now, so the singular/plural helper
+                // does not apply: given one key for both roles it writes then nulls it.
+                const authors = this.toDisplayList(updates.authors);
+                frontmatterUpdates.author = authors.length > 0 ? authors : null;
+                if (this.hasKey(frontmatter, 'authors')) frontmatterUpdates.authors = null;
+            }
             if ('publisher' in updates) this.updateDisplayListField(
                 frontmatterUpdates,
                 frontmatter,
@@ -274,10 +297,22 @@ export class ReadingService {
             const pageCurrent = 'pageCurrent' in updates ? this.normalizeProgressValue(updates.pageCurrent, pageTotal) : item.pageCurrent;
             const chapterTotal = 'chapterTotal' in updates ? this.normalizeProgressValue(updates.chapterTotal) : item.chapterTotal;
             const chapterCurrent = 'chapterCurrent' in updates ? this.normalizeProgressValue(updates.chapterCurrent, chapterTotal) : item.chapterCurrent;
-            if ('pageCurrent' in updates) frontmatterUpdates.page_current = pageCurrent;
-            if ('pageTotal' in updates) frontmatterUpdates.page_total = pageTotal;
-            if ('chapterCurrent' in updates) frontmatterUpdates.chapter_current = chapterCurrent;
-            if ('chapterTotal' in updates) frontmatterUpdates.chapter_total = chapterTotal;
+            if ('pageCurrent' in updates) {
+                frontmatterUpdates['page-current'] = pageCurrent;
+                if (this.hasKey(frontmatter, 'page_current')) frontmatterUpdates.page_current = null;
+            }
+            if ('pageTotal' in updates) {
+                frontmatterUpdates['page-total'] = pageTotal;
+                if (this.hasKey(frontmatter, 'page_total')) frontmatterUpdates.page_total = null;
+            }
+            if ('chapterCurrent' in updates) {
+                frontmatterUpdates['chapter-current'] = chapterCurrent;
+                if (this.hasKey(frontmatter, 'chapter_current')) frontmatterUpdates.chapter_current = null;
+            }
+            if ('chapterTotal' in updates) {
+                frontmatterUpdates['chapter-total'] = chapterTotal;
+                if (this.hasKey(frontmatter, 'chapter_total')) frontmatterUpdates.chapter_total = null;
+            }
             const pagesDone = (pageTotal ?? 0) > 0 && (pageCurrent ?? 0) >= (pageTotal ?? 0);
             const chaptersDone = (chapterTotal ?? 0) > 0 && (chapterCurrent ?? 0) >= (chapterTotal ?? 0);
             if (pagesDone || chaptersDone) {

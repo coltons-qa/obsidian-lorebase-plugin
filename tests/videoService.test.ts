@@ -223,13 +223,15 @@ describe('VideoService', () => {
             actors: 'Keanu Reeves, Carrie-Anne Moss',
         });
 
+        // director/directors consolidate onto `author`, actors onto `cast`.
         expect(frontmatter).toMatchObject({
             released: '2014-01-01',
-            directors: ['Lana Wachowski', 'Lilly Wachowski'],
-            actors: ['Keanu Reeves', 'Carrie-Anne Moss'],
+            author: ['Lana Wachowski', 'Lilly Wachowski'],
+            cast: ['Keanu Reeves', 'Carrie-Anne Moss'],
         });
         expect(frontmatter).not.toHaveProperty('director');
-        expect(frontmatter).not.toHaveProperty('cast');
+        expect(frontmatter).not.toHaveProperty('directors');
+        expect(frontmatter).not.toHaveProperty('actors');
     });
 
     it('trashes video notes instead of deleting them directly', async () => {

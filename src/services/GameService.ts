@@ -635,7 +635,10 @@ export class GameService {
         const frontmatterUpdates: Record<string, unknown> = {};
         const frontmatter = this.app.metadataCache.getFileCache(file)?.frontmatter;
 
-        if ('userRating' in updates) frontmatterUpdates.userRating = updates.userRating;
+        if ('userRating' in updates) {
+            frontmatterUpdates['user-rating'] = updates.userRating;
+            if (this.hasFrontmatterKey(frontmatter, 'userRating')) frontmatterUpdates.userRating = null;
+        }
         if ('favorite' in updates) frontmatterUpdates.favorite = updates.favorite;
         if ('status' in updates) {
             frontmatterUpdates.status = updates.status ?? 'not_started';
@@ -648,14 +651,17 @@ export class GameService {
         if ('year' in updates) frontmatterUpdates.year = updates.year;
         if ('displayName' in updates) {
             const title = updates.displayName?.trim() ?? '';
-            if (this.hasFrontmatterKey(frontmatter, 'title') && !this.hasFrontmatterKey(frontmatter, 'name')) {
-                frontmatterUpdates.title = title || null;
-            } else {
-                frontmatterUpdates.name = title || null;
-            }
+            frontmatterUpdates.title = title || null;
+            if (this.hasFrontmatterKey(frontmatter, 'name')) frontmatterUpdates.name = null;
         }
-        if ('description' in updates) frontmatterUpdates.plot = updates.description;
-        if ('gameSeries' in updates) frontmatterUpdates.gameSeries = updates.gameSeries || '';
+        if ('description' in updates) {
+            frontmatterUpdates.synopsis = updates.description;
+            if (this.hasFrontmatterKey(frontmatter, 'plot')) frontmatterUpdates.plot = null;
+        }
+        if ('gameSeries' in updates) {
+            frontmatterUpdates.series = updates.gameSeries || '';
+            if (this.hasFrontmatterKey(frontmatter, 'gameSeries')) frontmatterUpdates.gameSeries = null;
+        }
         if ('tags' in updates) this.updateFrontmatterListField(frontmatterUpdates, frontmatter, 'tag', 'tags', updates.tags, true);
         if ('genres' in updates) this.updateFrontmatterListField(frontmatterUpdates, frontmatter, 'genre', 'genres', updates.genres);
         if ('platforms' in updates) this.updateFrontmatterDisplayListField(frontmatterUpdates, frontmatter, 'platform', 'platforms', updates.platforms);
@@ -668,16 +674,45 @@ export class GameService {
             if (this.hasFrontmatterKey(frontmatter, 'completionDate')) frontmatterUpdates.completionDate = null;
         }
         if ('publisher' in updates) this.updateFrontmatterTextField(frontmatterUpdates, frontmatter, 'publisher', 'publishers', updates.publisher);
-        if ('developer' in updates) this.updateFrontmatterTextField(frontmatterUpdates, frontmatter, 'developer', 'developers', updates.developer);
+        if ('developer' in updates) {
+            // developer/developers consolidated onto a single `author` key, so the
+            // singular/plural helper does not apply: given one key for both roles it
+            // writes the value and then nulls it. Keeps the list shape `developers` had.
+            const authors = this.splitDisplayList(updates.developer);
+            frontmatterUpdates.author = authors.length > 0 ? authors : null;
+            if (this.hasFrontmatterKey(frontmatter, 'developer')) frontmatterUpdates.developer = null;
+            if (this.hasFrontmatterKey(frontmatter, 'developers')) frontmatterUpdates.developers = null;
+        }
         if ('sourceUrl' in updates) frontmatterUpdates.url = updates.sourceUrl || null;
-        if ('integrationProvider' in updates) frontmatterUpdates.integration_provider = updates.integrationProvider;
-        if ('integrationId' in updates) frontmatterUpdates.integration_id = updates.integrationId;
-        if ('steamAppId' in updates) frontmatterUpdates.steamAppId = updates.steamAppId;
+        if ('integrationProvider' in updates) {
+            frontmatterUpdates['integration-provider'] = updates.integrationProvider;
+            if (this.hasFrontmatterKey(frontmatter, 'integration_provider')) frontmatterUpdates.integration_provider = null;
+        }
+        if ('integrationId' in updates) {
+            frontmatterUpdates['integration-id'] = updates.integrationId;
+            if (this.hasFrontmatterKey(frontmatter, 'integration_id')) frontmatterUpdates.integration_id = null;
+        }
+        if ('steamAppId' in updates) {
+            frontmatterUpdates['steam-app-id'] = updates.steamAppId;
+            if (this.hasFrontmatterKey(frontmatter, 'steamAppId')) frontmatterUpdates.steamAppId = null;
+        }
         if ('dlc' in updates) frontmatterUpdates.dlc = this.serializeDlcList(updates.dlc);
-        if ('relatedMedia' in updates) frontmatterUpdates.related_media = serializeRelatedMedia(updates.relatedMedia);
-        if ('communityRating' in updates) frontmatterUpdates.communityRating = updates.communityRating;
-        if ('communityVotes' in updates) frontmatterUpdates.communityVotes = updates.communityVotes;
-        if ('communityRatingProvider' in updates) frontmatterUpdates.communityRatingProvider = updates.communityRatingProvider;
+        if ('relatedMedia' in updates) {
+            frontmatterUpdates['related-media'] = serializeRelatedMedia(updates.relatedMedia);
+            if (this.hasFrontmatterKey(frontmatter, 'related_media')) frontmatterUpdates.related_media = null;
+        }
+        if ('communityRating' in updates) {
+            frontmatterUpdates['community-rating'] = updates.communityRating;
+            if (this.hasFrontmatterKey(frontmatter, 'communityRating')) frontmatterUpdates.communityRating = null;
+        }
+        if ('communityVotes' in updates) {
+            frontmatterUpdates['community-votes'] = updates.communityVotes;
+            if (this.hasFrontmatterKey(frontmatter, 'communityVotes')) frontmatterUpdates.communityVotes = null;
+        }
+        if ('communityRatingProvider' in updates) {
+            frontmatterUpdates['community-rating-provider'] = updates.communityRatingProvider;
+            if (this.hasFrontmatterKey(frontmatter, 'communityRatingProvider')) frontmatterUpdates.communityRatingProvider = null;
+        }
         if ('dateCompleted' in updates) {
             frontmatterUpdates.finished = updates.dateCompleted && Number.isFinite(updates.dateCompleted)
                 ? this.normalizeCompletionDateForFrontmatter(updates.dateCompleted)

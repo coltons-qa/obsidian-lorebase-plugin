@@ -199,7 +199,7 @@ describe('Steam Sync gameSeries', () => {
         const result = await service.sync(buildSettings());
 
         expect(result).toEqual({ created: 1, updated: 0, skipped: 0, failed: 0 });
-        expect(app.vault.created['Games/Half-Life 2.md']).toContain('gameSeries: "Half-Life"');
+        expect(app.vault.created['Games/Half-Life 2.md']).toContain('series: "Half-Life"');
     });
 
     it('looks the whole library up in one batched request', async () => {
@@ -217,9 +217,9 @@ describe('Steam Sync gameSeries', () => {
         await service.sync(buildSettings());
 
         expect(igdbRequests).toHaveLength(1);
-        expect(app.vault.created['Games/Half-Life 2.md']).toContain('gameSeries: "Half-Life"');
-        expect(app.vault.created['Games/Portal 2.md']).toContain('gameSeries: "Portal"');
-        expect(app.vault.created['Games/Stardew Valley.md']).toContain('gameSeries: ""');
+        expect(app.vault.created['Games/Half-Life 2.md']).toContain('series: "Half-Life"');
+        expect(app.vault.created['Games/Portal 2.md']).toContain('series: "Portal"');
+        expect(app.vault.created['Games/Stardew Valley.md']).toContain('series: ""');
     });
 
     it('backfills gameSeries on a re-sync when the existing note leaves it empty', async () => {
@@ -302,7 +302,7 @@ describe('Steam Sync gameSeries', () => {
         const existing = app.vault.getFiles().find((file) => file.path === 'Games/Half-Life 2.md') as TFile;
         expect(app.metadataCache.getFileCache(existing)?.frontmatter.gameSeries).toBe('My Favourites');
         // The game that had nothing still gets filled in.
-        expect(app.vault.created['Games/Portal 2.md']).toContain('gameSeries: "Portal"');
+        expect(app.vault.created['Games/Portal 2.md']).toContain('series: "Portal"');
     });
 
     it('treats a List-type gameSeries as filled rather than empty', async () => {
@@ -339,7 +339,7 @@ describe('Steam Sync gameSeries', () => {
 
         expect(igdbRequests).toEqual([]);
         expect(result).toEqual({ created: 1, updated: 0, skipped: 0, failed: 0 });
-        expect(app.vault.created['Games/Half-Life 2.md']).toContain('gameSeries: ""');
+        expect(app.vault.created['Games/Half-Life 2.md']).toContain('series: ""');
     });
 
     it('completes the sync when the IGDB lookup fails', async () => {
@@ -356,7 +356,7 @@ describe('Steam Sync gameSeries', () => {
         const result = await service.sync(buildSettings());
 
         expect(result).toEqual({ created: 1, updated: 0, skipped: 0, failed: 0 });
-        expect(app.vault.created['Games/Half-Life 2.md']).toContain('gameSeries: ""');
+        expect(app.vault.created['Games/Half-Life 2.md']).toContain('series: ""');
     });
 
     it('skips the lookup when every note already has a series', async () => {

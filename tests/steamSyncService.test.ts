@@ -507,8 +507,8 @@ describe('SteamSyncService', () => {
         const content = app.vault.created['Games/Portal.md'];
         expect(content).toContain('poster: "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/10/library_600x900.jpg"');
         expect(content).toContain('status: "not_started"');
-        expect(content).toContain('integration_provider: "steam"');
-        expect(content).toContain('integration_id: "10"');
+        expect(content).toContain('integration-provider: "steam"');
+        expect(content).toContain('integration-id: "10"');
         expect(content).not.toContain('steamAppId:');
         expect(content).not.toContain('playtime:');
     });
@@ -583,9 +583,9 @@ describe('SteamSyncService', () => {
         const content = app.vault.created['Games/Portal.md'];
 
         expect(result).toEqual({ created: 1, updated: 0, skipped: 0, failed: 0 });
-        expect(content).toContain('main: 3');
-        expect(content).toContain('main_plus_sides: 5');
-        expect(content).toContain('perfectionist: 10');
+        expect(content).toContain('hltb-main: 3');
+        expect(content).toContain('hltb-main-sides: 5');
+        expect(content).toContain('hltb-perfectionist: 10');
     });
 
     it('skips duplicates in skip mode', async () => {
@@ -681,7 +681,7 @@ describe('SteamSyncService', () => {
             { appId: 40, name: 'Wish Two' },
         ]);
         expect(result).toEqual({ created: 3, updated: 0, skipped: 0, failed: 0 });
-        expect(app.vault.created['Games/Portal.md']).toContain('integration_id: "10"');
+        expect(app.vault.created['Games/Portal.md']).toContain('integration-id: "10"');
     });
 
     it('loads wishlist from multiple wishlistdata pages', async () => {

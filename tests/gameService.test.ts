@@ -110,7 +110,7 @@ describe('GameService', () => {
             ],
         });
 
-        expect(frontmatter.related_media).toEqual([
+        expect(frontmatter['related-media']).toEqual([
             {
                 type: 'book',
                 path: 'Books/Mass Effect - Revelation.md',
@@ -490,9 +490,11 @@ describe('GameService', () => {
             publisher: 'Ubisoft, Ubisoft Entertainment',
         });
 
-        expect(frontmatter.developers).toEqual(['Ubisoft Montreal', 'Ubisoft']);
+        // developer/developers consolidate onto `author`; publishers keeps its own key.
+        expect(frontmatter.author).toEqual(['Ubisoft Montreal', 'Ubisoft']);
         expect(frontmatter.publishers).toEqual(['Ubisoft', 'Ubisoft Entertainment']);
         expect(frontmatter.developer).toBeUndefined();
+        expect(frontmatter.developers).toBeUndefined();
         expect(frontmatter.publisher).toBeUndefined();
     });
 

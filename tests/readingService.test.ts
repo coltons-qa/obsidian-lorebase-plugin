@@ -240,22 +240,23 @@ describe('ReadingService', () => {
         });
 
         expect(frontmatterByPath[bookFile.path]).toMatchObject({
-            page_current: 100,
-            page_total: 100,
-            chapter_current: 10,
-            chapter_total: 10,
+            'page-current': 100,
+            'page-total': 100,
+            'chapter-current': 10,
+            'chapter-total': 10,
             status: 'completed',
             publishers: ['Tor Books', 'Orbit'],
-            authors: ['Christie Golden', 'Blizzard Writer'],
+            author: ['Christie Golden', 'Blizzard Writer'],
             released: '2013-12-25',
         });
         expect(frontmatterByPath[bookFile.path]).not.toHaveProperty('publisher');
+        expect(frontmatterByPath[bookFile.path]).not.toHaveProperty('authors');
         expect(frontmatterByPath[mangaFile.path].status).toBe('completed');
         expect(frontmatterByPath[mangaFile.path].Sex18).toBe(true);
         expect(frontmatterByPath[mangaFile.path].authors).toEqual(['Takahiro', 'Second Author']);
         expect(frontmatterByPath[mangaFile.path].artists).toEqual(['Tetsuya Tashiro', 'Second Artist']);
         expect(frontmatterByPath[mangaFile.path].active_part_id).toBe('vol-1');
-        expect(frontmatterByPath[mangaFile.path].related_media).toEqual([
+        expect(frontmatterByPath[mangaFile.path]['related-media']).toEqual([
             {
                 type: 'game',
                 path: 'Games/Complete.md',

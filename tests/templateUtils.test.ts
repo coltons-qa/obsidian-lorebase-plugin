@@ -6,10 +6,10 @@ describe('templateUtils', () => {
     it('builds simple game template with selected fields only', () => {
         const template = buildSimpleTemplate('games', ['type', 'name', 'poster', 'plot', 'rating', 'userRating', 'status']);
         expect(template).toContain('type: "game"');
-        expect(template).toContain('name: "{{VALUE:name}}"');
+        expect(template).toContain('title: "{{VALUE:name}}"');
         expect(template).toContain('poster: "{{VALUE:Poster}}"');
-        expect(template).toContain('plot: "{{VALUE:Plot}}"');
-        expect(template).toContain('userRating: {{VALUE:userRating}}');
+        expect(template).toContain('synopsis: "{{VALUE:Plot}}"');
+        expect(template).toContain('user-rating: {{VALUE:userRating}}');
         expect(template).toContain('status: "{{VALUE:status}}"');
         expect(template).not.toContain('rating: {{VALUE:rating}}');
         expect(template).not.toContain('metacritic:');
@@ -62,9 +62,10 @@ describe('templateUtils', () => {
 
         expect(bookTemplate).toContain('type: "book"');
         expect(bookTemplate).toContain('title: "{{VALUE:name}}"');
-        expect(bookTemplate).toContain('authors: "{{VALUE:authors}}"');
-        expect(bookTemplate).toContain('page_total: {{VALUE:pageTotal}}');
-        expect(bookTemplate).toContain('chapter_total: {{VALUE:chapterTotal}}');
+        expect(bookTemplate).toContain('author: "{{VALUE:authors}}"');
+        expect(bookTemplate).toContain('page-total: {{VALUE:pageTotal}}');
+        expect(bookTemplate).toContain('chapter-total: {{VALUE:chapterTotal}}');
+        // Manga was excluded from the kebab migration and keeps the legacy spellings.
         expect(mangaTemplate).toContain('type: "manga"');
         expect(mangaTemplate).toContain('chapter_total: {{VALUE:chapterTotal}}');
         expect(mangaTemplate).toContain('volume_total: {{VALUE:volumeTotal}}');
@@ -75,10 +76,10 @@ describe('templateUtils', () => {
 
     it('builds howlongtobeat fields when selected', () => {
         const template = buildSimpleTemplate('games', ['rating', 'url', 'main', 'main_plus_sides', 'perfectionist']);
-        expect(template).toContain('main: {{VALUE:main}}');
-        expect(template).toContain('main_plus_sides: {{VALUE:main_plus_sides}}');
-        expect(template).toContain('perfectionist: {{VALUE:perfectionist}}');
-        expect(template.indexOf('url: "{{VALUE:url}}"')).toBeLessThan(template.indexOf('main: {{VALUE:main}}'));
+        expect(template).toContain('hltb-main: {{VALUE:main}}');
+        expect(template).toContain('hltb-main-sides: {{VALUE:main_plus_sides}}');
+        expect(template).toContain('hltb-perfectionist: {{VALUE:perfectionist}}');
+        expect(template.indexOf('url: "{{VALUE:url}}"')).toBeLessThan(template.indexOf('hltb-main: {{VALUE:main}}'));
     });
 
     it('normalizes effective simple template fields before saving or creating notes', () => {
@@ -130,8 +131,9 @@ describe('templateUtils', () => {
         expect(template).toContain('released: {{VALUE:released}}');
         expect(template).not.toContain('released: "{{VALUE:released}}"');
         expect(result).toContain('released: 2013-12-25');
-        expect(result).toContain('directors:\n  - "Martin Scorsese"');
-        expect(result).toContain('actors:\n  - "Leonardo DiCaprio"\n  - "Jonah Hill"');
+        // director and actors consolidate onto the `author` and `cast` note keys.
+        expect(result).toContain('author:\n  - "Martin Scorsese"');
+        expect(result).toContain('cast:\n  - "Leonardo DiCaprio"\n  - "Jonah Hill"');
         expect(renderTemplate('released: "{{VALUE:released}}"', { released: '2013-12-25' }))
             .toBe('released: 2013-12-25');
     });
@@ -146,7 +148,7 @@ describe('templateUtils', () => {
 
         expect(template).toContain('released: {{VALUE:released}}');
         expect(result).toContain('released: 2001-10-01');
-        expect(result).toContain('authors:\n  - "Christie Golden"\n  - "Second Author"');
+        expect(result).toContain('author:\n  - "Christie Golden"\n  - "Second Author"');
         expect(result).toContain('publisher:\n  - "Blizzard Legends"\n  - "Orbit"');
     });
 
