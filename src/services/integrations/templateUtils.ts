@@ -390,12 +390,13 @@ function appendIntegrationSourceFields(lines: string[], kebab: boolean): void {
 }
 
 /**
- * Manual fields with no provider source. Emitted with defaults so a freshly imported
- * note shows the full property set in Obsidian rather than growing keys on first edit.
+ * Manual fields with no provider source.
+ *
+ * `owned` and `count` are deliberately NOT emitted: they should stay absent from a note
+ * until actually set, rather than seeding every import with a meaningless "no" and 0.
+ * `repeatable` is a boolean with a genuine default, so it behaves like `favorite: false`.
  */
 function appendManualFields(set: Set<string>, lines: string[]): void {
-    if (set.has('owned')) lines.push('owned: "no"');
-    if (set.has('count')) lines.push('count: 0');
     if (set.has('repeatable')) lines.push('repeatable: false');
 }
 
@@ -425,7 +426,6 @@ export function buildSimpleTemplate(kind: MediaKind, fields: string[]): string {
         if (set.has('status')) lines.push('status: "{{VALUE:status}}"');
         if (set.has('favorite')) lines.push('favorite: false');
         appendManualFields(set, lines);
-        if (set.has('myPlatform')) lines.push('my-platform: ""');
         if (set.has('integrationSource')) appendIntegrationSourceFields(lines, kebab);
         if (set.has('url')) lines.push('url: "{{VALUE:url}}"');
         if (set.has('main')) lines.push('hltb-main: {{VALUE:main}}');
@@ -528,7 +528,6 @@ export function buildSimpleTemplate(kind: MediaKind, fields: string[]): string {
         if (set.has('favorite')) lines.push('favorite: false');
         if (kind === 'books') {
             appendManualFields(set, lines);
-            if (set.has('illustrator')) lines.push('illustrator: ""');
         }
         if (set.has('integrationSource')) appendIntegrationSourceFields(lines, kebab);
         if (set.has('url')) lines.push('url: "{{VALUE:url}}"');

@@ -112,7 +112,7 @@ export class ReadingEditModal extends Modal {
         this.tags = this.normalizeList(item.tags);
         this.authors = this.normalizeList(item.authors);
         this.illustrator = item.type === 'book' ? (item.illustrator ?? '') : '';
-        this.owned = item.owned ?? 'no';
+        this.owned = item.owned ?? '';
         this.count = item.count ?? null;
         this.repeatable = item.repeatable ?? false;
         this.publisher = item.type === 'book' ? item.publisher ?? '' : '';

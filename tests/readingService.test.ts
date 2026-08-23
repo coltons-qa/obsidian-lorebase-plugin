@@ -207,6 +207,12 @@ describe('ReadingService', () => {
         expect(book).not.toBeNull();
         expect(manga).not.toBeNull();
         await bookService.updateItem(book!, {
+            // illustrator had a reader and an editor input but no writer, so the value
+            // silently vanished on save. Round-tripped here to keep that shut.
+            illustrator: 'Jane Illustrator',
+            owned: 'physical',
+            count: 2,
+            repeatable: true,
             pageCurrent: 150,
             pageTotal: 100,
             chapterCurrent: 10,
@@ -239,6 +245,10 @@ describe('ReadingService', () => {
             author: ['Christie Golden', 'Blizzard Writer'],
             released: '2013-12-25',
         });
+        expect(frontmatterByPath[bookFile.path].illustrator).toBe('Jane Illustrator');
+        expect(frontmatterByPath[bookFile.path].owned).toBe('physical');
+        expect(frontmatterByPath[bookFile.path].count).toBe(2);
+        expect(frontmatterByPath[bookFile.path].repeatable).toBe(true);
         expect(frontmatterByPath[bookFile.path]).not.toHaveProperty('publisher');
         expect(frontmatterByPath[bookFile.path]).not.toHaveProperty('authors');
         expect(frontmatterByPath[mangaFile.path].status).toBe('completed');

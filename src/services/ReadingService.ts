@@ -275,6 +275,9 @@ export class ReadingService {
                 frontmatterUpdates.author = authors.length > 0 ? authors : null;
                 if (this.hasKey(frontmatter, 'authors')) frontmatterUpdates.authors = null;
             }
+            if ('illustrator' in updates) {
+                frontmatterUpdates.illustrator = String(updates.illustrator ?? '').trim() || null;
+            }
             if ('publisher' in updates) this.updateDisplayListField(
                 frontmatterUpdates,
                 frontmatter,

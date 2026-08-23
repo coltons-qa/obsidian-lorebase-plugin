@@ -107,7 +107,7 @@ export class VideoEditModal extends Modal {
         this.actors = item.actors ?? '';
         this.seasons = item.type === 'series' ? item.seasons : null;
         this.networks = item.type === 'series' ? this.normalizeList(item.networks ?? []) : [];
-        this.owned = item.owned ?? 'no';
+        this.owned = item.owned ?? '';
         this.count = item.count ?? null;
         this.repeatable = item.repeatable ?? false;
         this.parts = this.normalizeParts(item);

@@ -114,7 +114,7 @@ export class EditModal extends Modal {
         this.releaseDate = this.normalizeDateInput(game.releaseDate);
         this.publisher = game.publisher ?? '';
         this.developer = game.developer ?? '';
-        this.owned = game.owned ?? 'no';
+        this.owned = game.owned ?? '';
         this.count = game.count ?? null;
         this.repeatable = game.repeatable ?? false;
         this.myPlatform = game.myPlatform ?? '';
