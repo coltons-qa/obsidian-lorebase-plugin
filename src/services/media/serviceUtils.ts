@@ -8,6 +8,19 @@ export function getAllMarkdownFiles(folder: TFolder): TFile[] {
 }
 
 /**
+ * Returns the raw YAML between the opening and closing frontmatter fences, or null when
+ * the content has no closed frontmatter block. Empty frontmatter returns an empty string.
+ *
+ * Used where the metadata cache cannot be trusted: Obsidian re-parses it asynchronously
+ * after a write, so code that saves a file and immediately reads the cache can see stale
+ * or missing frontmatter.
+ */
+export function extractFrontmatterBlock(content: string): string | null {
+    const match = content.match(/^﻿?---[ \t]*\r?\n([\s\S]*?)\r?\n?---[ \t]*(?:\r?\n|$)/);
+    return match ? match[1] : null;
+}
+
+/**
  * Returns the raw value of the first key present in the frontmatter, so a reader can
  * accept a canonical key plus its legacy spellings without flattening the value to text.
  * Use this for lists, booleans, and structured values; the per-service `read*Text`

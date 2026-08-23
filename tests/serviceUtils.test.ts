@@ -1,5 +1,37 @@
 import { describe, expect, it } from 'vitest';
-import { isFileInFolder, mapInFrameBatches } from '../src/services/media/serviceUtils';
+import { extractFrontmatterBlock, isFileInFolder, mapInFrameBatches } from '../src/services/media/serviceUtils';
+
+describe('extractFrontmatterBlock', () => {
+    it('returns the yaml between the fences', () => {
+        expect(extractFrontmatterBlock('---\ntype: game\ntitle: Halo\n---\nbody')).toBe('type: game\ntitle: Halo');
+    });
+
+    it('ignores --- that appears later in the body', () => {
+        const content = '---\ntype: game\n---\n\nSome text\n\n---\n\nMore text';
+        expect(extractFrontmatterBlock(content)).toBe('type: game');
+    });
+
+    it('handles CRLF line endings', () => {
+        expect(extractFrontmatterBlock('---\r\ntype: game\r\n---\r\nbody')).toBe('type: game');
+    });
+
+    it('tolerates a leading BOM', () => {
+        expect(extractFrontmatterBlock('﻿---\ntype: game\n---\n')).toBe('type: game');
+    });
+
+    it('returns null when there is no frontmatter', () => {
+        expect(extractFrontmatterBlock('just a note')).toBeNull();
+        expect(extractFrontmatterBlock('')).toBeNull();
+    });
+
+    it('returns null when the block is never closed', () => {
+        expect(extractFrontmatterBlock('---\ntype: game\nstill going')).toBeNull();
+    });
+
+    it('returns an empty string for an empty block', () => {
+        expect(extractFrontmatterBlock('---\n\n---\nbody')).toBe('');
+    });
+});
 
 describe('isFileInFolder', () => {
     it('matches files directly inside the folder', () => {

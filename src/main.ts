@@ -3,7 +3,7 @@
  * v3.0.1
  */
 
-import { Plugin, WorkspaceLeaf, Menu, Notice, addIcon, TFile, type Command } from 'obsidian';
+import { Plugin, WorkspaceLeaf, Menu, Notice, addIcon, parseYaml, TFile, type Command } from 'obsidian';
 import { CommunityRating, GameDlc, LorebaseSettings, MediaItem, GameStats, AnimeStats, MediaType, RelatedMediaLink, IntegrationTemplateSettings } from './types';
 import { DEFAULT_SETTINGS, VIEW_TYPE_LIBRARY, LOREBASE_ICON_ID, LOREBASE_ICON_SVG, DEFAULT_COVER, PARTICLE_INTENSITY_MAX, PARTICLE_INTENSITY_MIN } from './constants';
 import { i18n, t, type TranslationKey } from './localization';
@@ -41,7 +41,7 @@ import { parseRelatedMedia } from './services/media/parsers';
 import type { MediaKind, MediaSourceSelection } from './services/integrations/types';
 import { buildSimpleTemplate, getDefaultTemplateFields, getEffectiveSimpleTemplateFields } from './services/integrations/templateUtils';
 import { mediaTypeToKind, synchronizeProviderMetadata } from './services/integrations/enrichment';
-import { isFileInFolder } from './services/media/serviceUtils';
+import { extractFrontmatterBlock, isFileInFolder } from './services/media/serviceUtils';
 
 // =============================================================================
 // LOREBASE PLUGIN
@@ -1039,10 +1039,14 @@ export default class LorebasePlugin extends Plugin {
         try {
             const file = this.app.vault.getAbstractFileByPath(item.filePath);
             if (!(file instanceof TFile)) return false;
-            const frontmatter = this.app.metadataCache.getFileCache(file)?.frontmatter;
-            const current = frontmatter && typeof frontmatter === 'object'
-                ? { ...frontmatter } as Record<string, unknown>
-                : {};
+            // Read the frontmatter from disk, not from the metadata cache. This runs
+            // straight after the editor saved the file, and Obsidian re-parses the cache
+            // asynchronously, so the cache is frequently stale or empty at this point.
+            // An empty `current` makes findExistingAlias match nothing, and every
+            // provider field then gets written under its own name: before the kebab-case
+            // migration that silently overwrote the identically named key, but now it
+            // appends a duplicate legacy property beside each migrated one.
+            const current = await this.readFrontmatterFromDisk(file);
             delete current.position;
             const searchTitle = this.getMediaSearchTitle(item, current);
 
@@ -1105,6 +1109,26 @@ export default class LorebasePlugin extends Plugin {
             new Notice(t('noticeSourceFailed'));
             return false;
         }
+    }
+
+    /**
+     * Authoritative frontmatter for a file, falling back to the metadata cache only if
+     * the file cannot be read or parsed.
+     */
+    private async readFrontmatterFromDisk(file: TFile): Promise<Record<string, unknown>> {
+        try {
+            const block = extractFrontmatterBlock(await this.app.vault.read(file));
+            if (block !== null) {
+                const parsed: unknown = block.trim() ? parseYaml(block) : {};
+                if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
+                    return { ...parsed as Record<string, unknown> };
+                }
+            }
+        } catch (error) {
+            console.warn('[LOREBASE] Could not read frontmatter from disk, using cache:', error);
+        }
+        const cached = this.app.metadataCache.getFileCache(file)?.frontmatter;
+        return cached && typeof cached === 'object' ? { ...cached } as Record<string, unknown> : {};
     }
 
     private repairGeneratedSteamPoster(
