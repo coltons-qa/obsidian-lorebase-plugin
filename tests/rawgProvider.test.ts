@@ -65,7 +65,6 @@ describe('RAWG provider', () => {
             publishers: ['Rockstar Games'],
             communityRating: '4.47',
             communityVotes: '7200',
-            metacritic: '92',
             year: '2013',
             url: 'https://rawg.io/games/grand-theft-auto-v',
         });

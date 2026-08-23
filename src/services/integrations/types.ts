@@ -36,7 +36,6 @@ export interface GameDetails {
     publishers: string[];
     gameSeries?: string;
     rating: string;
-    metacritic: string;
     released: string;
     year: string;
     url: string;

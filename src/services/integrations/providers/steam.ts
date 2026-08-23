@@ -170,7 +170,6 @@ export async function getSteamDetails(
     const releaseDate = getObject(data, 'release_date');
     const released = getString(releaseDate, 'date');
     const year = extractYear(released);
-    const metacritic = getString(getObject(data, 'metacritic'), 'score');
     const posterHorizontal = getString(data, 'header_image')
         || getString(data, 'capsule_image')
         || getString(data, 'capsule_imagev5');
@@ -189,7 +188,6 @@ export async function getSteamDetails(
         developers,
         publishers,
         rating: '',
-        metacritic,
         released,
         year,
         url: `https://store.steampowered.com/app/${id}/`,

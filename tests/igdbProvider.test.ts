@@ -163,7 +163,6 @@ describe('IGDB provider', () => {
             publishers: ['Electronic Arts'],
             communityRating: '90.5',
             communityVotes: '12345',
-            metacritic: '88',
             released: '2007-10-26',
             url: 'https://example.com/portal',
         });
