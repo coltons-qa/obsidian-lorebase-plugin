@@ -36,7 +36,6 @@ export class ReadingEditModal extends Modal {
     private selectedStatus: ReadingStatus;
     private selectedRating: UserRating;
     private favorite: boolean;
-    private isAdult: boolean;
     private summary: string;
     private myNotes = '';
     private notesMode: NotesMode = 'description';
@@ -101,7 +100,6 @@ export class ReadingEditModal extends Modal {
         this.selectedStatus = item.status;
         this.selectedRating = item.userRating;
         this.favorite = item.favorite;
-        this.isAdult = item.type === 'manga' && item.isAdult;
         this.summary = item.summary || item.description || '';
         this.started = this.normalizeDateInput(item.started);
         this.finished = this.normalizeDateInput(item.finished);
@@ -223,14 +221,6 @@ export class ReadingEditModal extends Modal {
                                     <span class="lorebase-editmode-switch-label">${t('editFavorite')}</span>
                                     <button type="button" class="lorebase-editmode-switch lorebase-editmode-switch-favorite" data-toggle="favorite" aria-label="${t('editFavorite')}" aria-pressed="false"><span class="lorebase-editmode-switch-thumb"></span></button>
                                 </label>
-                                ${isBook ? '' : `
-                                <label class="lorebase-editmode-switch-row">
-                                    <span class="lorebase-editmode-switch-label" id="lorebase-reading-adult-label">${t('editAdult')}</span>
-                                    <button type="button" class="lorebase-editmode-switch lorebase-editmode-switch-adult" data-toggle="adult" aria-labelledby="lorebase-reading-adult-label" aria-describedby="lorebase-reading-adult-tooltip" aria-pressed="false">
-                                        <span class="lorebase-editmode-switch-thumb"></span>
-                                        <span class="lorebase-editmode-switch-tooltip" id="lorebase-reading-adult-tooltip" role="tooltip">${t('editAdultVisibilityHint')}</span>
-                                    </button>
-                                </label>`}
                             </div>
                         </section>
                     </aside>
@@ -410,7 +400,6 @@ export class ReadingEditModal extends Modal {
             button.addEventListener('click', () => {
                 const key = button.dataset.toggle;
                 if (key === 'favorite') this.favorite = !this.favorite;
-                if (key === 'adult' && this.item.type === 'manga') this.isAdult = !this.isAdult;
                 this.updateQuickSettings(root);
             });
         });
@@ -419,9 +408,6 @@ export class ReadingEditModal extends Modal {
 
     private updateQuickSettings(root: HTMLElement): void {
         this.updateQuickSettingSwitch(root, 'favorite', this.favorite);
-        if (this.item.type === 'manga') {
-            this.updateQuickSettingSwitch(root, 'adult', this.isAdult);
-        }
     }
 
     private updateQuickSettingSwitch(root: HTMLElement, key: string, value: boolean): void {
@@ -976,7 +962,6 @@ export class ReadingEditModal extends Modal {
                 volumeTotal: this.volumeTotal,
                 parts: this.parts,
                 activePartId: this.activePartId,
-                isAdult: this.isAdult,
             } satisfies Partial<MangaItem>);
         }
 

@@ -91,7 +91,6 @@ export class VideoService {
                 imageUrl: verticalImageUrl || poster || DEFAULT_COVER,
                 horizontalImageUrl: horizontalImageUrl || verticalImageUrl || horizontal,
                 hasCustomPoster: Boolean(poster),
-                isAdult: false,
                 status,
                 genres: collectFieldTags(metadata, ['genres', 'genre']),
                 tags: collectTags(metadata, cache?.tags),

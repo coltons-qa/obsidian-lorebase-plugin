@@ -69,9 +69,6 @@ export class ReadingService {
             const horizontalImageUrl = this.metadataService.getImageUrl(readFrontmatterValue(metadata, ['poster-b', 'poster_b', 'image_b', 'horizontal_poster']), metadata.cm_poster);
             const status = this.getStatus(this.readText(metadata, ['status']) || '') ?? 'planned';
             const genres = collectFieldTags(metadata, ['genres', 'genre', 'subjects', 'subject']);
-            const explicitAdult = metadata.Sex18 ?? metadata.sex18 ?? metadata.adult ?? metadata.isAdult;
-            const inferredAdult = this.mediaType === 'manga'
-                && genres.some((genre) => ['adult', 'hentai'].includes(genre.trim().toLowerCase()));
             const base = {
                 filePath: file.path,
                 displayName: title,
@@ -85,8 +82,6 @@ export class ReadingService {
                 imageUrl: verticalImageUrl || poster || DEFAULT_COVER,
                 horizontalImageUrl: horizontalImageUrl || horizontal || verticalImageUrl || poster || null,
                 hasCustomPoster: Boolean(metadata.cm_poster || poster),
-                isAdult: this.mediaType === 'manga'
-                    && (explicitAdult === undefined ? inferredAdult : isTruthy(explicitAdult)),
                 status,
                 genres,
                 tags: collectTags(metadata, cache?.tags),
@@ -164,19 +159,13 @@ export class ReadingService {
         items: ReadingItem[],
         filter: FilterState,
         sortField: SortField,
-        sortOrder: SortOrder,
-        showAdultInAll = false
+        sortOrder: SortOrder
     ): ReadingItem[] {
         return filterAndSortMedia({
             items,
             filter,
             sortField,
             sortOrder,
-            isVisible: (item) => {
-                if (this.mediaType !== 'manga') return true;
-                if (filter.adultOnly) return showAdultInAll && item.isAdult;
-                return showAdultInAll || !item.isAdult;
-            },
             getCompletedDate: (item) => this.parseDateString(item.finished),
         });
     }
@@ -243,7 +232,6 @@ export class ReadingService {
             if (this.hasKey(frontmatter, 'rating')) frontmatterUpdates.rating = null;
         }
         if ('favorite' in updates) frontmatterUpdates.favorite = updates.favorite;
-        if (item.type === 'manga' && 'isAdult' in updates) frontmatterUpdates.Sex18 = updates.isAdult;
         if ('sourceUrl' in updates) this.updateTextField(frontmatterUpdates, frontmatter, ['url', 'source_url'], updates.sourceUrl);
         if ('started' in updates) frontmatterUpdates.started = this.normalizeDateString(String(updates.started ?? '')) || null;
         if ('finished' in updates) frontmatterUpdates.finished = this.normalizeDateString(String(updates.finished ?? '')) || null;

@@ -313,7 +313,6 @@ describe('reading providers', () => {
             volumes: '43',
             rating: '8.98',
             communityVotes: '3722',
-            isAdult: true,
         });
         expect(details?.genres).toEqual(['Action', 'Adult', 'Seinen']);
         expect(details?.parts).toHaveLength(43);

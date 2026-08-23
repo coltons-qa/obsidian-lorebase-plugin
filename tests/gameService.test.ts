@@ -57,7 +57,6 @@ describe('GameService', () => {
         expect(parsed?.status).toBe('completed');
         expect(parsed?.userRating).toBe(5);
         expect(parsed?.year).toBe(2007);
-        expect(parsed?.isAdult).toBe(true);
         expect(parsed?.tags).toContain('sci-fi');
         expect(parsed?.tags).toContain('space');
         expect(parsed?.genres).toContain('rpg');
@@ -180,7 +179,6 @@ describe('GameService', () => {
                 imageUrl: '',
                 horizontalImageUrl: null,
                 hasCustomPoster: false,
-                isAdult: false,
                 status: 'completed',
                 gameSeries: '',
                 dateCompleted: null,
@@ -200,7 +198,6 @@ describe('GameService', () => {
                 imageUrl: '',
                 horizontalImageUrl: null,
                 hasCustomPoster: true,
-                isAdult: false,
                 status: 'playing',
                 gameSeries: '',
                 dateCompleted: null,
@@ -220,7 +217,6 @@ describe('GameService', () => {
                 imageUrl: '',
                 horizontalImageUrl: null,
                 hasCustomPoster: false,
-                isAdult: true,
                 status: 'dropped',
                 gameSeries: '',
                 dateCompleted: null,
@@ -229,20 +225,19 @@ describe('GameService', () => {
             },
         ];
 
-        const base = service.filterAndSort(games, createBaseFilter(), 'name', 'asc', false);
-        expect(base.map((item) => item.displayName)).toEqual(['Alpha', 'Bravo']);
-
-        const showEverything = service.filterAndSort(games, createBaseFilter(), 'name', 'asc', true);
-        expect(showEverything.map((item) => item.displayName)).toEqual(['Alpha', 'Bravo', 'Charlie']);
+        // The 18+ flag was removed, so nothing is hidden by default any more.
+        const base = service.filterAndSort(games, createBaseFilter(), 'name', 'asc');
+        expect(base.map((item) => item.displayName)).toEqual(['Alpha', 'Bravo', 'Charlie']);
 
         const defaultViewFilter = createBaseFilter();
         defaultViewFilter.rules = DEFAULT_SETTINGS.games.viewState.rules;
-        const defaultView = service.filterAndSort(games, defaultViewFilter, 'name', 'asc', true);
-        expect(defaultView.map((item) => item.displayName)).toEqual(['Bravo']);
+        const defaultView = service.filterAndSort(games, defaultViewFilter, 'name', 'asc');
+        // Only the custom-poster rule remains in the defaults; Alpha has one, so it hides.
+        expect(defaultView.map((item) => item.displayName)).toEqual(['Bravo', 'Charlie']);
 
         const searchFilter = createBaseFilter();
         searchFilter.searchTerm = 'alpha';
-        const withSearch = service.filterAndSort(games, searchFilter, 'name', 'asc', false);
+        const withSearch = service.filterAndSort(games, searchFilter, 'name', 'asc');
         expect(withSearch.map((item) => item.displayName)).toEqual(['Alpha']);
     });
 
@@ -266,7 +261,6 @@ describe('GameService', () => {
             imageUrl: '',
             horizontalImageUrl: null,
             hasCustomPoster: false,
-            isAdult: false,
             status: 'not_started',
             gameSeries: 'Same series',
             dateCompleted: null,
@@ -343,7 +337,6 @@ describe('GameService', () => {
             imageUrl: '',
             horizontalImageUrl: null,
             hasCustomPoster: false,
-            isAdult: false,
             status: 'wishlist',
             gameSeries: '',
             dateCompleted: null,
@@ -374,7 +367,6 @@ describe('GameService', () => {
                 imageUrl: '',
                 horizontalImageUrl: null,
                 hasCustomPoster: false,
-                isAdult: false,
                 status: 'not_started',
                 gameSeries: '',
                 dateCompleted: null,
@@ -394,7 +386,6 @@ describe('GameService', () => {
                 imageUrl: '',
                 horizontalImageUrl: null,
                 hasCustomPoster: false,
-                isAdult: false,
                 status: 'not_started',
                 gameSeries: '',
                 dateCompleted: null,

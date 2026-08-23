@@ -23,7 +23,6 @@ export interface FilterableMediaItem {
     userRating: number | null;
     favorite: boolean;
     hasCustomPoster: boolean;
-    isAdult: boolean;
     status: MediaStatus;
     tags: string[];
     genres: string[];
@@ -34,7 +33,7 @@ export interface FilterableMediaItem {
 }
 
 const BUILTIN_FIELDS = new Set([
-    'type', 'title', 'name', 'status', 'favorite', 'adult', 'isadult', 'sex18', 'cm_poster',
+    'type', 'title', 'name', 'status', 'favorite', 'cm_poster',
     'started', 'datestarted', 'start_date', 'finished', 'datefinished', 'finish_date',
     'datecompleted', 'dateread', 'readdate', 'completeddate', 'datewatched', 'watched',
     'tags', 'genres', 'genre', 'year', 'rating', 'userrating', 'rating_user', 'gameseries',
@@ -162,7 +161,6 @@ export function getViewFieldValue(item: FilterableMediaItem, field: string): unk
         case 'rating': return item.userRating;
         case 'status': return item.status;
         case 'favorite': return item.favorite;
-        case 'adult': return item.isAdult;
         case 'custom': return item.hasCustomPoster;
         case 'tags': return item.tags;
         case 'genres': return item.genres;

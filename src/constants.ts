@@ -40,7 +40,6 @@ const DEFAULT_LIBRARY_SETTINGS = {
     },
     savedViews: [],
     activeSavedViewId: null,
-    showAdultInAll: false,
 };
 
 export const DEFAULT_NOTE_IMPORT_FIELD_MAPPINGS: NoteImportFieldMapping[] = [
@@ -189,7 +188,6 @@ communityVotes: {{VALUE:communityVotes}}
 communityRatingProvider: "{{VALUE:communityRatingProvider}}"
 status: "{{VALUE:status}}"
 favorite: false
-Sex18: {{VALUE:isAdult}}
 integration_provider: "{{VALUE:integrationProvider}}"
 integration_id: "{{VALUE:integrationId}}"
 url: "{{VALUE:url}}"
@@ -359,7 +357,6 @@ const DEFAULT_MANGA_TEMPLATE_FIELDS = [
     'communityRatingProvider',
     'status',
     'favorite',
-    'adult',
     'integrationSource',
     'url',
 ];
@@ -625,13 +622,6 @@ export const DEFAULT_SETTINGS: LorebaseSettings = {
             group: { mode: 'series' as const, order: 'asc' as const },
             rules: [
                 {
-                    id: 'default-game-adult-hidden',
-                    field: 'adult',
-                    fieldType: 'boolean' as const,
-                    operator: 'isFalse' as const,
-                    value: false,
-                },
-                {
                     id: 'default-game-custom-hidden',
                     field: 'custom',
                     fieldType: 'boolean' as const,
@@ -817,7 +807,6 @@ export const STATUS_ICON_MAP: Record<MediaStatus, string> = {
 /** Lucide icon names for filter/flag UI */
 export const FILTER_ICON_MAP = {
     favorite: 'heart',
-    adult: 'shield-alert',
     custom: 'image',
 } as const;
 

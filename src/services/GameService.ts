@@ -469,7 +469,6 @@ export class GameService {
                 imageUrl: imageUrl || rawPoster || DEFAULT_COVER,
                 horizontalImageUrl: horizontalImageUrl || rawHorizontalPoster || null,
                 hasCustomPoster: Boolean(metadata.cm_poster),
-                isAdult: isTruthy(metadata.Sex18),
                 status,
                 gameSeries: this.readFrontmatterText(metadata, ['series', 'gameSeries']) ?? '',
                 dateCompleted,
@@ -507,8 +506,7 @@ export class GameService {
         games: GameItem[],
         filter: FilterState,
         sortField: SortField,
-        sortOrder: SortOrder,
-        showAdultInAll: boolean = false
+        sortOrder: SortOrder
     ): GameItem[] {
         return filterAndSortMedia({
             items: games,
@@ -516,15 +514,7 @@ export class GameService {
             sortField,
             sortOrder,
             getCompletedDate: (game) => game.dateCompleted,
-            isVisible: (game) => {
-                if (filter.adultOnly) {
-                    return showAdultInAll && game.isAdult;
-                }
-                if (filter.customOnly) {
-                    return game.hasCustomPoster && (showAdultInAll || !game.isAdult);
-                }
-                return showAdultInAll || !game.isAdult;
-            },
+            isVisible: (game) => (filter.customOnly ? game.hasCustomPoster : true),
         });
     }
 
@@ -573,7 +563,7 @@ export class GameService {
             total: games.length,
             completed: 0, playing: 0, dropped: 0, sandbox: 0, wishlist: 0, notStarted: 0,
             favorite: 0, withRating: 0, avgRating: 0,
-            customPosters: 0, adult: 0, seriesCount: 0,
+            customPosters: 0, seriesCount: 0,
             ratingDistribution: createRatingDistribution(),
             statusPercentages: {},
         };
@@ -595,7 +585,6 @@ export class GameService {
 
             if (game.favorite) stats.favorite++;
             if (game.hasCustomPoster) stats.customPosters++;
-            if (game.isAdult) stats.adult++;
 
             if (game.userRating) {
                 stats.withRating++;
@@ -720,7 +709,6 @@ export class GameService {
             if (this.hasFrontmatterKey(frontmatter, 'dateCompleted')) frontmatterUpdates.dateCompleted = null;
             if (this.hasFrontmatterKey(frontmatter, 'completionDate')) frontmatterUpdates.completionDate = null;
         }
-        if ('isAdult' in updates) frontmatterUpdates.Sex18 = updates.isAdult;
         // Note: hasCustomPoster is read-only from cm_poster value, don't write boolean to it
 
         await this.metadataService.updateMetadata(file, frontmatterUpdates);

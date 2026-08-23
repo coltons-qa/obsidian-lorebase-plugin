@@ -102,13 +102,6 @@ describe('ReadingService', () => {
         const parsed = service.parseFromCache(activeFile) as MangaItem | null;
         const items = [parsed, service.parseFromCache(plannedFile)].filter((item): item is MangaItem => Boolean(item));
         const filtered = service.filterAndSort(items, { ...createBaseFilter(), statuses: ['watching'] }, 'rating', 'desc');
-        const adultOnly = service.filterAndSort(
-            items,
-            { ...createBaseFilter(), adultOnly: true },
-            'name',
-            'asc',
-            true
-        );
         const stats = service.calculateStats(items);
 
         expect(parsed).toMatchObject({
@@ -123,9 +116,7 @@ describe('ReadingService', () => {
         });
         expect(parsed?.parts).toHaveLength(2);
         expect(parsed?.artists).toEqual(['Tetsuya Tashiro']);
-        expect(items[1]?.isAdult).toBe(true);
         expect(filtered.map((item) => item.displayName)).toEqual(['Akame ga Kill!']);
-        expect(adultOnly.map((item) => item.displayName)).toEqual(['Berserk']);
         expect(stats.total).toBe(2);
         expect(stats.watching).toBe(1);
         expect(stats.planned).toBe(1);
@@ -229,7 +220,6 @@ describe('ReadingService', () => {
             chapterTotal: 10,
             authors: ['Takahiro', 'Second Author', 'takahiro'],
             artists: ['Tetsuya Tashiro', 'Second Artist', 'tetsuya tashiro'],
-            isAdult: true,
             relatedMedia: [
                 {
                     type: 'game',
@@ -252,7 +242,6 @@ describe('ReadingService', () => {
         expect(frontmatterByPath[bookFile.path]).not.toHaveProperty('publisher');
         expect(frontmatterByPath[bookFile.path]).not.toHaveProperty('authors');
         expect(frontmatterByPath[mangaFile.path].status).toBe('completed');
-        expect(frontmatterByPath[mangaFile.path].Sex18).toBe(true);
         expect(frontmatterByPath[mangaFile.path].authors).toEqual(['Takahiro', 'Second Author']);
         expect(frontmatterByPath[mangaFile.path].artists).toEqual(['Tetsuya Tashiro', 'Second Artist']);
         expect(frontmatterByPath[mangaFile.path].active_part_id).toBe('vol-1');

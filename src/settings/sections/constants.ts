@@ -154,7 +154,6 @@ export const MANGA_TEMPLATE_FIELDS: TemplateFieldDef[] = [
     { key: 'communityRatingProvider', label: 'templateFieldCommunityRatingProvider' },
     { key: 'status', label: 'templateFieldStatus' },
     { key: 'favorite', label: 'templateFieldFavorite' },
-    { key: 'adult', label: 'editAdult' },
     { key: 'integrationSource', label: 'templateFieldIntegrationSource' },
     { key: 'url', label: 'templateFieldUrl' },
 ];

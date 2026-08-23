@@ -48,7 +48,6 @@ export function createBaseFilter(): FilterState {
     return {
         statuses: [],
         favoriteOnly: false,
-        adultOnly: false,
         customOnly: false,
         searchTerm: '',
         tags: [],

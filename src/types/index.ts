@@ -333,8 +333,6 @@ interface BaseMediaItem {
     horizontalImageUrl?: string | null;
     /** Has custom poster */
     hasCustomPoster: boolean;
-    /** Is adult content (18+) */
-    isAdult: boolean;
     /** Community/provider rating such as AniList, MAL, TMDB, RAWG */
     communityRating?: number | null;
     /** Number of votes behind the community/provider rating */
@@ -576,7 +574,6 @@ interface LibrarySettings {
     /** Currently selected named view, or null for an unsaved state */
     activeSavedViewId: string | null;
     /** Show 18+ content in 'all' mode */
-    showAdultInAll: boolean;
 }
 
 /** Plugin settings structure */
@@ -848,8 +845,6 @@ export interface FilterState {
     statuses: MediaStatus[];
     /** Favorite filter */
     favoriteOnly: boolean;
-    /** Adult-only filter */
-    adultOnly: boolean;
     /** Custom poster filter */
     customOnly: boolean;
     /** Search term */
@@ -875,7 +870,6 @@ export interface GameStats {
     withRating: number;
     avgRating: number;
     customPosters: number;
-    adult: number;
     seriesCount: number;
     ratingDistribution: Record<number, number>;
     statusPercentages: Record<string, number>;

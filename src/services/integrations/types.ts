@@ -110,7 +110,6 @@ export interface MangaDetails {
     authors: string[];
     artists: string[];
     genres: string[];
-    isAdult?: boolean;
     year: string;
     chapters?: string;
     volumes?: string;

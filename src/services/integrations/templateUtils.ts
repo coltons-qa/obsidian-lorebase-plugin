@@ -126,7 +126,6 @@ export function getDefaultTemplateFields(kind: MediaKind): string[] {
             'communityRatingProvider',
             'status',
             'favorite',
-            'adult',
             'integrationSource',
             'url',
         ];
@@ -191,7 +190,6 @@ function getTemplateFieldForYamlKey(kind: MediaKind, yamlKey: string): string | 
         rating: kind === 'games' ? 'userRating' : 'rating',
         status: 'status',
         favorite: 'favorite',
-        Sex18: 'adult',
         'integration-provider': 'integrationSource',
         'integration-id': 'integrationSource',
         integration_provider: 'integrationSource',
@@ -497,7 +495,6 @@ export function buildSimpleTemplate(kind: MediaKind, fields: string[]): string {
         appendCommunityRatingFields(set, lines, kebab);
         if (set.has('status')) lines.push('status: "{{VALUE:status}}"');
         if (set.has('favorite')) lines.push('favorite: false');
-        if (kind === 'manga' && set.has('adult')) lines.push('Sex18: {{VALUE:isAdult}}');
         if (set.has('integrationSource')) appendIntegrationSourceFields(lines, kebab);
         if (set.has('url')) lines.push('url: "{{VALUE:url}}"');
     }

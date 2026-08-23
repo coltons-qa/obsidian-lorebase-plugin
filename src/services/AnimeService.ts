@@ -294,7 +294,6 @@ export class AnimeService {
                 imageUrl: verticalImageUrl || rawVerticalImage || horizontalImageUrl || rawHorizontalImage || DEFAULT_COVER,
                 horizontalImageUrl: horizontalImageUrl || rawHorizontalImage || verticalImageUrl || rawVerticalImage || null,
                 hasCustomPoster: Boolean(metadata.cm_poster),
-                isAdult: false,
                 format,
                 status,
                 seasonCurrent: activePart?.seasonNumber ?? seasonCurrent,

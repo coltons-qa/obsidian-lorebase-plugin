@@ -71,7 +71,6 @@ describe('templateUtils', () => {
         expect(mangaTemplate).toContain('volume_total: {{VALUE:volumeTotal}}');
         expect(mangaTemplate).toContain('manga_parts:');
         expect(mangaTemplate).toContain('{{VALUE:mangaPartsYaml}}');
-        expect(mangaTemplate).toContain('Sex18: {{VALUE:isAdult}}');
     });
 
     it('builds howlongtobeat fields when selected', () => {

@@ -88,7 +88,6 @@ export class LibraryView extends ItemView {
     private filter: FilterState = {
         statuses: [],
         favoriteOnly: false,
-        adultOnly: false,
         customOnly: false,
         searchTerm: '',
         tags: [],
@@ -669,16 +668,14 @@ export class LibraryView extends ItemView {
                     this.games as ReadingItem[],
                     this.filter,
                     this.viewState.sort.field,
-                    this.viewState.sort.order,
-                    settings.showAdultInAll
+                    this.viewState.sort.order
                 );
             } else {
                 this.filteredGames = this.gameService.filterAndSort(
                     this.games as GameItem[],
                     this.filter,
                     this.viewState.sort.field,
-                    this.viewState.sort.order,
-                    settings.showAdultInAll
+                    this.viewState.sort.order
                 );
             }
 
@@ -1177,7 +1174,6 @@ export class LibraryView extends ItemView {
             || left.imageUrl !== right.imageUrl
             || left.horizontalImageUrl !== right.horizontalImageUrl
             || left.hasCustomPoster !== right.hasCustomPoster
-            || left.isAdult !== right.isAdult
             || left.status !== right.status
             || left.started !== right.started
             || left.finished !== right.finished
@@ -1786,11 +1782,6 @@ export class LibraryView extends ItemView {
         this.invalidateActiveServiceCache();
         this.cachedLayout = null;
 
-        // If 18+ is disabled and we are in adult mode, switch to all
-        if (!activeSettings.showAdultInAll && this.filter.adultOnly) {
-            this.filter.adultOnly = false;
-        }
-
         if (this.toolbar) {
             this.toolbar.beginUpdate();
             this.toolbar.updateMediaContext(this.mediaType, this.plugin.getEnabledMediaTypes());
@@ -1875,7 +1866,6 @@ export class LibraryView extends ItemView {
         this.setViewState(activeSettings.viewState, false);
         this.viewMode = activeSettings.orientation === 'horizontal' ? 'horizontal' : 'grid';
         this.applyViewMode();
-        this.filter.adultOnly = false;
         this.filter.customOnly = false;
         this.invalidateActiveServiceCache();
         this.filter.statuses = [];
@@ -1895,7 +1885,6 @@ export class LibraryView extends ItemView {
                 statuses: [],
                 tags: this.viewState.tags,
                 genres: this.viewState.genres,
-                adultOnly: false,
                 customOnly: false,
                 rules: this.viewState.rules,
             });
@@ -1924,7 +1913,6 @@ export class LibraryView extends ItemView {
         this.filter.rules = this.viewState.rules;
         this.filter.tags = [...this.viewState.tags];
         this.filter.genres = [...this.viewState.genres];
-        this.filter.adultOnly = this.viewState.rules.some((rule) => rule.field === 'adult' && rule.operator === 'isTrue');
         this.filter.customOnly = this.viewState.rules.some((rule) => rule.field === 'custom' && rule.operator === 'isTrue');
         const settings = this.getActiveSettings();
         settings.viewState = cloneLibraryViewState(this.viewState);
@@ -2082,7 +2070,7 @@ export class LibraryView extends ItemView {
         return getSortOptionsForMediaType(this.mediaType);
     }
 
-    private getFilterFlags(): { showAdult: boolean; showCustom: boolean } {
+    private getFilterFlags(): { showCustom: boolean } {
         return getFilterFlagsForMediaType(this.mediaType);
     }
 

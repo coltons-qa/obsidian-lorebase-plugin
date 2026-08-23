@@ -281,7 +281,6 @@ export class IntegrationService {
                 year: built.Year,
                 chapter_total: built.chapterTotal,
                 volume_total: built.volumeTotal,
-                Sex18: built.isAdult,
                 url: built.url,
                 manga_parts: toMangaPartsFrontmatter(details.parts),
             };
@@ -1680,8 +1679,6 @@ export class IntegrationService {
             authors: details.authors,
             artists: details.artists,
             genres: details.genres,
-            isAdult: details.isAdult
-                ?? details.genres.some((genre) => ['adult', 'hentai'].includes(genre.trim().toLowerCase())),
             Year: this.toIntegerOrZero(details.year),
             chapterCurrent: activePart?.chapterCurrent ?? 0,
             chapterTotal: activePart?.chapterTotal ?? this.toIntegerOrZero(details.chapters),
@@ -1723,7 +1720,6 @@ export class IntegrationService {
             communityRating: '',
             communityVotes: '',
             communityRatingProvider: '',
-            isAdult: false,
         };
 
         if (draft.kind === 'games') {

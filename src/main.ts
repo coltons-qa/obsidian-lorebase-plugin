@@ -677,27 +677,6 @@ export default class LorebasePlugin extends Plugin {
                 changed = true;
             }
         }
-        if (!this.settings.migrations?.mangaTemplateAdultField) {
-            if (media.manga?.templateMode !== 'advanced') {
-                const fields = Array.isArray(media.manga?.templateFields)
-                    ? media.manga.templateFields
-                    : [];
-                if (!fields.includes('adult')) {
-                    const favoriteIndex = fields.indexOf('favorite');
-                    const insertAt = favoriteIndex >= 0 ? favoriteIndex + 1 : fields.length;
-                    media.manga.templateFields = [
-                        ...fields.slice(0, insertAt),
-                        'adult',
-                        ...fields.slice(insertAt),
-                    ];
-                    changed = true;
-                }
-            }
-            if (this.settings.migrations) {
-                this.settings.migrations.mangaTemplateAdultField = true;
-                changed = true;
-            }
-        }
 
         syncSimpleTemplate('games', media.games, Boolean(media.games?.howLongToBeatEnabled));
         syncSimpleTemplate('anime', media.anime);

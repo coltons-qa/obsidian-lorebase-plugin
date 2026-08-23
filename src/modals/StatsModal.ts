@@ -243,7 +243,6 @@ export class StatsModal extends Modal {
         const extraData = [
             { icon: '\u{1F3AF}', label: t('statsSeries'), value: stats.seriesCount },
             { icon: '\u{1F3A8}', label: t('statsCustomPosters'), value: stats.customPosters },
-            { icon: '\u{1F51E}', label: t('statsAdultContent'), value: stats.adult },
 
             { icon: '\u{1F3C6}', label: t('statsRated'), value: stats.withRating },
             {

@@ -207,7 +207,6 @@ function mapDetails(item: Record<string, unknown>): MangaDetails | null {
         authors: writers,
         artists,
         genres,
-        isAdult: genres.some((genre) => ['adult', 'hentai'].includes(genre.toLowerCase())),
         year: getString(item, 'year'),
         chapters,
         volumes,

@@ -70,7 +70,7 @@ export function getSortOptionsForMediaType(mediaType: MediaType): Array<{ field:
 export function getBuiltInFieldDefinitions(
     mediaType: MediaType,
     statuses: Array<{ status: MediaStatus; label: string }>,
-    flags: { showAdult: boolean; showCustom: boolean }
+    flags: { showCustom: boolean }
 ): FieldDefinition[] {
     const language = i18n.getLanguage();
     const startedLabel = language === 'ru' ? 'Дата начала' : language === 'uk' ? 'Дата початку' : 'Start date';
@@ -108,12 +108,6 @@ export function getBuiltInFieldDefinitions(
             operators: ['contains', 'equals', 'notEquals', 'empty', 'notEmpty'],
         });
     }
-    if (flags.showAdult) {
-        definitions.push({
-            id: 'adult', label: t('filterAdult'), icon: 'shield-alert', type: 'boolean', source: 'builtin',
-            operators: ['isTrue', 'isFalse'],
-        });
-    }
     if (flags.showCustom) {
         definitions.push({
             id: 'custom', label: t('modeCustom'), icon: 'image', type: 'boolean', source: 'builtin',
@@ -130,17 +124,17 @@ function dateSortLabel(started: boolean): string {
     return started ? 'Date started' : 'Date finished';
 }
 
-export function getFilterFlagsForMediaType(mediaType: MediaType): { showAdult: boolean; showCustom: boolean } {
+export function getFilterFlagsForMediaType(mediaType: MediaType): { showCustom: boolean } {
     if (mediaType === 'anime') {
-        return { showAdult: false, showCustom: false };
+        return { showCustom: false };
     }
     if (mediaType === 'manga') {
-        return { showAdult: true, showCustom: false };
+        return { showCustom: false };
     }
     if (mediaType === 'movie' || mediaType === 'series' || mediaType === 'book') {
-        return { showAdult: false, showCustom: false };
+        return { showCustom: false };
     }
-    return { showAdult: true, showCustom: true };
+    return { showCustom: true };
 }
 
 export function getRandomLabelForMediaType(mediaType: MediaType): string {

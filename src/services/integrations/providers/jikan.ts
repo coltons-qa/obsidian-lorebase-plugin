@@ -221,7 +221,6 @@ export async function getLegacyJikanMangaDetails(
         authors,
         artists,
         genres: Array.from(new Set(genres)),
-        isAdult: genres.some((genre) => genre.toLowerCase() === 'hentai'),
         year: getJikanYear(item),
         chapters: getString(item, 'chapters'),
         volumes: getString(item, 'volumes'),

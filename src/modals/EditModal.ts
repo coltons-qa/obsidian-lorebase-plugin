@@ -44,7 +44,6 @@ export class EditModal extends Modal {
     private gameSeries: string;
     private started: string;
     private finished: string;
-    private isAdult: boolean;
     private releaseDate: string;
     private publisher: string;
     private developer: string;
@@ -108,7 +107,6 @@ export class EditModal extends Modal {
         this.gameSeries = game.gameSeries;
         this.started = this.normalizeDateInput(game.started);
         this.finished = this.normalizeDateInput(game.finished);
-        this.isAdult = game.isAdult;
         this.releaseDate = this.normalizeDateInput(game.releaseDate);
         this.publisher = game.publisher ?? '';
         this.developer = game.developer ?? '';
@@ -219,13 +217,6 @@ export class EditModal extends Modal {
                                 <label class="lorebase-editmode-switch-row">
                                     <span class="lorebase-editmode-switch-label">${t('editFavorite')}</span>
                                     <button type="button" class="lorebase-editmode-switch lorebase-editmode-switch-favorite" data-toggle="favorite" aria-label="${t('editFavorite')}" aria-pressed="false"><span class="lorebase-editmode-switch-thumb"></span></button>
-                                </label>
-                                <label class="lorebase-editmode-switch-row">
-                                    <span class="lorebase-editmode-switch-label" id="lorebase-game-adult-label">${t('editAdult')}</span>
-                                    <button type="button" class="lorebase-editmode-switch lorebase-editmode-switch-adult" data-toggle="adult" aria-labelledby="lorebase-game-adult-label" aria-describedby="lorebase-game-adult-tooltip" aria-pressed="false">
-                                        <span class="lorebase-editmode-switch-thumb"></span>
-                                        <span class="lorebase-editmode-switch-tooltip" id="lorebase-game-adult-tooltip" role="tooltip">${t('editAdultVisibilityHint')}</span>
-                                    </button>
                                 </label>
                                 <div class="lorebase-editmode-switch-row">
                                     <span class="lorebase-editmode-switch-label-row">
@@ -572,7 +563,6 @@ export class EditModal extends Modal {
             btn.addEventListener('click', () => {
                 const key = btn.dataset.toggle;
                 if (key === 'favorite') this.favorite = !this.favorite;
-                if (key === 'adult') this.isAdult = !this.isAdult;
                 if (key === 'wishlist') {
                     if (this.selectedStatus === 'wishlist') {
                         this.selectedStatus = this.statusBeforeWishlist;
@@ -1341,7 +1331,6 @@ export class EditModal extends Modal {
     private updateQuickSettingSwitches(root: HTMLElement): void {
         this.updateSwitch(root, 'favorite', this.favorite);
         this.updateSwitch(root, 'wishlist', this.selectedStatus === 'wishlist');
-        this.updateSwitch(root, 'adult', this.isAdult);
     }
 
     private updateSwitch(root: HTMLElement, key: string, value: boolean): void {
@@ -1523,7 +1512,6 @@ export class EditModal extends Modal {
             tags: this.tags,
             genres: this.genres,
             platforms: this.platforms,
-            isAdult: this.isAdult,
             releaseDate: this.releaseDate || null,
             started: this.started || null,
             finished: this.finished || null,

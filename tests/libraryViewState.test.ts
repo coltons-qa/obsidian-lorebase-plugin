@@ -21,7 +21,6 @@ function item(overrides: Record<string, unknown> = {}) {
         userRating: 4,
         favorite: false,
         hasCustomPoster: false,
-        isAdult: false,
         status: 'completed' as const,
         tags: ['fiction', 'priority'],
         genres: ['fantasy'],
@@ -49,7 +48,7 @@ describe('library view rule engine', () => {
         const filtered = filterAndSortMedia({
             items: source,
             filter: {
-                statuses: [], favoriteOnly: false, adultOnly: false, customOnly: false,
+                statuses: [], favoriteOnly: false, customOnly: false,
                 searchTerm: '', tags: [], genres: [],
                 rules: [
                     rule({ field: 'tags', fieldType: 'list', operator: 'containsAll', value: ['fiction', 'priority'] }),
@@ -92,7 +91,7 @@ describe('library view rule engine', () => {
             item({ displayName: 'Two', rawFields: { priority: 2 } }),
         ];
         const filter = {
-            statuses: [], favoriteOnly: false, adultOnly: false, customOnly: false,
+            statuses: [], favoriteOnly: false, customOnly: false,
             searchTerm: '', tags: [], genres: [], rules: [],
         };
         const descending = filterAndSortMedia({
@@ -110,7 +109,7 @@ describe('library view rule engine', () => {
         const sorted = filterAndSortMedia({
             items: source,
             filter: {
-                statuses: [], favoriteOnly: false, adultOnly: false, customOnly: false,
+                statuses: [], favoriteOnly: false, customOnly: false,
                 searchTerm: '', tags: [], genres: [], rules: [],
             },
             sortField: 'yaml:date:read_on',

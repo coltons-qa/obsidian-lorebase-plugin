@@ -14,7 +14,7 @@ interface FilterAndSortOptions<T extends FilterableMediaItem> {
     filter: FilterState;
     sortField: SortField;
     sortOrder: SortOrder;
-    isVisible: (item: T, hasGlobalFilters: boolean) => boolean;
+    isVisible?: (item: T, hasGlobalFilters: boolean) => boolean;
     getCompletedDate: (item: T) => number | null | undefined;
 }
 
@@ -43,7 +43,7 @@ export function filterAndSortMedia<T extends FilterableMediaItem>(
         if (!item) continue;
 
         if (isSearching && !(item.nameLower && item.nameLower.includes(searchLower))) continue;
-        if (!isVisible(item, hasGlobalFilters)) continue;
+        if (isVisible && !isVisible(item, hasGlobalFilters)) continue;
         if (statusSet && !statusSet.has(item.status)) continue;
         if (filter.favoriteOnly && !item.favorite) continue;
         if (selectedTags && !hasAllValues(item.tags, selectedTags)) continue;

@@ -125,7 +125,6 @@ export class GameCard {
     private render(): void {
         const isHorizontal = this.orientation === 'horizontal';
         const isProgressStyle = this.isProgressStyle();
-        this.container.toggleClass('is-adult', this.game.isAdult);
         this.container.toggleClass('is-anime', this.game.type === 'anime');
         this.container.toggleClass('is-series', this.game.type === 'series');
         this.container.toggleClass('is-book', this.game.type === 'book');

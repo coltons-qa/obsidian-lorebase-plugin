@@ -274,7 +274,6 @@ describe('VideoService', () => {
             imageUrl: '',
             horizontalImageUrl: null,
             hasCustomPoster: false,
-            isAdult: false,
             status: 'planned',
             genres: [],
             tags: [],

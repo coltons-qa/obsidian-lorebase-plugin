@@ -266,19 +266,4 @@ function renderLibrarySettingsPanel(
                     });
             });
     }
-
-    if (key === 'games' || key === 'manga') {
-        new Setting(container)
-            .setName(t('settingsShowAdult'))
-            .setDesc(t('settingsDescShowAdult'))
-            .addToggle(toggle => {
-                toggle
-                    .setValue(settings.showAdultInAll)
-                    .onChange(async (value) => {
-                        context.plugin.settings[key].showAdultInAll = value;
-                        await context.plugin.saveSettings();
-                        context.plugin.refreshViews();
-                    });
-            });
-    }
 }
