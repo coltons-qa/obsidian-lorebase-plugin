@@ -122,7 +122,6 @@ export class VideoService {
                     episodeCurrent: activePart?.episodeCurrent ?? parseNumber(readFrontmatterValue(metadata, ['episode-current', 'episode_current'])),
                     episodeTotal: activePart?.episodeTotal ?? parseNumber(readFrontmatterValue(metadata, ['episodes', 'episode_total'])),
                     networks: this.toStringArray(metadata.networks),
-                    studios: this.toStringArray(metadata.studios),
                 };
             }
 
@@ -197,16 +196,20 @@ export class VideoService {
         if ('displayName' in updates) this.updateTextField(frontmatterUpdates, frontmatter, ['title', 'name'], updates.displayName);
         if ('title' in updates) this.updateTextField(frontmatterUpdates, frontmatter, ['title', 'name'], String(updates.title ?? ''));
         if ('year' in updates) frontmatterUpdates.year = updates.year;
-        if ('description' in updates) this.updateTextField(frontmatterUpdates, frontmatter, ['plot', 'summary', 'description'], updates.description);
-        if ('summary' in updates) this.updateTextField(frontmatterUpdates, frontmatter, ['plot', 'summary', 'description'], updates.summary);
+        if ('description' in updates) this.updateTextField(frontmatterUpdates, frontmatter, ['synopsis', 'plot', 'summary', 'description'], updates.description);
+        if ('summary' in updates) this.updateTextField(frontmatterUpdates, frontmatter, ['synopsis', 'plot', 'summary', 'description'], updates.summary);
         if ('poster' in updates) this.updateTextField(frontmatterUpdates, frontmatter, ['poster', 'image'], updates.poster);
         if ('imageUrl' in updates) this.updateTextField(frontmatterUpdates, frontmatter, ['poster', 'image'], updates.imageUrl === DEFAULT_COVER ? '' : updates.imageUrl);
-        if ('horizontalImageUrl' in updates) this.updateTextField(frontmatterUpdates, frontmatter, ['poster_b', 'image_b', 'horizontal_poster'], updates.horizontalImageUrl);
+        if ('horizontalImageUrl' in updates) this.updateTextField(frontmatterUpdates, frontmatter, ['poster-b', 'poster_b', 'image_b', 'horizontal_poster'], updates.horizontalImageUrl);
         if ('genres' in updates) this.updateListField(frontmatterUpdates, frontmatter, ['genres', 'genre'], updates.genres);
         if ('tags' in updates) this.updateListField(frontmatterUpdates, frontmatter, ['tags', 'tag'], updates.tags, true);
         if ('rating' in updates) this.updateTextField(frontmatterUpdates, frontmatter, ['rating', 'scoreImdb', 'imdbRating'], updates.rating);
         if ('status' in updates) frontmatterUpdates.status = updates.status;
-        if ('userRating' in updates) frontmatterUpdates.userRating = updates.userRating;
+        if ('userRating' in updates) {
+            frontmatterUpdates['user-rating'] = updates.userRating;
+            if (this.hasKey(frontmatter, 'userRating')) frontmatterUpdates.userRating = null;
+            if (this.hasKey(frontmatter, 'rating_user')) frontmatterUpdates.rating_user = null;
+        }
         if ('favorite' in updates) frontmatterUpdates.favorite = updates.favorite;
         if ('sourceUrl' in updates) this.updateTextField(frontmatterUpdates, frontmatter, ['url', 'source_url'], updates.sourceUrl);
         if ('started' in updates) frontmatterUpdates.started = this.normalizeDateString(String(updates.started ?? '')) || null;
@@ -232,7 +235,6 @@ export class VideoService {
         }
         if ('seasons' in updates) frontmatterUpdates.seasons = updates.seasons;
         if ('networks' in updates) this.updateListField(frontmatterUpdates, frontmatter, ['networks', 'network'], updates.networks);
-        if ('studios' in updates) this.updateListField(frontmatterUpdates, frontmatter, ['studios', 'studio'], updates.studios);
         if ('parts' in updates) {
             if (this.mediaType === 'series') {
                 frontmatterUpdates['season-data'] = this.serializeParts(updates.parts ?? []);
@@ -328,9 +330,9 @@ export class VideoService {
             id: part.id,
             kind: part.kind,
             title: part.title,
-            season: part.seasonNumber,
-            episode_current: part.episodeCurrent,
-            episode_total: part.episodeTotal,
+            'season-number': part.seasonNumber,
+            'episode-current': part.episodeCurrent,
+            episodes: part.episodeTotal,
             status: part.status,
         }));
     }
@@ -401,9 +403,15 @@ export class VideoService {
         keys: string[],
         value: unknown
     ): void {
-        const key = this.preferredKey(frontmatter, keys);
+        // keys[0] is the canonical spelling. Always write it rather than preserving
+        // whichever legacy alias the note happened to have, and clear any other alias
+        // present, so saving converges a note instead of leaving two spellings.
+        const key = keys[0];
         const normalized = value === null || value === undefined ? '' : String(value).trim();
         updates[key] = normalized || null;
+        for (const alias of keys.slice(1)) {
+            if (this.hasKey(frontmatter, alias)) updates[alias] = null;
+        }
     }
 
     private updateDisplayListField(

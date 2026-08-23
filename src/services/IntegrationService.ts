@@ -241,7 +241,6 @@ export class IntegrationService {
                 seasons: built.seasons,
                 episode_total: built.episodeTotal,
                 networks: built.networks,
-                studios: built.studios,
                 rating: built.rating,
                 url: built.url,
                 [partsKey]: toVideoPartsFrontmatter(details.parts),
@@ -1616,12 +1615,11 @@ export class IntegrationService {
             episodeCurrent: activePart?.episodeCurrent ?? details.episodeCurrent ?? 0,
             episodeTotal: activePart?.episodeTotal ?? this.toIntegerOrZero(details.episodeTotal),
             networks: details.networks ?? [],
-            studios: details.studios ?? [],
             rating: this.toNumberOrZero(details.rating),
             url: details.url,
             status: source?.status ?? 'planned',
             activePartId: activePart?.id ?? '',
-            videoPartsYaml: renderPartsYaml(parts),
+            videoPartsYaml: renderPartsYaml(parts, true),
             integrationProvider: source?.provider ?? '',
             integrationId: source?.id ?? '',
             communityRating: '',
@@ -1789,9 +1787,8 @@ export class IntegrationService {
                 episodeCurrent: draft.episodeCurrent ?? 0,
                 episodeTotal: draft.episodeTotal ?? 0,
                 networks: [],
-                studios: [],
                 activePartId: part.id,
-                videoPartsYaml: renderPartsYaml([part]),
+                videoPartsYaml: renderPartsYaml([part], true),
             };
         }
 

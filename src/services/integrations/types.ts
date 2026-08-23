@@ -77,7 +77,6 @@ export interface VideoDetails {
     episodeCurrent?: string;
     episodeTotal?: string;
     networks?: string[];
-    studios?: string[];
     url: string;
     parts?: IntegrationVideoPart[];
     communityRating?: string;

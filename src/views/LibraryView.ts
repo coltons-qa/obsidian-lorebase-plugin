@@ -1241,7 +1241,6 @@ export class LibraryView extends ItemView {
                 && left.episodeCurrent === right.episodeCurrent
                 && left.episodeTotal === right.episodeTotal
                 && this.areStringArraysEquivalent(left.networks, right.networks)
-                && this.areStringArraysEquivalent(left.studios, right.studios)
                 && this.areRelatedMediaEquivalent(left.relatedMedia, right.relatedMedia);
         }
 

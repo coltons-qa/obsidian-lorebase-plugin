@@ -472,7 +472,6 @@ export interface SeriesItem extends BaseMediaItem {
     episodeCurrent: number | null;
     episodeTotal: number | null;
     networks?: string[];
-    studios?: string[];
     rating?: string;
     genres: string[];
     tags: string[];

@@ -169,15 +169,23 @@ export async function fetchHowLongToBeatValues(
     }
 }
 
-export function renderPartsYaml(parts: PartLike[]): string {
+/**
+ * `kebab` emits the migrated nested key names, used for movies and series. Anime and
+ * manga were excluded from that migration and their services still read only the
+ * legacy spellings, so they keep the defaults.
+ */
+export function renderPartsYaml(parts: PartLike[], kebab = false): string {
     if (!parts.length) return '  []';
+    const seasonKey = kebab ? 'season-number' : 'season';
+    const currentKey = kebab ? 'episode-current' : 'episode_current';
+    const totalKey = kebab ? 'episodes' : 'episode_total';
     return parts.map((part) => [
         `  - id: "${escapeYaml(part.id)}"`,
         `    kind: "${part.kind}"`,
         `    title: "${escapeYaml(part.title)}"`,
-        `    season: ${part.seasonNumber ?? 'null'}`,
-        `    episode_current: ${part.episodeCurrent ?? 0}`,
-        `    episode_total: ${part.episodeTotal ?? 'null'}`,
+        `    ${seasonKey}: ${part.seasonNumber ?? 'null'}`,
+        `    ${currentKey}: ${part.episodeCurrent ?? 0}`,
+        `    ${totalKey}: ${part.episodeTotal ?? 'null'}`,
         `    status: "${part.status}"`,
     ].join('\n')).join('\n');
 }

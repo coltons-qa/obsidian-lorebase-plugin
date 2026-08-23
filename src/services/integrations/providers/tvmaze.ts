@@ -142,7 +142,6 @@ export async function getTvmazeDetails(
         episodeCurrent: '0',
         episodeTotal: seasons.reduce((sum, part) => sum + (part.episodeTotal ?? 0), 0).toString(),
         networks: getChannelNames(show),
-        studios: getChannelNames(show),
         url: clean(show.officialSite) || clean(show.url),
         parts: seasons,
     };

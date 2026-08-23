@@ -45,7 +45,6 @@ export class VideoEditModal extends Modal {
     private actors: string;
     private seasons: number | null;
     private networks: string[];
-    private studios: string[];
     private parts: PartDraft[];
     private activePartId: string | null;
     private relatedMedia: RelatedMediaLink[];
@@ -105,7 +104,6 @@ export class VideoEditModal extends Modal {
         this.actors = item.actors ?? '';
         this.seasons = item.type === 'series' ? item.seasons : null;
         this.networks = item.type === 'series' ? this.normalizeList(item.networks ?? []) : [];
-        this.studios = item.type === 'series' ? this.normalizeList(item.studios ?? []) : [];
         this.parts = this.normalizeParts(item);
         this.relatedMedia = this.normalizeRelatedMedia(item.relatedMedia ?? []);
         this.relatedCandidates = relatedCandidates.filter((candidate) => candidate.path !== item.filePath);
@@ -449,7 +447,6 @@ export class VideoEditModal extends Modal {
         this.setInput(root, '[data-field="seasons"]', this.seasons);
         this.setInput(root, '[data-field="episode-current"]', this.item.type === 'series' ? this.item.episodeCurrent : null);
         this.setInput(root, '[data-field="episode-total"]', this.item.type === 'series' ? this.item.episodeTotal : null);
-        this.setInput(root, '[data-field="studios"]', this.studios.join(', '));
 
         this.renderStatusSegments(root, '[data-role="status-segments"]', this.getVideoStatusOptions());
         this.renderStatusSegments(root, '[data-role="part-status-segments"]', this.getVideoStatusOptions().filter((entry) => entry.status !== 'dropped' && entry.status !== 'paused'));
@@ -524,7 +521,6 @@ export class VideoEditModal extends Modal {
         this.bindText(root, '[data-field="runtime"]', (value) => { this.runtime = value; });
         this.bindText(root, '[data-field="director"]', (value) => { this.director = value; });
         this.bindText(root, '[data-field="actors"]', (value) => { this.actors = value; });
-        this.bindText(root, '[data-field="studios"]', (value) => { this.studios = this.parseList(value); });
 
         this.qs<HTMLInputElement>(root, '[data-field="year"]')?.addEventListener('input', (event) => {
             this.year = this.parseNumberInput((event.currentTarget as HTMLInputElement).value);
@@ -1319,7 +1315,6 @@ export class VideoEditModal extends Modal {
             updates.actors = this.actors;
             updates.seasons = this.parts.length || this.seasons;
             updates.networks = this.networks;
-            updates.studios = this.studios;
             updates.episodeCurrent = activePart?.episodeCurrent ?? null;
             updates.episodeTotal = activePart?.episodeTotal ?? null;
         }

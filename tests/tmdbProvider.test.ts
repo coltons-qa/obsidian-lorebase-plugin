@@ -85,7 +85,6 @@ describe('TMDB provider', () => {
             seasons: '2',
             episodeTotal: '16',
             networks: ['Prime Video'],
-            studios: ['Amazon Studios'],
         });
         expect(details?.parts).toHaveLength(2);
         expect(details?.parts?.[0]).toMatchObject({

@@ -235,9 +235,9 @@ export function toVideoPartsFrontmatter(parts: IntegrationVideoPart[] | undefine
         id: part.id,
         kind: part.kind,
         title: part.title,
-        season: part.seasonNumber,
-        episode_current: part.episodeCurrent,
-        episode_total: part.episodeTotal,
+        'season-number': part.seasonNumber,
+        'episode-current': part.episodeCurrent,
+        episodes: part.episodeTotal,
         status: part.status,
     }));
 }

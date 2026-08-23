@@ -123,7 +123,6 @@ export async function getTmdbDetails(
         }))
         : [];
     const networks = isSeries ? getArray(show, 'networks').map((network) => clean(network.name)).filter(Boolean) : [];
-    const studios = getArray(show, 'production_companies').map((company) => clean(company.name)).filter(Boolean);
 
     return {
         kind: 'video',
@@ -144,7 +143,6 @@ export async function getTmdbDetails(
         episodeCurrent: '0',
         episodeTotal: parts.reduce((sum, part) => sum + (part.episodeTotal ?? 0), 0).toString(),
         networks,
-        studios,
         url: `https://www.themoviedb.org/${isSeries ? 'tv' : 'movie'}/${id}`,
         parts,
     };
