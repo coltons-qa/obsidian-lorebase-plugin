@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { extractFrontmatterBlock, isFileInFolder, mapInFrameBatches } from '../src/services/media/serviceUtils';
+import { extractFrontmatterBlock, isFileInFolder, isMediaType, mapInFrameBatches, resolveMediaType } from '../src/services/media/serviceUtils';
+import type { FolderTypeEntry } from '../src/services/media/serviceUtils';
 
 describe('extractFrontmatterBlock', () => {
     it('returns the yaml between the fences', () => {
@@ -81,5 +82,74 @@ describe('mapInFrameBatches', () => {
         );
 
         expect(result).toEqual([20, 40]);
+    });
+});
+
+describe('isMediaType', () => {
+    it('accepts all six valid media types', () => {
+        for (const type of ['game', 'anime', 'movie', 'series', 'book', 'manga']) {
+            expect(isMediaType(type)).toBe(true);
+        }
+    });
+
+    it('rejects non-media-type strings', () => {
+        expect(isMediaType('room')).toBe(false);
+        expect(isMediaType('character')).toBe(false);
+        expect(isMediaType('tv')).toBe(false);
+        expect(isMediaType('')).toBe(false);
+    });
+
+    it('rejects non-string values', () => {
+        expect(isMediaType(undefined)).toBe(false);
+        expect(isMediaType(null)).toBe(false);
+        expect(isMediaType(42)).toBe(false);
+        expect(isMediaType(true)).toBe(false);
+    });
+});
+
+describe('resolveMediaType', () => {
+    // Mirrors the real vault: games, movies, series, and books all point at Library.
+    const sharedFolders: FolderTypeEntry[] = [
+        { type: 'game', folderPath: 'Library' },
+        { type: 'anime', folderPath: 'Anime' },
+        { type: 'movie', folderPath: 'Library' },
+        { type: 'series', folderPath: 'Library' },
+        { type: 'book', folderPath: 'Library' },
+        { type: 'manga', folderPath: 'Manga' },
+    ];
+
+    it('uses frontmatter type when file is in a shared folder', () => {
+        expect(resolveMediaType('Library/The Matrix.md', 'movie', sharedFolders)).toBe('movie');
+        expect(resolveMediaType('Library/Dune.md', 'book', sharedFolders)).toBe('book');
+        expect(resolveMediaType('Library/The Witcher.md', 'series', sharedFolders)).toBe('series');
+        expect(resolveMediaType('Library/Halo Infinite.md', 'game', sharedFolders)).toBe('game');
+    });
+
+    it('falls back to folder match when frontmatter type is absent', () => {
+        // Anime and Manga have unique folders, so folder inference is unambiguous.
+        expect(resolveMediaType('Anime/Naruto.md', undefined, sharedFolders)).toBe('anime');
+        expect(resolveMediaType('Manga/One Piece.md', undefined, sharedFolders)).toBe('manga');
+    });
+
+    it('falls back to folder match when frontmatter type is not a valid MediaType', () => {
+        // A note with type: "room" (e.g. Blue Prince notes shouldn't be here, but if
+        // something in Library had a weird type value, fall back to folder inference).
+        expect(resolveMediaType('Library/Mystery.md', 'room', sharedFolders)).toBe('game');
+    });
+
+    it('returns undefined when file is outside all media folders', () => {
+        expect(resolveMediaType('Games/Blue Prince/Room.md', 'room', sharedFolders)).toBeUndefined();
+        expect(resolveMediaType('Templates/Template.md', undefined, sharedFolders)).toBeUndefined();
+    });
+
+    it('handles empty and null frontmatter type values', () => {
+        expect(resolveMediaType('Library/Note.md', null, sharedFolders)).toBe('game');
+        expect(resolveMediaType('Library/Note.md', '', sharedFolders)).toBe('game');
+    });
+
+    it('without the bug: a book in Library is correctly typed as book, not game', () => {
+        // This is THE bug: before the fix, folders.find() returned 'game' for everything in Library/.
+        expect(resolveMediaType('Library/Dune.md', 'book', sharedFolders)).toBe('book');
+        expect(resolveMediaType('Library/Dune.md', 'book', sharedFolders)).not.toBe('game');
     });
 });

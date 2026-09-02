@@ -1,4 +1,5 @@
 import { TFile, TFolder } from 'obsidian';
+import type { MediaType } from '../../types';
 import { normalizeObsidianTag } from '../../settings/settingsNormalization';
 
 export function getAllMarkdownFiles(folder: TFolder): TFile[] {
@@ -200,4 +201,46 @@ export function hasAllValues(values: string[] | undefined, required: readonly st
         if (!valueSet.has(value)) return false;
     }
     return true;
+}
+
+/** The six Lorebase media types. Used to validate frontmatter `type` values. */
+const MEDIA_TYPES: ReadonlySet<string> = new Set([
+    'game', 'anime', 'movie', 'series', 'book', 'manga',
+]);
+
+/** Type guard: returns true when `value` is a valid Lorebase MediaType string. */
+export function isMediaType(value: unknown): value is MediaType {
+    return typeof value === 'string' && MEDIA_TYPES.has(value);
+}
+
+export interface FolderTypeEntry {
+    type: MediaType;
+    folderPath: string;
+}
+
+/**
+ * Resolves a file's media type by preferring frontmatter `type` over folder-based inference.
+ *
+ * When multiple media types share the same folder (e.g. games, movies, series, and books
+ * all in `Library/`), folder-based `find()` always returns the first entry. This function
+ * checks frontmatter first, falling back to the folder match only when frontmatter is
+ * absent or not a valid MediaType.
+ *
+ * Returns `undefined` when the file is not in any media folder.
+ */
+export function resolveMediaType(
+    filePath: string,
+    frontmatterType: unknown,
+    folders: readonly FolderTypeEntry[]
+): MediaType | undefined {
+    // Check folder membership first as a scope filter: files outside all media folders
+    // (e.g. Blue Prince notes) should never be candidates.
+    const folderMatch = folders.find((entry) => isFileInFolder(filePath, entry.folderPath));
+    if (!folderMatch) return undefined;
+
+    // Prefer frontmatter type when it's a valid MediaType.
+    if (isMediaType(frontmatterType)) return frontmatterType;
+
+    // Fall back to folder-based inference (works when folder → type is unambiguous).
+    return folderMatch.type;
 }

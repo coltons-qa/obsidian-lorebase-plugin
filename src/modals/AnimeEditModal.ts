@@ -14,6 +14,8 @@ import { MediaSourceAction, renderMediaSourcePanel } from './MediaSourcePanel';
 import { setupMobileEditor } from './mobileEditor';
 import { extractMarkdownSection } from '../services/markdownSections';
 import { HierarchicalDatePicker, validateDatePickers } from './HierarchicalDatePicker';
+import type { RelatedItemClickHandler } from './RelatedMediaEditor';
+import { reconcileRelatedTypes } from './RelatedMediaEditor';
 
 type PartDraft = AnimePart;
 type AnimePartsRefreshResult = {
@@ -84,7 +86,8 @@ export class AnimeEditModal extends Modal {
         onRefreshCommunityRating?: CommunityRatingRefresh,
         relatedCandidates: RelatedCandidate[] = [],
         private readonly onRefreshSource?: MediaSourceAction,
-        private readonly onChangeSource?: MediaSourceAction
+        private readonly onChangeSource?: MediaSourceAction,
+        private readonly onRelatedItemClick?: RelatedItemClickHandler
     ) {
         super(app);
         this.anime = anime;
@@ -108,6 +111,7 @@ export class AnimeEditModal extends Modal {
         this.parts = this.normalizeParts(anime.parts);
         this.relatedMedia = this.normalizeRelatedMedia(anime.relatedMedia ?? []);
         this.relatedCandidates = relatedCandidates.filter((candidate) => candidate.path !== anime.filePath);
+        reconcileRelatedTypes(this.relatedMedia, this.relatedCandidates);
         this.activePartId = this.parts.some((part) => part.id === anime.activePartId)
             ? anime.activePartId ?? this.parts[0]?.id ?? null
             : this.parts[0]?.id ?? null;
@@ -916,6 +920,14 @@ export class AnimeEditModal extends Modal {
                 this.reorderRelatedMedia(item.path);
                 this.renderRelatedMedia(root);
             });
+            if (this.onRelatedItemClick) {
+                row.setCssStyles({ cursor: 'pointer' });
+                const handler = this.onRelatedItemClick;
+                row.addEventListener('click', (event) => {
+                    if ((event.target as HTMLElement | null)?.closest('button')) return;
+                    handler(item, event);
+                });
+            }
             const image = row.createDiv({ cls: 'lorebase-editmode-related-image' });
             image.setCssStyles({
                 backgroundImage: `url("${imageUrl.replace(/"/g, '\\"')}")`,

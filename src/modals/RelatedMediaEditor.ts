@@ -3,24 +3,38 @@ import { DEFAULT_COVER } from '../constants';
 import { t } from '../localization';
 import type { RelatedMediaLink } from '../types';
 
+/** Callback for clicking a related media card. Mirrors the library card click convention. */
+export type RelatedItemClickHandler = (item: RelatedMediaLink, event: MouseEvent) => void;
+
 export class RelatedMediaEditor {
     private values: RelatedMediaLink[];
     private candidates: RelatedMediaLink[];
     private incoming: RelatedMediaLink[];
     private draggedPath: string | null = null;
+    private onItemClick?: RelatedItemClickHandler;
 
     constructor(
         private app: App,
         currentPath: string,
         values: RelatedMediaLink[] = [],
         candidates: RelatedMediaLink[] = [],
-        incoming: RelatedMediaLink[] = []
+        incoming: RelatedMediaLink[] = [],
+        onItemClick?: RelatedItemClickHandler
     ) {
+        this.onItemClick = onItemClick;
         this.values = normalizeRelatedMedia(values);
         this.candidates = normalizeRelatedMedia(candidates)
             .filter((candidate) => candidate.path !== currentPath);
         this.incoming = normalizeRelatedMedia(incoming)
             .filter((candidate) => candidate.path !== currentPath);
+
+        // Reconcile stored types: entries saved before the resolveMediaType fix
+        // may carry the wrong type (e.g. 'game' for a book in a shared folder).
+        // The candidates list is rebuilt fresh each time with the correct type from
+        // frontmatter, so use it as the source of truth. This also means the next
+        // save writes the corrected type back to the note.
+        reconcileRelatedTypes(this.values, this.candidates);
+        reconcileRelatedTypes(this.incoming, this.candidates);
     }
 
     bind(root: HTMLElement): void {
@@ -77,6 +91,15 @@ export class RelatedMediaEditor {
             },
         });
         if (!readonly) this.bindDrag(row, item.path, root);
+        if (this.onItemClick) {
+            row.setCssStyles({ cursor: 'pointer' });
+            const handler = this.onItemClick;
+            row.addEventListener('click', (event) => {
+                // Let button clicks (order/remove) bubble without triggering navigation.
+                if ((event.target as HTMLElement | null)?.closest('button')) return;
+                handler(item, event);
+            });
+        }
         const image = row.createDiv({ cls: 'lorebase-editmode-related-image' });
         image.setCssStyles({
             backgroundImage: `url("${imageUrl.replace(/"/g, '\\"')}")`,
@@ -354,4 +377,21 @@ function getRelatedTypeOptions(): Array<{ value: RelatedMediaLink['type']; label
 
 function getRelatedTypeLabel(type: RelatedMediaLink['type']): string {
     return getRelatedTypeOptions().find((option) => option.value === type)?.label ?? type;
+}
+
+/**
+ * Correct the `type` on stored related-media entries using the freshly built candidate
+ * list as the source of truth. Entries saved before the `resolveMediaType` fix may carry
+ * the wrong type (e.g. `game` for a book in a shared folder). Mutates in place so both
+ * the display and the next save reflect the corrected type.
+ */
+export function reconcileRelatedTypes(items: RelatedMediaLink[], candidates: RelatedMediaLink[]): void {
+    if (!candidates.length) return;
+    const typeByPath = new Map(candidates.map((c) => [c.path, c.type]));
+    for (const item of items) {
+        const correctType = typeByPath.get(item.path);
+        if (correctType && correctType !== item.type) {
+            item.type = correctType;
+        }
+    }
 }

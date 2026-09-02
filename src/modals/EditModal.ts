@@ -13,6 +13,7 @@ import { MediaSourceAction, renderMediaSourcePanel } from './MediaSourcePanel';
 import { extractMarkdownSection } from '../services/GameService';
 import { normalizeObsidianTag } from '../settings/settingsNormalization';
 import { RelatedMediaEditor } from './RelatedMediaEditor';
+import type { RelatedItemClickHandler } from './RelatedMediaEditor';
 import { HierarchicalDatePicker, validateDatePickers } from './HierarchicalDatePicker';
 
 type GameDlcRefresh = (existing: GameDlc[]) => Promise<GameDlc[] | null>;
@@ -89,7 +90,8 @@ export class EditModal extends Modal {
         relatedCandidates: RelatedMediaLink[] = [],
         incomingRelated: RelatedMediaLink[] = [],
         private readonly onRefreshSource?: MediaSourceAction,
-        private readonly onChangeSource?: MediaSourceAction
+        private readonly onChangeSource?: MediaSourceAction,
+        private readonly onRelatedItemClick?: RelatedItemClickHandler
     ) {
         super(app);
         this.game = game;
@@ -127,7 +129,8 @@ export class EditModal extends Modal {
             game.filePath,
             game.relatedMedia ?? [],
             relatedCandidates,
-            incomingRelated
+            incomingRelated,
+            onRelatedItemClick
         );
     }
 

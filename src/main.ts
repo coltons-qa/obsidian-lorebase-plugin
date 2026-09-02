@@ -3,13 +3,14 @@
  * v3.0.1
  */
 
-import { Plugin, WorkspaceLeaf, Menu, Notice, addIcon, parseYaml, TFile, type Command } from 'obsidian';
+import { Plugin, WorkspaceLeaf, Menu, Notice, addIcon, parseYaml, TFile, Keymap, type Command } from 'obsidian';
 import { CommunityRating, GameDlc, LorebaseSettings, MediaItem, GameStats, AnimeStats, MediaType, RelatedMediaLink, IntegrationTemplateSettings } from './types';
 import { DEFAULT_SETTINGS, VIEW_TYPE_LIBRARY, LOREBASE_ICON_ID, LOREBASE_ICON_SVG, DEFAULT_COVER, PARTICLE_INTENSITY_MAX, PARTICLE_INTENSITY_MIN } from './constants';
 import { i18n, t, type TranslationKey } from './localization';
 import { LibraryView } from './views/LibraryView';
 import { LorebaseSettingTab } from './settings/SettingsTab';
 import { EditModal } from './modals/EditModal';
+import type { RelatedItemClickHandler } from './modals/RelatedMediaEditor';
 import { AnimeEditModal } from './modals/AnimeEditModal';
 import { VideoEditModal } from './modals/VideoEditModal';
 import { ReadingEditModal } from './modals/ReadingEditModal';
@@ -41,7 +42,8 @@ import { parseRelatedMedia } from './services/media/parsers';
 import type { MediaKind, MediaSourceSelection } from './services/integrations/types';
 import { buildSimpleTemplate, getDefaultTemplateFields, getEffectiveSimpleTemplateFields } from './services/integrations/templateUtils';
 import { mediaTypeToKind, synchronizeProviderMetadata } from './services/integrations/enrichment';
-import { extractFrontmatterBlock, isFileInFolder } from './services/media/serviceUtils';
+import { extractFrontmatterBlock, isFileInFolder, resolveMediaType } from './services/media/serviceUtils';
+import type { FolderTypeEntry } from './services/media/serviceUtils';
 
 // =============================================================================
 // LOREBASE PLUGIN
@@ -814,11 +816,60 @@ export default class LorebasePlugin extends Plugin {
     }
 
     /**
+     * Build a click handler for related media cards. Plain click opens the target item's
+     * editor; mod-click (Cmd/Ctrl) opens its note—mirroring the library card convention
+     * from `ed72b40`. The returned handler closes `modalRef.current` before navigating;
+     * use a ref object so the handler can be passed to a constructor whose `modal` variable
+     * hasn't been assigned yet.
+     */
+    private makeRelatedItemClickHandler(
+        modalRef: { current: { close(): void } | null },
+        onSave: () => void
+    ): RelatedItemClickHandler {
+        return (relatedItem: RelatedMediaLink, event: MouseEvent) => {
+            const file = this.app.vault.getAbstractFileByPath(relatedItem.path);
+            if (!(file instanceof TFile)) return;
+
+            modalRef.current?.close();
+
+            const modHeld = Keymap.isModifier(event, 'Mod');
+            const opensEditor = this.settings.cardClickAction === 'edit';
+
+            if (modHeld ? !opensEditor : opensEditor) {
+                // Open the editor for the target item.
+                const parsed = this.parseMediaItemFromFile(file, relatedItem.type);
+                if (parsed) {
+                    this.showEditModal(parsed, onSave);
+                }
+            } else {
+                // Open the note itself.
+                void this.app.workspace.openLinkText(relatedItem.path, '', false);
+            }
+        };
+    }
+
+    /**
+     * Parse a MediaItem from a TFile using the service that matches the given type.
+     */
+    private parseMediaItemFromFile(file: TFile, mediaType: MediaType): MediaItem | null {
+        switch (mediaType) {
+            case 'anime': return this.animeService?.parseAnimeFromCache(file) ?? null;
+            case 'movie': return this.movieService?.parseFromCache(file) ?? null;
+            case 'series': return this.seriesService?.parseFromCache(file) ?? null;
+            case 'book': return this.bookService?.parseFromCache(file) ?? null;
+            case 'manga': return this.mangaService?.parseFromCache(file) ?? null;
+            case 'game': return this.gameService?.parseGameFromCache(file) ?? null;
+            default: return null;
+        }
+    }
+
+    /**
      * Show edit modal for a media item
      */
     showEditModal(item: MediaItem, onSave: () => void, onBeforeSave?: () => void): void {
         if (item.type === 'anime') {
             const animeItem = item;
+            const modalRef: { current: AnimeEditModal | null } = { current: null };
             const modal: AnimeEditModal = new AnimeEditModal(
                 this.app,
                 animeItem,
@@ -884,14 +935,17 @@ export default class LorebasePlugin extends Plugin {
                     true,
                     onSave,
                     () => modal.saveBeforeSourceRefresh()
-                )
+                ),
+                this.makeRelatedItemClickHandler(modalRef, onSave)
             );
+            modalRef.current = modal;
             modal.open();
             return;
         }
 
         if (item.type === 'movie' || item.type === 'series') {
             const service = item.type === 'movie' ? this.movieService : this.seriesService;
+            const modalRef: { current: VideoEditModal | null } = { current: null };
             const modal: VideoEditModal = new VideoEditModal(
                 this.app,
                 item,
@@ -922,8 +976,10 @@ export default class LorebasePlugin extends Plugin {
                     true,
                     onSave,
                     () => modal.saveBeforeSourceRefresh()
-                )
+                ),
+                this.makeRelatedItemClickHandler(modalRef, onSave)
             );
+            modalRef.current = modal;
             modal.open();
             return;
         }
@@ -931,6 +987,7 @@ export default class LorebasePlugin extends Plugin {
         if (item.type === 'book' || item.type === 'manga') {
             const service = item.type === 'book' ? this.bookService : this.mangaService;
             const readingItem = item;
+            const modalRef: { current: ReadingEditModal | null } = { current: null };
             const modal: ReadingEditModal = new ReadingEditModal(
                 this.app,
                 readingItem,
@@ -963,14 +1020,17 @@ export default class LorebasePlugin extends Plugin {
                     true,
                     onSave,
                     () => modal.saveBeforeSourceRefresh()
-                )
+                ),
+                this.makeRelatedItemClickHandler(modalRef, onSave)
             );
+            modalRef.current = modal;
             modal.open();
             return;
         }
 
         const gameItem = item;
         const seriesOptions = this.gameService?.getSeriesList() ?? [];
+        const modalRef: { current: EditModal | null } = { current: null };
         const modal: EditModal = new EditModal(
             this.app,
             gameItem,
@@ -1005,8 +1065,10 @@ export default class LorebasePlugin extends Plugin {
                 true,
                 onSave,
                 () => modal.saveBeforeSourceRefresh()
-            )
+            ),
+            this.makeRelatedItemClickHandler(modalRef, onSave)
         );
+        modalRef.current = modal;
         modal.open();
     }
 
@@ -1225,8 +1287,8 @@ export default class LorebasePlugin extends Plugin {
         return merged;
     }
 
-    private collectRelatedMediaCandidates(): RelatedMediaLink[] {
-        const folders: Array<{ type: RelatedMediaLink['type']; folderPath: string }> = [
+    private getMediaFolders(): FolderTypeEntry[] {
+        return [
             { type: 'game', folderPath: this.settings.games.folderPath },
             { type: 'anime', folderPath: this.settings.anime.folderPath },
             { type: 'movie', folderPath: this.settings.movies.folderPath },
@@ -1234,10 +1296,14 @@ export default class LorebasePlugin extends Plugin {
             { type: 'book', folderPath: this.settings.books.folderPath },
             { type: 'manga', folderPath: this.settings.manga.folderPath },
         ];
+    }
+
+    private collectRelatedMediaCandidates(): RelatedMediaLink[] {
+        const folders = this.getMediaFolders();
         const candidates: RelatedMediaLink[] = [];
         const seen = new Set<string>();
         for (const file of this.app.vault.getMarkdownFiles()) {
-            const mediaType = folders.find((entry) => this.isFileInFolder(file.path, entry.folderPath))?.type;
+            const mediaType = resolveMediaType(file.path, this.getFrontmatterValue(file, 'type'), folders);
             if (!mediaType || seen.has(file.path)) continue;
             candidates.push({
                 type: mediaType,
@@ -1251,18 +1317,11 @@ export default class LorebasePlugin extends Plugin {
     }
 
     private collectIncomingRelatedMedia(targetPath: string): RelatedMediaLink[] {
+        const folders = this.getMediaFolders();
         const incoming: RelatedMediaLink[] = [];
         const seen = new Set<string>();
-        const folders: Array<{ type: RelatedMediaLink['type']; folderPath: string }> = [
-            { type: 'game', folderPath: this.settings.games.folderPath },
-            { type: 'anime', folderPath: this.settings.anime.folderPath },
-            { type: 'movie', folderPath: this.settings.movies.folderPath },
-            { type: 'series', folderPath: this.settings.series.folderPath },
-            { type: 'book', folderPath: this.settings.books.folderPath },
-            { type: 'manga', folderPath: this.settings.manga.folderPath },
-        ];
         for (const file of this.app.vault.getMarkdownFiles()) {
-            const mediaType = folders.find((entry) => this.isFileInFolder(file.path, entry.folderPath))?.type;
+            const mediaType = resolveMediaType(file.path, this.getFrontmatterValue(file, 'type'), folders);
             if (!mediaType) continue;
             const related = parseRelatedMedia(this.getFrontmatterValue(file, 'related_media'));
             if (!related.some((entry) => entry.path === targetPath)) continue;

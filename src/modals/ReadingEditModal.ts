@@ -9,6 +9,7 @@ import { setupMobileEditor } from './mobileEditor';
 import { bindSourceUrlButton } from './sourceUrlButton';
 import { extractMarkdownSection } from '../services/markdownSections';
 import { RelatedMediaEditor } from './RelatedMediaEditor';
+import type { RelatedItemClickHandler } from './RelatedMediaEditor';
 import { HierarchicalDatePicker, validateDatePickers } from './HierarchicalDatePicker';
 import { normalizeProgress, stepProgress } from '../utils/progress';
 
@@ -89,7 +90,8 @@ export class ReadingEditModal extends Modal {
         relatedCandidates: RelatedMediaLink[] = [],
         incomingRelated: RelatedMediaLink[] = [],
         private readonly onRefreshSource?: MediaSourceAction,
-        private readonly onChangeSource?: MediaSourceAction
+        private readonly onChangeSource?: MediaSourceAction,
+        private readonly onRelatedItemClick?: RelatedItemClickHandler
     ) {
         super(app);
         this.item = item;
@@ -133,7 +135,8 @@ export class ReadingEditModal extends Modal {
             item.filePath,
             item.relatedMedia ?? [],
             relatedCandidates,
-            incomingRelated
+            incomingRelated,
+            onRelatedItemClick
         );
     }
 

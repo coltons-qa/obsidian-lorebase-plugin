@@ -9,6 +9,8 @@ import { setupMobileEditor } from './mobileEditor';
 import { bindSourceUrlButton } from './sourceUrlButton';
 import { extractMarkdownSection } from '../services/markdownSections';
 import { HierarchicalDatePicker, validateDatePickers } from './HierarchicalDatePicker';
+import type { RelatedItemClickHandler } from './RelatedMediaEditor';
+import { reconcileRelatedTypes } from './RelatedMediaEditor';
 
 type VideoItem = MovieItem | SeriesItem;
 type VideoUpdates = Partial<VideoItem> & Record<string, unknown>;
@@ -79,7 +81,8 @@ export class VideoEditModal extends Modal {
         incomingRelated: RelatedMediaLink[] = [],
         relatedCandidates: RelatedCandidate[] = [],
         private readonly onRefreshSource?: MediaSourceAction,
-        private readonly onChangeSource?: MediaSourceAction
+        private readonly onChangeSource?: MediaSourceAction,
+        private readonly onRelatedItemClick?: RelatedItemClickHandler
     ) {
         super(app);
         this.item = item;
@@ -114,6 +117,8 @@ export class VideoEditModal extends Modal {
         this.relatedMedia = this.normalizeRelatedMedia(item.relatedMedia ?? []);
         this.relatedCandidates = relatedCandidates.filter((candidate) => candidate.path !== item.filePath);
         this.incomingRelated = incomingRelated;
+        reconcileRelatedTypes(this.relatedMedia, this.relatedCandidates);
+        reconcileRelatedTypes(this.incomingRelated, this.relatedCandidates);
         this.activePartId = this.parts.some((part) => part.id === item.activePartId)
             ? item.activePartId ?? this.parts[0]?.id ?? null
             : this.parts[0]?.id ?? null;
@@ -899,6 +904,14 @@ export class VideoEditModal extends Modal {
             attr: { title: item.title || item.path, draggable: 'true', 'data-path': item.path },
         });
         this.bindRelatedDrag(row, item.path, order?.onDrop);
+        if (this.onRelatedItemClick) {
+            row.setCssStyles({ cursor: 'pointer' });
+            const handler = this.onRelatedItemClick;
+            row.addEventListener('click', (event) => {
+                if ((event.target as HTMLElement | null)?.closest('button')) return;
+                handler(item, event);
+            });
+        }
         const image = row.createDiv({ cls: 'lorebase-editmode-related-image' });
         image.setCssStyles({
             backgroundImage: `url("${imageUrl.replace(/"/g, '\\"')}")`,
