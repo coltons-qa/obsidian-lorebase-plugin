@@ -15,12 +15,11 @@ describe('GameService', () => {
                     type: 'game',
                     poster: 'https://cdn.example/me.jpg',
                     status: 'played',
-                    userRating: '5',
+                    'user-rating': '5',
                     year: '2007',
-                    plot: 'Sci-fi RPG',
+                    synopsis: 'Sci-fi RPG',
                     favorite: true,
-                    Sex18: 'true',
-                    gameSeries: 'Mass Effect',
+                    series: 'Mass Effect',
                     dateCompleted: '2024-05-10',
                     started: '2024-04-01',
                     finished: '2024-05-10',
@@ -31,10 +30,10 @@ describe('GameService', () => {
                             title: 'Citadel',
                             image: 'https://cdn.example/dlc.jpg',
                             url: 'https://store.steampowered.com/app/123/',
-                            userRating: 4,
+                            'user-rating': 4,
                         },
                     ],
-                    related_media: [
+                    'related-media': [
                         {
                             type: 'manga',
                             path: 'Manga/Mass Effect - Redemption.md',
@@ -86,7 +85,7 @@ describe('GameService', () => {
 
     it('serializes related media when a game is edited', async () => {
         const file = createMockFile('Games/Mass Effect.md', 'Mass Effect');
-        const frontmatter: Record<string, unknown> = { type: 'game', name: 'Mass Effect' };
+        const frontmatter: Record<string, unknown> = { type: 'game', title: 'Mass Effect' };
         const app = createMockApp({
             [file.path]: { frontmatter },
         });
@@ -150,7 +149,7 @@ describe('GameService', () => {
             [file.path]: {
                 frontmatter: {
                     type: 'game',
-                    name: 'Cyberpunk 2077',
+                    title: 'Cyberpunk 2077',
                     poster: posterPath,
                 },
             },
@@ -406,7 +405,7 @@ describe('GameService', () => {
         const app = createMockApp({
             [file.path]: {
                 frontmatter: {
-                    name: 'Plans',
+                    title: 'Plans',
                     tags: ['play soon', 'wait early access'],
                 },
             },
@@ -438,14 +437,14 @@ describe('GameService', () => {
         expect(parsed?.favorite).toBe(false);
     });
 
-    it('reads release and studio fields from alias frontmatter keys', () => {
+    it('reads release and studio fields from canonical frontmatter keys', () => {
         const file = createMockFile('Games/AC2.md', 'AC2');
         const app = createMockApp({
             [file.path]: {
                 frontmatter: {
                     type: 'game',
                     released: '2009-11-17',
-                    developers: ['Ubisoft Montreal'],
+                    author: ['Ubisoft Montreal'],
                     publishers: ['Ubisoft Entertainment'],
                 },
             },
@@ -493,8 +492,8 @@ describe('GameService', () => {
         const file = createMockFile('Games/Platforms.md', 'Platforms');
         const frontmatter: Record<string, unknown> = {
             type: 'game',
-            name: 'Platforms',
-            platform: 'Windows PC',
+            title: 'Platforms',
+            platforms: 'Windows PC',
         };
         const app = createMockApp({ [file.path]: { frontmatter } });
         app.vault.getAbstractFileByPath = () => file;
@@ -508,7 +507,7 @@ describe('GameService', () => {
             platforms: ['Windows PC', 'Xbox Series X|S'],
         });
 
-        expect(frontmatter.platform).toEqual(['Windows PC', 'Xbox Series X|S']);
+        expect(frontmatter.platforms).toEqual(['Windows PC', 'Xbox Series X|S']);
     });
 
     describe('new manual fields (migration stage 4c)', () => {
@@ -566,30 +565,8 @@ describe('GameService', () => {
         });
     });
 
-    describe('kebab-case frontmatter (migration stage 1)', () => {
-        // Stage 1 of the frontmatter migration: readers must accept the new kebab-case
-        // keys so the bulk data rewrite in stage 2 cannot break the library. Legacy
-        // spellings stay readable until stage 5 retires them.
-        const legacyFrontmatter = {
-            type: 'game',
-            name: 'Mass Effect',
-            poster: 'https://cdn.example/me.jpg',
-            poster_b: 'https://cdn.example/me-wide.jpg',
-            plot: 'Sci-fi RPG',
-            gameSeries: 'Mass Effect',
-            developers: 'BioWare',
-            publishers: 'EA',
-            userRating: 5,
-            communityRating: 86.2,
-            communityVotes: 1774,
-            communityRatingProvider: 'IGDB',
-            integration_provider: 'igdb',
-            integration_id: '15',
-            steamAppId: '17460',
-            releaseDate: '2007-11-20',
-            related_media: [{ type: 'book', path: 'Library/Revelation.md', title: 'Revelation' }],
-        };
-
+    describe('canonical kebab-case frontmatter', () => {
+        // After migration stage 5, readers accept only canonical keys.
         const kebabFrontmatter = {
             type: 'game',
             title: 'Mass Effect',
@@ -616,22 +593,7 @@ describe('GameService', () => {
             return new GameService(app, createMetadataService(app)).parseGameFromCache(file);
         }
 
-        it('parses a fully kebab-case note identically to its legacy-case twin', () => {
-            const legacy = parse(legacyFrontmatter);
-            const kebab = parse(kebabFrontmatter);
-
-            expect(legacy).not.toBeNull();
-            expect(kebab).not.toBeNull();
-
-            // rawFields is a deliberate passthrough of the literal note keys, feeding the
-            // custom YAML filter rules in the view. It reflects whatever the note actually
-            // says, so it is expected to differ between the two spellings.
-            const { rawFields: _legacyRaw, ...legacyRest } = legacy!;
-            const { rawFields: _kebabRaw, ...kebabRest } = kebab!;
-            expect(kebabRest).toEqual(legacyRest);
-        });
-
-        it('reads kebab-case DLC entries and round-trips them (stage 3c)', () => {
+        it('reads kebab-case DLC entries and round-trips them', () => {
             const file = createMockFile('Library/Fallout 3.md', 'Fallout 3');
             const frontmatter: Record<string, unknown> = {
                 type: 'game',
@@ -660,24 +622,6 @@ describe('GameService', () => {
                 userRating: 4,
                 owned: true,
             });
-        });
-
-        it('still reads legacy DLC entries', () => {
-            const file = createMockFile('Library/Fallout 3.md', 'Fallout 3');
-            const app = createMockApp({
-                [file.path]: {
-                    frontmatter: {
-                        type: 'game',
-                        title: 'Fallout 3',
-                        dlc: [
-                            { id: '22370', title: 'Operation Anchorage', image: 'https://cdn.example/a.jpg', userRating: 4, owned: true },
-                        ],
-                    },
-                },
-            });
-            const game = new GameService(app, createMetadataService(app)).parseGameFromCache(file);
-
-            expect(game?.dlc?.[0]).toMatchObject({ userRating: 4, owned: true, imageUrl: 'https://cdn.example/a.jpg' });
         });
 
         it('passes the literal note keys through to rawFields', () => {
@@ -710,33 +654,6 @@ describe('GameService', () => {
             expect(game?.relatedMedia?.[0]?.path).toBe('Library/Revelation.md');
         });
 
-        it('still reads legacy keys, so unmigrated notes keep working', () => {
-            const game = parse(legacyFrontmatter);
-
-            expect(game?.displayName).toBe('Mass Effect');
-            expect(game?.description).toBe('Sci-fi RPG');
-            expect(game?.gameSeries).toBe('Mass Effect');
-            expect(game?.developer).toBe('BioWare');
-            expect(game?.userRating).toBe(5);
-            expect(game?.steamAppId).toBe('17460');
-            expect(game?.relatedMedia?.[0]?.path).toBe('Library/Revelation.md');
-        });
-
-        it('prefers the kebab key when a note carries both spellings', () => {
-            const game = parse({
-                type: 'game',
-                name: 'Legacy Title',
-                title: 'Kebab Title',
-                plot: 'legacy synopsis',
-                synopsis: 'kebab synopsis',
-                gameSeries: 'Legacy Series',
-                series: 'Kebab Series',
-            });
-
-            expect(game?.displayName).toBe('Kebab Title');
-            expect(game?.description).toBe('kebab synopsis');
-            expect(game?.gameSeries).toBe('Kebab Series');
-        });
     });
 
     describe('getSeriesList', () => {
@@ -746,10 +663,10 @@ describe('GameService', () => {
             const halo = createMockFile('Library/Halo.md', 'Halo');
             const orphan = createMockFile('Library/Untitled Goose Game.md', 'Untitled Goose Game');
             const app = createMockApp({
-                [bg3.path]: { frontmatter: { type: 'game', name: 'Baldur\'s Gate III', gameSeries: 'Baldur\'s Gate' } },
-                [bg2.path]: { frontmatter: { type: 'game', name: 'Baldur\'s Gate II', gameSeries: 'Baldur\'s Gate' } },
-                [halo.path]: { frontmatter: { type: 'game', name: 'Halo', gameSeries: 'Halo' } },
-                [orphan.path]: { frontmatter: { type: 'game', name: 'Untitled Goose Game' } },
+                [bg3.path]: { frontmatter: { type: 'game', title: 'Baldur\'s Gate III', series: 'Baldur\'s Gate' } },
+                [bg2.path]: { frontmatter: { type: 'game', title: 'Baldur\'s Gate II', series: 'Baldur\'s Gate' } },
+                [halo.path]: { frontmatter: { type: 'game', title: 'Halo', series: 'Halo' } },
+                [orphan.path]: { frontmatter: { type: 'game', title: 'Untitled Goose Game' } },
             });
             const folder = new TFolder('Library', [bg3, bg2, halo, orphan]);
             app.vault.getAbstractFileByPath = () => folder;

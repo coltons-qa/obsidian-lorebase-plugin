@@ -1,6 +1,5 @@
 import { describe, expect, it } from 'vitest';
 import {
-    LEGACY_SOURCE_SNAPSHOT_FIELD,
     mergeProviderMetadata,
     normalizeCommunityRating,
     SOURCE_SNAPSHOT_FIELD,
@@ -10,9 +9,9 @@ import {
 describe('media enrichment merge', () => {
     it('fills missing provider fields while preserving personal and custom fields', () => {
         const current = {
-            Name: 'Gothic 1 Remake',
-            Platform: 'PC',
-            Status: 'beaten',
+            title: 'Gothic 1 Remake',
+            platforms: 'PC',
+            status: 'beaten',
             Storefront: 'steam',
             hours: 45.4,
             comment: 'Keep this',
@@ -28,20 +27,20 @@ describe('media enrichment merge', () => {
         });
 
         expect(result.values).toMatchObject({
-            Name: 'Gothic 1 Remake',
-            Platform: 'PC',
-            Status: 'beaten',
+            title: 'Gothic 1 Remake',
+            platforms: 'PC',
+            status: 'beaten',
             Storefront: 'steam',
             hours: 45.4,
             comment: 'Keep this',
             poster: 'https://example.com/gothic.jpg',
-            plot: 'Provider description',
+            synopsis: 'Provider description',
             year: 2026,
-            integration_provider: 'steam',
-            integration_id: '1297900',
+            'integration-provider': 'steam',
+            'integration-id': '1297900',
         });
-        expect(result.patch).not.toHaveProperty('name');
-        expect(result.patch).not.toHaveProperty('Status');
+        expect(result.patch).not.toHaveProperty('title');
+        expect(result.patch).not.toHaveProperty('status');
     });
 
     it('respects blacklist except for explicitly selected source identity', () => {
@@ -54,9 +53,9 @@ describe('media enrichment merge', () => {
 
         expect(result.values).not.toHaveProperty('poster');
         expect(result.values).toMatchObject({
-            plot: 'Description',
-            integration_provider: 'anilist',
-            integration_id: '123',
+            synopsis: 'Description',
+            'integration-provider': 'anilist',
+            'integration-id': '123',
         });
     });
 
@@ -107,9 +106,9 @@ describe('media enrichment merge', () => {
 
     it('replaces provider metadata in synchronization mode while preserving custom fields', () => {
         const result = mergeProviderMetadata({
-            Name: 'Old title',
-            plot: 'Old description',
-            Platform: ['PC'],
+            title: 'Old title',
+            synopsis: 'Old description',
+            platforms: ['PC'],
             status: 'completed',
             favorite: true,
             my_notes: 'Keep me',
@@ -122,14 +121,14 @@ describe('media enrichment merge', () => {
         }, [], { overwriteProviderFields: true });
 
         expect(result.values).toMatchObject({
-            Name: 'New title',
-            plot: 'New description',
-            Platform: ['PC', 'PlayStation 5'],
+            title: 'New title',
+            synopsis: 'New description',
+            platforms: ['PC', 'PlayStation 5'],
             status: 'completed',
             favorite: true,
             my_notes: 'Keep me',
-            integration_provider: 'rawg',
-            integration_id: '42',
+            'integration-provider': 'rawg',
+            'integration-id': '42',
         });
         expect(result.patch).not.toHaveProperty('status');
         expect(result.patch).not.toHaveProperty('favorite');
@@ -211,7 +210,7 @@ describe('media enrichment merge', () => {
     it('updates untouched scalar fields but preserves scalars edited after the previous source snapshot', () => {
         const source = { provider: 'tmdb' as const, id: '100' };
         const first = synchronizeProviderMetadata({
-            plot: 'Old provider plot',
+            synopsis: 'Old provider plot',
             year: 2020,
         }, {
             integration_provider: 'tmdb',
@@ -220,12 +219,12 @@ describe('media enrichment merge', () => {
             year: 2021,
         }, source);
 
-        expect(first.values.plot).toBe('First provider plot');
+        expect(first.values.synopsis).toBe('First provider plot');
         expect(first.values.year).toBe(2021);
 
         const second = synchronizeProviderMetadata({
             ...first.values,
-            plot: 'Моё описание',
+            synopsis: 'Моё описание',
         }, {
             integration_provider: 'tmdb',
             integration_id: '100',
@@ -233,7 +232,7 @@ describe('media enrichment merge', () => {
             year: 2022,
         }, source);
 
-        expect(second.values.plot).toBe('Моё описание');
+        expect(second.values.synopsis).toBe('Моё описание');
         expect(second.values.year).toBe(2022);
     });
 
@@ -248,7 +247,7 @@ describe('media enrichment merge', () => {
 
         const relinked = synchronizeProviderMetadata({
             ...first.values,
-            name: 'Моё название',
+            title: 'Моё название',
             genres: ['Drama', 'Любимое'],
         }, {
             integration_provider: 'omdb',
@@ -257,9 +256,9 @@ describe('media enrichment merge', () => {
             genres: ['Drama', 'Thriller'],
         }, { provider: 'omdb', id: 'tt100' });
 
-        expect(relinked.values.name).toBe('Моё название');
+        expect(relinked.values.title).toBe('Моё название');
         expect(relinked.values.genres).toEqual(['Drama', 'Thriller', 'Любимое']);
-        expect(relinked.values.integration_provider).toBe('omdb');
+        expect(relinked.values['integration-provider']).toBe('omdb');
     });
 
     it('preserves edited part titles while refreshing provider totals and adding new parts', () => {
@@ -445,63 +444,5 @@ describe('media enrichment merge', () => {
             expect(added).toEqual([]);
         });
 
-        it('reads a legacy snapshot and clears the old key (stage 3b)', () => {
-            const current = migratedGame();
-            current[LEGACY_SOURCE_SNAPSHOT_FIELD] = {
-                version: 1,
-                provider: 'igdb',
-                id: '15',
-                hashes: { name: 'k7xdp9' },
-                lists: {},
-            };
-
-            const result = synchronizeProviderMetadata(current, incomingGame(), source);
-
-            // New snapshot written under the kebab key.
-            expect(result.values[SOURCE_SNAPSHOT_FIELD]).toMatchObject({ provider: 'igdb', id: '15' });
-            // Old key explicitly nulled, which is how MetadataService deletes a property.
-            expect(result.patch[LEGACY_SOURCE_SNAPSHOT_FIELD]).toBeNull();
-        });
-
-        it('does not touch the legacy snapshot key when a note has none', () => {
-            const result = synchronizeProviderMetadata(migratedGame(), incomingGame(), source);
-
-            expect(result.patch).not.toHaveProperty(LEGACY_SOURCE_SNAPSHOT_FIELD);
-        });
-
-        it('still resolves legacy notes, so unmigrated vaults keep working', () => {
-            // Mirrors incomingGame() key for key in the legacy spelling, so anything
-            // added would be a genuine duplicate rather than a legitimately filled gap.
-            const current: Record<string, unknown> = {
-                type: 'game',
-                name: 'Fallout 3',
-                poster: 'https://cdn.example/fallout3.jpg',
-                poster_b: 'https://cdn.example/fallout3-wide.jpg',
-                plot: 'Post-apocalyptic Washington DC.',
-                gameSeries: 'Fallout',
-                developers: 'Bethesda Game Studios',
-                publishers: 'Bethesda Softworks',
-                communityRating: 86.2,
-                communityVotes: 1774,
-                communityRatingProvider: 'IGDB',
-                released: '2008-10-28',
-                year: 2008,
-                url: 'https://example.com/fallout3',
-                integration_provider: 'igdb',
-                integration_id: '15',
-            };
-            const before = new Set(Object.keys(current));
-
-            const result = synchronizeProviderMetadata(current, incomingGame(), source);
-
-            const added = Object.keys(result.values)
-                .filter((key) => !before.has(key) && key !== SOURCE_SNAPSHOT_FIELD);
-
-            expect(added).toEqual([]);
-            expect(result.values.poster_b).toBe('https://cdn.example/fallout3-wide-v2.jpg');
-            expect(result.values.plot).toBe('Updated provider description.');
-            expect(result.values).not.toHaveProperty('synopsis');
-            expect(result.values).not.toHaveProperty('poster-b');
-        });
     });
 });

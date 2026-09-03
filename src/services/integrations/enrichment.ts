@@ -30,56 +30,49 @@ export interface ProviderSourceSnapshot {
 }
 
 export const SOURCE_SNAPSHOT_FIELD = 'lorebase-source-snapshot';
-/** Pre-migration spelling, still read so existing snapshots are not orphaned. */
-export const LEGACY_SOURCE_SNAPSHOT_FIELD = 'lorebase_source_snapshot';
 
 function readSnapshotField(current: Record<string, unknown>): unknown {
-    return current[SOURCE_SNAPSHOT_FIELD] ?? current[LEGACY_SOURCE_SNAPSHOT_FIELD];
+    return current[SOURCE_SNAPSHOT_FIELD];
 }
 
-// Keys here are provider field names (the shape IntegrationService emits); values are
-// the note YAML spellings to look for, in priority order. The kebab entries exist
-// because the vault was migrated to lower-kebab-case: without them findExistingAlias
-// matches nothing and the merge falls back to writing the provider field name, which
-// silently adds a duplicate legacy property beside every migrated one.
+// Maps provider field names (the shape IntegrationService emits) to the canonical
+// note YAML key. Each list is a single entry after the Stage 5 legacy cleanup.
 const FIELD_ALIASES: Record<string, string[]> = {
-    name: ['name', 'Name', 'title', 'Title'],
-    poster: ['poster', 'image', 'cover', 'thumbnail'],
-    poster_b: ['poster-b', 'poster_b', 'image_b', 'horizontal_poster', 'backdrop', 'banner'],
-    plot: ['synopsis', 'plot', 'summary', 'description'],
-    genres: ['genres', 'genre', 'Genre'],
-    tags: ['tags', 'tag', 'Tags'],
-    platforms: ['platforms', 'platform', 'Platform'],
-    studios: ['studios', 'studio'],
-    networks: ['networks', 'network'],
-    year: ['year', 'Year'],
-    released: ['released', 'releaseDate', 'release_date', 'date'],
-    url: ['url', 'source_url', 'source', 'link'],
-    developers: ['author', 'developers', 'developer'],
-    publishers: ['publishers', 'publisher'],
-    publisher: ['publisher', 'publishers'],
-    authors: ['author', 'authors'],
-    artists: ['artists', 'artist'],
-    director: ['author', 'director', 'directors'],
-    actors: ['cast', 'actors'],
-    episode_total: ['episodes', 'episode_total', 'episodeTotal'],
-    season_total: ['season_total', 'seasonTotal'],
-    page_total: ['page-total', 'page_total', 'pageTotal', 'pages', 'pageCount', 'number_of_pages'],
-    chapter_total: ['chapter-total', 'chapter_total', 'chapterTotal', 'chapters'],
-    volume_total: ['volume_total', 'volumeTotal', 'volumes'],
-    communityRating: ['community-rating', 'communityRating', 'community_rating'],
-    communityVotes: ['community-votes', 'communityVotes', 'community_votes'],
-    communityRatingProvider: ['community-rating-provider', 'communityRatingProvider', 'community_rating_provider'],
-    // These had no entry at all before the migration, so they defaulted to their own
-    // name and would have duplicated against the renamed note key.
-    gameSeries: ['series', 'gameSeries'],
-    steamAppId: ['steam-app-id', 'steamAppId', 'steam_appid', 'appid'],
-    main: ['hltb-main', 'main'],
-    main_plus_sides: ['hltb-main-sides', 'main_plus_sides'],
-    perfectionist: ['hltb-perfectionist', 'perfectionist'],
-    series_parts: ['season-data', 'series_parts'],
-    integration_provider: ['integration-provider', 'integration_provider'],
-    integration_id: ['integration-id', 'integration_id'],
+    name: ['title'],
+    poster: ['poster'],
+    poster_b: ['poster-b'],
+    plot: ['synopsis'],
+    genres: ['genres'],
+    tags: ['tags'],
+    platforms: ['platforms'],
+    studios: ['studios'],
+    networks: ['networks'],
+    year: ['year'],
+    released: ['released'],
+    url: ['url'],
+    developers: ['author'],
+    publishers: ['publishers'],
+    publisher: ['publisher'],
+    authors: ['author'],
+    artists: ['artists'],
+    director: ['author'],
+    actors: ['cast'],
+    episode_total: ['episodes'],
+    season_total: ['season_total'],
+    page_total: ['page-total'],
+    chapter_total: ['chapter-total'],
+    volume_total: ['volume_total'],
+    communityRating: ['community-rating'],
+    communityVotes: ['community-votes'],
+    communityRatingProvider: ['community-rating-provider'],
+    gameSeries: ['series'],
+    steamAppId: ['steam-app-id'],
+    main: ['hltb-main'],
+    main_plus_sides: ['hltb-main-sides'],
+    perfectionist: ['hltb-perfectionist'],
+    series_parts: ['season-data'],
+    integration_provider: ['integration-provider'],
+    integration_id: ['integration-id'],
 };
 
 const ZERO_IS_EMPTY = new Set([
@@ -126,18 +119,15 @@ export function mergeProviderMetadata(
         if (isEmptyIncoming(value)) continue;
 
         if (IDENTITY_FIELDS.has(key)) {
-            // Resolve to the note's own spelling first. Writing `key` unconditionally
-            // added a duplicate `integration_provider` beside a migrated
-            // `integration-provider`, since this branch skips findExistingAlias.
-            const identityKey = findExistingAlias(current, key) ?? key;
+            const identityKey = findExistingAlias(current, key);
             values[identityKey] = value;
             patch[identityKey] = value;
             filledFields.push(identityKey);
             continue;
         }
 
-        const existingKey = findExistingAlias(current, key);
-        const existing = existingKey ? current[existingKey] : undefined;
+        const noteKey = findExistingAlias(current, key);
+        const existing = current[noteKey];
         if (isPartField(key) && Array.isArray(value)) {
             const merged = mergeStructuredList(
                 existing,
@@ -148,18 +138,16 @@ export function mergeProviderMetadata(
                 options.forceProviderFields === true
             );
             if (merged.changed) {
-                const outputKey = existingKey ?? key;
-                values[outputKey] = merged.value;
-                patch[outputKey] = merged.value;
-                filledFields.push(outputKey);
+                values[noteKey] = merged.value;
+                patch[noteKey] = merged.value;
+                filledFields.push(noteKey);
             } else {
-                skippedFields.push(existingKey ?? key);
+                skippedFields.push(noteKey);
             }
             continue;
         }
 
         if (options.overwriteProviderFields) {
-            const outputKey = existingKey ?? key;
             let synchronizedValue = value;
             if (Array.isArray(value)) {
                 synchronizedValue = mergeProviderList(
@@ -172,33 +160,32 @@ export function mergeProviderMetadata(
                 const previousHash = options.previousSourceSnapshot.hashes[key];
                 if (previousHash) {
                     if (valueHash(existing) !== previousHash) {
-                        skippedFields.push(outputKey);
+                        skippedFields.push(noteKey);
                         continue;
                     }
                 } else if (!isEmptyExisting(existing, key)) {
-                    skippedFields.push(outputKey);
+                    skippedFields.push(noteKey);
                     continue;
                 }
             }
             if (valuesEqual(existing, synchronizedValue)) {
-                skippedFields.push(outputKey);
+                skippedFields.push(noteKey);
                 continue;
             }
-            values[outputKey] = synchronizedValue;
-            patch[outputKey] = synchronizedValue;
-            filledFields.push(outputKey);
+            values[noteKey] = synchronizedValue;
+            patch[noteKey] = synchronizedValue;
+            filledFields.push(noteKey);
             continue;
         }
 
         if (!isEmptyExisting(existing, key)) {
-            skippedFields.push(existingKey ?? key);
+            skippedFields.push(noteKey);
             continue;
         }
 
-        const outputKey = existingKey ?? key;
-        values[outputKey] = value;
-        patch[outputKey] = value;
-        filledFields.push(outputKey);
+        values[noteKey] = value;
+        patch[noteKey] = value;
+        filledFields.push(noteKey);
     }
 
     return { values, patch, filledFields, skippedFields };
@@ -220,12 +207,6 @@ export function synchronizeProviderMetadata(
     result.values[SOURCE_SNAPSHOT_FIELD] = nextSnapshot;
     if (!valuesEqual(readSnapshotField(current), nextSnapshot)) {
         result.patch[SOURCE_SNAPSHOT_FIELD] = nextSnapshot;
-    }
-    // Clear the legacy key when a note still carries it, so the rename does not leave
-    // two snapshot blocks behind. null is how MetadataService deletes a property.
-    if (LEGACY_SOURCE_SNAPSHOT_FIELD in current) {
-        result.values[LEGACY_SOURCE_SNAPSHOT_FIELD] = null;
-        result.patch[LEGACY_SOURCE_SNAPSHOT_FIELD] = null;
     }
     return result;
 }
@@ -283,7 +264,7 @@ export function mediaTypeToKind(type: string): MediaKind | null {
     return null;
 }
 
-function findExistingAlias(current: Record<string, unknown>, key: string): string | null {
+function findExistingAlias(current: Record<string, unknown>, key: string): string {
     const aliases = FIELD_ALIASES[key] ?? [key];
     const entries = Object.keys(current);
     for (const alias of aliases) {
@@ -291,7 +272,7 @@ function findExistingAlias(current: Record<string, unknown>, key: string): strin
         if (exact) return exact;
     }
     const lowerAliases = new Set(aliases.map((alias) => alias.toLowerCase()));
-    return entries.find((candidate) => lowerAliases.has(candidate.toLowerCase())) ?? null;
+    return entries.find((candidate) => lowerAliases.has(candidate.toLowerCase())) ?? aliases[0];
 }
 
 export function isEmptyIncoming(value: unknown): boolean {

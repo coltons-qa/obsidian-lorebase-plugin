@@ -7,7 +7,7 @@ import { resetIntegrationRequestStateForTests } from '../src/services/integratio
 import type { LorebaseSettings } from '../src/types';
 
 /**
- * Steam Sync resolves gameSeries from IGDB (see the "IGDB Steam appid series
+ * Steam Sync resolves series from IGDB (see the "IGDB Steam appid series
  * lookup" suite for why Steam's own data is unusable). Three separate hand-listed
  * field maps feed a game note -- buildTemplateValues for new notes,
  * updateExistingGame for re-syncs, and the enrichment map in IntegrationService --
@@ -182,7 +182,7 @@ function mockSteamAndIgdb(options: SteamMockOptions): { igdbRequests: string[] }
     return { igdbRequests };
 }
 
-describe('Steam Sync gameSeries', () => {
+describe('Steam Sync series', () => {
     beforeEach(() => {
         resetIntegrationRequestStateForTests();
         __setRequestUrlMock(null);
@@ -222,13 +222,13 @@ describe('Steam Sync gameSeries', () => {
         expect(app.vault.created['Games/Stardew Valley.md']).toContain('series: ""');
     });
 
-    it('backfills gameSeries on a re-sync when the existing note leaves it empty', async () => {
+    it('backfills series on a re-sync when the existing note leaves it empty', async () => {
         mockSteamAndIgdb({
             apps: [{ appid: 220, name: 'Half-Life 2', playtime_forever: 500 }],
             series: { 220: 'Half-Life' },
         });
         const app = createMockApp([
-            { path: 'Games/Half-Life 2.md', frontmatter: { steamAppId: 220, gameSeries: '' } },
+            { path: 'Games/Half-Life 2.md', frontmatter: { 'steam-app-id': 220, series: '' } },
         ]);
         const settings = buildSettings();
         settings.steamSync.duplicateMode = 'update';
@@ -238,16 +238,16 @@ describe('Steam Sync gameSeries', () => {
         const frontmatter = app.metadataCache.getFileCache(app.vault.getFiles()[0])?.frontmatter;
 
         expect(result).toEqual({ created: 0, updated: 1, skipped: 0, failed: 0 });
-        expect(frontmatter?.gameSeries).toBe('Half-Life');
+        expect(frontmatter?.series).toBe('Half-Life');
     });
 
-    it('backfills gameSeries when the existing note has no such property at all', async () => {
+    it('backfills series when the existing note has no such property at all', async () => {
         mockSteamAndIgdb({
             apps: [{ appid: 220, name: 'Half-Life 2', playtime_forever: 500 }],
             series: { 220: 'Half-Life' },
         });
         const app = createMockApp([
-            { path: 'Games/Half-Life 2.md', frontmatter: { steamAppId: 220 } },
+            { path: 'Games/Half-Life 2.md', frontmatter: { 'steam-app-id': 220 } },
         ]);
         const settings = buildSettings();
         settings.steamSync.duplicateMode = 'update';
@@ -255,10 +255,10 @@ describe('Steam Sync gameSeries', () => {
 
         await service.sync(settings);
 
-        expect(app.metadataCache.getFileCache(app.vault.getFiles()[0])?.frontmatter.gameSeries).toBe('Half-Life');
+        expect(app.metadataCache.getFileCache(app.vault.getFiles()[0])?.frontmatter.series).toBe('Half-Life');
     });
 
-    it('never overwrites a gameSeries the user set by hand', async () => {
+    it('never overwrites a series the user set by hand', async () => {
         // The whole point of the backfill rule: a re-sync may fill a blank field
         // but must leave a curated value alone, even when IGDB disagrees.
         mockSteamAndIgdb({
@@ -266,7 +266,7 @@ describe('Steam Sync gameSeries', () => {
             series: { 220: 'Half-Life' },
         });
         const app = createMockApp([
-            { path: 'Games/Half-Life 2.md', frontmatter: { steamAppId: 220, gameSeries: 'My Favourites' } },
+            { path: 'Games/Half-Life 2.md', frontmatter: { 'steam-app-id': 220, series: 'My Favourites' } },
         ]);
         const settings = buildSettings();
         settings.steamSync.duplicateMode = 'update';
@@ -274,7 +274,7 @@ describe('Steam Sync gameSeries', () => {
 
         await service.sync(settings);
 
-        expect(app.metadataCache.getFileCache(app.vault.getFiles()[0])?.frontmatter.gameSeries).toBe('My Favourites');
+        expect(app.metadataCache.getFileCache(app.vault.getFiles()[0])?.frontmatter.series).toBe('My Favourites');
     });
 
     it('refuses to overwrite even when a series for that game is already loaded', async () => {
@@ -291,7 +291,7 @@ describe('Steam Sync gameSeries', () => {
             igdbReturnsAll: true,
         });
         const app = createMockApp([
-            { path: 'Games/Half-Life 2.md', frontmatter: { steamAppId: 220, gameSeries: 'My Favourites' } },
+            { path: 'Games/Half-Life 2.md', frontmatter: { 'steam-app-id': 220, series: 'My Favourites' } },
         ]);
         const settings = buildSettings();
         settings.steamSync.duplicateMode = 'update';
@@ -300,13 +300,13 @@ describe('Steam Sync gameSeries', () => {
         await service.sync(settings);
 
         const existing = app.vault.getFiles().find((file) => file.path === 'Games/Half-Life 2.md') as TFile;
-        expect(app.metadataCache.getFileCache(existing)?.frontmatter.gameSeries).toBe('My Favourites');
+        expect(app.metadataCache.getFileCache(existing)?.frontmatter.series).toBe('My Favourites');
         // The game that had nothing still gets filled in.
         expect(app.vault.created['Games/Portal 2.md']).toContain('series: "Portal"');
     });
 
-    it('treats a List-type gameSeries as filled rather than empty', async () => {
-        // Obsidian's property editor can turn gameSeries into a List, making the
+    it('treats a List-type series as filled rather than empty', async () => {
+        // Obsidian's property editor can turn series into a List, making the
         // frontmatter value an array. A string-only emptiness check read that as
         // blank and overwrote the user's list with a plain string.
         mockSteamAndIgdb({
@@ -315,7 +315,7 @@ describe('Steam Sync gameSeries', () => {
             igdbReturnsAll: true,
         });
         const app = createMockApp([
-            { path: 'Games/Half-Life 2.md', frontmatter: { steamAppId: 220, gameSeries: ['My Favourites'] } },
+            { path: 'Games/Half-Life 2.md', frontmatter: { 'steam-app-id': 220, series: ['My Favourites'] } },
         ]);
         const settings = buildSettings();
         settings.steamSync.duplicateMode = 'update';
@@ -324,10 +324,10 @@ describe('Steam Sync gameSeries', () => {
         await service.sync(settings);
 
         const existing = app.vault.getFiles().find((file) => file.path === 'Games/Half-Life 2.md') as TFile;
-        expect(app.metadataCache.getFileCache(existing)?.frontmatter.gameSeries).toEqual(['My Favourites']);
+        expect(app.metadataCache.getFileCache(existing)?.frontmatter.series).toEqual(['My Favourites']);
     });
 
-    it('leaves gameSeries empty and makes no IGDB request when IGDB is not configured', async () => {
+    it('leaves series empty and makes no IGDB request when IGDB is not configured', async () => {
         const { igdbRequests } = mockSteamAndIgdb({
             apps: [{ appid: 220, name: 'Half-Life 2' }],
             series: { 220: 'Half-Life' },
@@ -365,7 +365,7 @@ describe('Steam Sync gameSeries', () => {
             series: { 220: 'Half-Life' },
         });
         const app = createMockApp([
-            { path: 'Games/Half-Life 2.md', frontmatter: { steamAppId: 220, gameSeries: 'Half-Life' } },
+            { path: 'Games/Half-Life 2.md', frontmatter: { 'steam-app-id': 220, series: 'Half-Life' } },
         ]);
         const settings = buildSettings();
         settings.steamSync.duplicateMode = 'update';

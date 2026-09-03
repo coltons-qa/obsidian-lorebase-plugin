@@ -13,22 +13,22 @@ describe('VideoService', () => {
                     type: 'movie',
                     title: 'Blade Runner',
                     poster: 'https://cdn.example/blade-runner.jpg',
-                    poster_b: 'https://cdn.example/blade-runner-wide.jpg',
-                    plot: 'Replicants and memory.',
+                    'poster-b': 'https://cdn.example/blade-runner-wide.jpg',
+                    synopsis: 'Replicants and memory.',
                     status: 'completed',
-                    userRating: '5',
+                    'user-rating': '5',
                     favorite: 'true',
                     year: '1982',
                     genres: 'Sci-Fi, Noir',
                     tags: ['Cyberpunk'],
                     released: '1982-06-25',
                     runtime: '117 min',
-                    director: 'Ridley Scott',
-                    actors: 'Harrison Ford',
+                    author: 'Ridley Scott',
+                    cast: 'Harrison Ford',
                     rating: '8.1',
-                    integration_provider: 'tmdb',
-                    integration_id: 78,
-                    related_media: [
+                    'integration-provider': 'tmdb',
+                    'integration-id': 78,
+                    'related-media': [
                         { type: 'series', path: 'Series/Blade Runner Black Lotus.md', title: 'Black Lotus' },
                     ],
                 },
@@ -145,22 +145,22 @@ describe('VideoService', () => {
                     type: 'series',
                     title: 'Show',
                     status: 'watching',
-                    active_part_id: 'season-2',
-                    series_parts: [
+                    'season-id-current': 'season-2',
+                    'season-data': [
                         {
                             id: 'season-1',
                             title: 'Season 1',
-                            season: 1,
-                            episode_current: 10,
-                            episode_total: 10,
+                            'season-number': 1,
+                            'episode-current': 10,
+                            episodes: 10,
                             status: 'completed',
                         },
                         {
                             id: 'season-2',
                             title: 'Season 2',
-                            season: 2,
-                            episode_current: 3,
-                            episode_total: 8,
+                            'season-number': 2,
+                            'episode-current': 3,
+                            episodes: 8,
                             status: 'watching',
                         },
                     ],
@@ -382,32 +382,5 @@ describe('VideoService', () => {
             expect(movie?.integrationId).toBe('329865');
         });
 
-        it('still reads legacy keys, so unmigrated notes keep working', () => {
-            const series = parseSeries({
-                type: 'series',
-                title: 'Severance',
-                poster_b: 'https://cdn.example/severance-wide.jpg',
-                plot: 'Work life balance, literally.',
-                director: 'Dan Erickson',
-                actors: 'Adam Scott',
-                userRating: 6,
-                communityRating: 88.4,
-                integration_provider: 'tmdb',
-                episode_current: 5,
-                episode_total: 10,
-                series_parts: [
-                    { id: 'season-1', title: 'Season 1', season_number: 1, episode_current: 9, episode_total: 9, status: 'completed' },
-                ],
-                active_part_id: 'season-1',
-            });
-
-            expect(series?.description).toBe('Work life balance, literally.');
-            expect(series?.director).toBe('Dan Erickson');
-            expect(series?.userRating).toBe(6);
-            expect(series?.communityRating).toBe(88.4);
-            expect(series?.parts).toHaveLength(1);
-            expect(series?.activePartId).toBe('season-1');
-            expect(series?.episodeCurrent).toBe(9);
-        });
     });
 });

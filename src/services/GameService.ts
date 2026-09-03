@@ -215,9 +215,9 @@ export class GameService {
                 id,
                 provider: record.provider === 'igdb' ? 'igdb' : 'steam',
                 title,
-                imageUrl: this.readRecordText(record, ['image', 'imageUrl', 'poster']),
-                url: this.readRecordText(record, ['url', 'sourceUrl']),
-                userRating: this.parseUserRating(readFrontmatterValue(record, ['user-rating', 'userRating', 'rating'])),
+                imageUrl: this.readRecordText(record, ['image']),
+                url: this.readRecordText(record, ['url']),
+                userRating: this.parseUserRating(readFrontmatterValue(record, ['user-rating'])),
                 owned: typeof owned === 'boolean' ? owned : undefined,
             });
         }
@@ -385,7 +385,7 @@ export class GameService {
             }
 
             // Get poster URLs (strict keys)
-            const horizontalPoster = readFrontmatterValue(metadata, ['poster-b', 'poster_b']);
+            const horizontalPoster = readFrontmatterValue(metadata, ['poster-b']);
             const rawPoster = typeof metadata.poster === 'string' ? metadata.poster : '';
             const rawHorizontalPoster = typeof horizontalPoster === 'string' ? horizontalPoster : '';
             const imageUrl = this.metadataService.getImageUrl(metadata.poster, metadata.cm_poster);
@@ -396,18 +396,18 @@ export class GameService {
             const tags = collectTags(metadata, normalizeCacheTags(cache?.tags));
             const genres = collectFieldTags(metadata, ['genres']);
             const platforms = this.splitDisplayList(
-                this.readFrontmatterText(metadata, ['platforms', 'platform', 'Platforms', 'Platform']) ?? undefined
+                this.readFrontmatterText(metadata, ['platforms']) ?? undefined
             );
-            const started = this.readFrontmatterDateText(metadata, ['started', 'dateStarted', 'start_date']);
-            const finished = this.readFrontmatterDateText(metadata, ['finished', 'dateFinished', 'finish_date']);
+            const started = this.readFrontmatterDateText(metadata, ['started']);
+            const finished = this.readFrontmatterDateText(metadata, ['finished']);
             const dateCompleted = this.readCompletionTimestamp(metadata, finished);
-            const releaseDate = this.readFrontmatterText(metadata, ['released', 'releaseDate', 'release_date', 'release']);
-            const publisher = this.readFrontmatterText(metadata, ['publishers', 'publisher']) ?? '';
-            const developer = this.readFrontmatterText(metadata, ['author', 'developer', 'developers']) ?? '';
-            const title = this.readFrontmatterText(metadata, ['title', 'name']) ?? file.basename ?? 'Unknown';
-            const sourceUrl = this.readFrontmatterText(metadata, ['url', 'source_url']);
-            const steamAppId = this.readFrontmatterText(metadata, ['steam-app-id', 'steamAppId', 'steam_appid', 'appid']);
-            const integrationProviderRaw = (this.readFrontmatterText(metadata, ['integration-provider', 'integration_provider']) ?? '').toLowerCase();
+            const releaseDate = this.readFrontmatterText(metadata, ['released']);
+            const publisher = this.readFrontmatterText(metadata, ['publishers']) ?? '';
+            const developer = this.readFrontmatterText(metadata, ['author']) ?? '';
+            const title = this.readFrontmatterText(metadata, ['title']) ?? file.basename ?? 'Unknown';
+            const sourceUrl = this.readFrontmatterText(metadata, ['url']);
+            const steamAppId = this.readFrontmatterText(metadata, ['steam-app-id']);
+            const integrationProviderRaw = (this.readFrontmatterText(metadata, ['integration-provider']) ?? '').toLowerCase();
             const integrationProvider = integrationProviderRaw === 'rawg' || integrationProviderRaw === 'steam' || integrationProviderRaw === 'igdb'
                 ? integrationProviderRaw
                 : steamAppId
@@ -437,7 +437,7 @@ export class GameService {
 
             // Parse rating safely
             let userRating = null;
-            const userRatingRaw = readFrontmatterValue(metadata, ['user-rating', 'userRating']);
+            const userRatingRaw = readFrontmatterValue(metadata, ['user-rating']);
             if (userRatingRaw !== undefined && userRatingRaw !== null) {
                 const rating = typeof userRatingRaw === 'string'
                     ? parseInt(userRatingRaw, 10)
@@ -462,7 +462,7 @@ export class GameService {
                 displayName: title,
                 nameLower: title.toLowerCase(),
                 year,
-                description: this.readFrontmatterText(metadata, ['synopsis', 'plot']) ?? '',
+                description: this.readFrontmatterText(metadata, ['synopsis']) ?? '',
                 userRating,
                 favorite: isTruthy(metadata.favorite),
                 poster: rawPoster,
@@ -470,7 +470,7 @@ export class GameService {
                 horizontalImageUrl: horizontalImageUrl || rawHorizontalPoster || null,
                 hasCustomPoster: Boolean(metadata.cm_poster),
                 status,
-                gameSeries: this.readFrontmatterText(metadata, ['series', 'gameSeries']) ?? '',
+                gameSeries: this.readFrontmatterText(metadata, ['series']) ?? '',
                 dateCompleted,
                 started,
                 finished,
@@ -482,18 +482,18 @@ export class GameService {
                 platforms,
                 sourceUrl,
                 integrationProvider,
-                integrationId: this.readFrontmatterText(metadata, ['integration-id', 'integration_id']) ?? steamAppId,
+                integrationId: this.readFrontmatterText(metadata, ['integration-id']) ?? steamAppId,
                 steamAppId,
                 owned: this.readFrontmatterText(metadata, ['owned']),
                 count: this.readFrontmatterNumber(metadata, ['count']),
                 repeatable: isTruthy(metadata.repeatable),
                 myPlatform: this.readFrontmatterText(metadata, ['my-platform']) ?? '',
                 dlc: this.parseDlcList(metadata.dlc),
-                relatedMedia: parseRelatedMedia(readFrontmatterValue(metadata, ['related-media', 'related_media'])),
+                relatedMedia: parseRelatedMedia(readFrontmatterValue(metadata, ['related-media'])),
                 rawFields: extractSimpleFrontmatter(metadata),
-                communityRating: this.readFrontmatterNumber(metadata, ['community-rating', 'communityRating', 'community_rating']),
-                communityVotes: this.readFrontmatterNumber(metadata, ['community-votes', 'communityVotes', 'community_votes']),
-                communityRatingProvider: this.readFrontmatterText(metadata, ['community-rating-provider', 'communityRatingProvider', 'community_rating_provider']),
+                communityRating: this.readFrontmatterNumber(metadata, ['community-rating']),
+                communityVotes: this.readFrontmatterNumber(metadata, ['community-votes']),
+                communityRatingProvider: this.readFrontmatterText(metadata, ['community-rating-provider']),
             };
 
             return game;

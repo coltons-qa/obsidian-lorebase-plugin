@@ -487,7 +487,7 @@ export class SteamSyncService {
             }
             try {
                 await this.metadataService.updateMetadata(duplicate, {
-                    steamAppId: game.appId,
+                    'steam-app-id': game.appId,
                     playtime: game.playtimeForever,
                 });
                 result.updated++;
@@ -726,11 +726,11 @@ export class SteamSyncService {
 
     /**
      * Whether a note already carries a series. Delegates emptiness to the same
-     * helper the enrichment merge uses, so a `gameSeries` the user switched to a
+     * helper the enrichment merge uses, so a `series` the user switched to a
      * List property counts as filled instead of reading as blank.
      */
     private hasExistingGameSeries(file: TFile): boolean {
-        const value = this.app.metadataCache.getFileCache(file)?.frontmatter?.gameSeries;
+        const value = this.app.metadataCache.getFileCache(file)?.frontmatter?.series;
         return !isEmptyIncoming(value);
     }
 
@@ -820,7 +820,7 @@ export class SteamSyncService {
 
     private async updateExistingGame(file: TFile, game: SteamSyncGame, settings: SteamSyncSettings): Promise<void> {
         const updates: Record<string, unknown> = {
-            steamAppId: game.appId,
+            'steam-app-id': game.appId,
             url: game.details.url || `https://store.steampowered.com/app/${game.appId}/`,
         };
 
@@ -875,7 +875,7 @@ export class SteamSyncService {
         index: { byAppId: Map<number, TFile>; byUrl: Map<string, TFile>; byPath: Map<string, TFile> }
     ): void {
         const frontmatter = this.asObject(this.app.metadataCache.getFileCache(file)?.frontmatter);
-        const appId = this.toNumber(frontmatter?.steamAppId) || this.toNumber(frontmatter?.appid);
+        const appId = this.toNumber(frontmatter?.['steam-app-id']);
         if (appId) {
             index.byAppId.set(appId, file);
         }

@@ -237,9 +237,9 @@ describe('NoteConversionService', () => {
         expect(created).toContain('type: game');
         expect(created).toContain('status: beaten');
         expect(created).toContain('hours: 45.4');
-        expect(created).toContain('integration_provider: steam');
-        expect(created).toContain('integration_id: 1297900');
-        expect(created).toContain('plot: "Provider description"');
+        expect(created).toContain('integration-provider: steam');
+        expect(created).toContain('integration-id: 1297900');
+        expect(created).toContain('synopsis: "Provider description"');
         expect(created).toContain('# Notes');
     });
 });

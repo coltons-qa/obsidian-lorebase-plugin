@@ -13,17 +13,17 @@ describe('ReadingService', () => {
             [bookFile.path]: {
                 frontmatter: {
                     title: 'Dune',
-                    authors: 'Frank Herbert',
+                    author: 'Frank Herbert',
                     publisher: 'Chilton Books',
                     released: '1965-08-01',
-                    page_current: 120,
-                    page_total: 412,
-                    chapter_current: 8,
-                    chapter_total: 20,
+                    'page-current': 120,
+                    'page-total': 412,
+                    'chapter-current': 8,
+                    'chapter-total': 20,
                     status: 'watching',
-                    integration_provider: 'hardcover',
-                    integration_id: '123',
-                    related_media: [
+                    'integration-provider': 'hardcover',
+                    'integration-id': '123',
+                    'related-media': [
                         { type: 'manga', path: 'Manga/Dune.md', title: 'Dune Manga' },
                     ],
                 },
@@ -71,7 +71,7 @@ describe('ReadingService', () => {
                     authors: ['Takahiro'],
                     artists: ['Tetsuya Tashiro'],
                     status: 'watching',
-                    rating: 4,
+                    'user-rating': 4,
                     favorite: true,
                     active_part_id: 'vol-2',
                     manga_parts: [
@@ -80,8 +80,8 @@ describe('ReadingService', () => {
                     ],
                     volume_total: 15,
                     genres: 'Action',
-                    integration_provider: 'mangadex',
-                    integration_id: 'abc',
+                    'integration-provider': 'mangadex',
+                    'integration-id': 'abc',
                 },
             },
             [plannedFile.path]: {
@@ -124,15 +124,15 @@ describe('ReadingService', () => {
         expect(stats.avgRating).toBe(4);
     });
 
-    it('preserves the Jikan provider and MAL id on legacy manga notes', () => {
+    it('preserves the Jikan provider and MAL id on manga notes', () => {
         const file = createMockFile('Manga/Legacy.md', 'Legacy');
         const app = createMockApp({
             [file.path]: {
                 frontmatter: {
                     type: 'manga',
                     title: 'Legacy Manga',
-                    integration_provider: 'JIKAN',
-                    integration_id: 12345,
+                    'integration-provider': 'JIKAN',
+                    'integration-id': 12345,
                 },
             },
         });
@@ -350,30 +350,5 @@ describe('ReadingService', () => {
             expect(book?.relatedMedia?.[0]?.path).toBe('Library/Dune Movie.md');
         });
 
-        it('still reads legacy keys, so unmigrated notes keep working', () => {
-            const book = parseBook({
-                type: 'book',
-                name: 'Dune',
-                poster_b: 'https://cdn.example/dune-wide.jpg',
-                plot: 'Spice and sandworms.',
-                authors: ['Frank Herbert'],
-                publisher: 'Chilton Books',
-                userRating: 7,
-                communityRating: 91.3,
-                integration_provider: 'hardcover',
-                page_current: 120,
-                page_total: 412,
-                chapter_current: 8,
-                chapter_total: 48,
-            });
-
-            expect(book?.displayName).toBe('Dune');
-            expect(book?.description).toBe('Spice and sandworms.');
-            expect(book?.type === 'book' && book.authors).toEqual(['Frank Herbert']);
-            expect(book?.userRating).toBe(7);
-            expect(book?.communityRating).toBe(91.3);
-            expect(book?.type === 'book' && book.pageCurrent).toBe(120);
-            expect(book?.type === 'book' && book.chapterTotal).toBe(48);
-        });
     });
 });
