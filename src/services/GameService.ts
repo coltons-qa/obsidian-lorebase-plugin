@@ -415,13 +415,16 @@ export class GameService {
                 : null;
 
             // Determine status (prefer status field, fallback to legacy booleans)
-            let status: GameStatus = 'not_started';
+            let status: GameStatus = 'planned';
             const statusRaw = typeof metadata.status === 'string' ? metadata.status.toLowerCase() : '';
             const statusNormalized = statusRaw.replace(/[-\s]+/g, '_');
             // @deprecated Legacy boolean status fallback kept for old notes.
             if (statusNormalized === 'played') {
                 status = 'completed';
-            } else if (['completed', 'playing', 'dropped', 'sandbox', 'wishlist', 'not_started'].includes(statusNormalized)) {
+            } else if (statusNormalized === 'not_started' || statusNormalized === 'wishlist') {
+                // Legacy migration: not_started and wishlist both map to planned
+                status = 'planned';
+            } else if (['planned', 'completed', 'playing', 'dropped', 'sandbox', 'paused'].includes(statusNormalized)) {
                 status = statusNormalized as GameStatus;
             } else if (isTruthy(metadata.played)) {
                 status = 'completed';
@@ -432,7 +435,7 @@ export class GameService {
             } else if (isTruthy(metadata.sandbox)) {
                 status = 'sandbox';
             } else if (isTruthy(metadata.wishlist)) {
-                status = 'wishlist';
+                status = 'planned';
             }
 
             // Parse rating safely
@@ -565,7 +568,7 @@ export class GameService {
     calculateStats(games: GameItem[]): GameStats {
         const stats: GameStats = {
             total: games.length,
-            completed: 0, playing: 0, dropped: 0, sandbox: 0, wishlist: 0, notStarted: 0,
+            completed: 0, playing: 0, dropped: 0, sandbox: 0, planned: 0, paused: 0,
             favorite: 0, withRating: 0, avgRating: 0,
             customPosters: 0, seriesCount: 0,
             ratingDistribution: createRatingDistribution(),
@@ -583,8 +586,8 @@ export class GameService {
                 case 'playing': stats.playing++; break;
                 case 'dropped': stats.dropped++; break;
                 case 'sandbox': stats.sandbox++; break;
-                case 'wishlist': stats.wishlist++; break;
-                case 'not_started': stats.notStarted++; break;
+                case 'planned': stats.planned++; break;
+                case 'paused': stats.paused++; break;
             }
 
             if (game.favorite) stats.favorite++;
@@ -610,8 +613,8 @@ export class GameService {
                     playing: Math.round((stats.playing / stats.total) * 1000) / 10,
                     dropped: Math.round((stats.dropped / stats.total) * 1000) / 10,
                     sandbox: Math.round((stats.sandbox / stats.total) * 1000) / 10,
-                    wishlist: Math.round((stats.wishlist / stats.total) * 1000) / 10,
-                    notStarted: Math.round((stats.notStarted / stats.total) * 1000) / 10,
+                    planned: Math.round((stats.planned / stats.total) * 1000) / 10,
+                    paused: Math.round((stats.paused / stats.total) * 1000) / 10,
                 };
             }
 
@@ -634,7 +637,7 @@ export class GameService {
         }
         if ('favorite' in updates) frontmatterUpdates.favorite = updates.favorite;
         if ('status' in updates) {
-            frontmatterUpdates.status = updates.status ?? 'not_started';
+            frontmatterUpdates.status = updates.status ?? 'planned';
             frontmatterUpdates.played = null;
             frontmatterUpdates.playing = null;
             frontmatterUpdates.dropped = null;

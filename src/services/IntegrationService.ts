@@ -1538,7 +1538,7 @@ export class IntegrationService {
             released: details.released,
             Year: this.toIntegerOrZero(details.year),
             url: details.url,
-            status: 'not_started',
+            status: 'planned',
             main: hltb?.main ?? '',
             main_plus_sides: hltb?.main_plus_sides ?? '',
             perfectionist: hltb?.perfectionist ?? '',

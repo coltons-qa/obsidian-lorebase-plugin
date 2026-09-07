@@ -1588,8 +1588,6 @@ export class LibraryView extends ItemView {
             playing: t('statusPlaying'),
             dropped: t('statusDropped'),
             sandbox: t('statusSandbox'),
-            wishlist: t('statusWishlist'),
-            not_started: t('statusNotStarted'),
             planned: isReadingMedia ? t('statusPlanToRead') : t('statusPlanned'),
             watching: isReadingMedia ? t('statusReading') : t('statusWatching'),
             paused: t('statusPaused'),

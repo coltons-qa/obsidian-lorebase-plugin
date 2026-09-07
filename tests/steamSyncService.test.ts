@@ -393,9 +393,9 @@ describe('SteamSyncService', () => {
         const service = createSteamSyncService();
         const settings = cloneSettings().steamSync;
 
-        expect(service.mapOwnedStatus(25, settings)).toBe('not_started');
-        expect(service.mapOwnedStatus(0, settings)).toBe('not_started');
-        expect(service.mapWishlistStatus(settings)).toBe('wishlist');
+        expect(service.mapOwnedStatus(25, settings)).toBe('planned');
+        expect(service.mapOwnedStatus(0, settings)).toBe('planned');
+        expect(service.mapWishlistStatus()).toBe('planned');
     });
 
     it('pauses, resumes, and cancels safely between items', async () => {
@@ -506,7 +506,7 @@ describe('SteamSyncService', () => {
         expect(result).toEqual({ created: 1, updated: 0, skipped: 0, failed: 0 });
         const content = app.vault.created['Games/Portal.md'];
         expect(content).toContain('poster: "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/10/library_600x900.jpg"');
-        expect(content).toContain('status: "not_started"');
+        expect(content).toContain('status: "planned"');
         expect(content).toContain('integration-provider: "steam"');
         expect(content).toContain('integration-id: "10"');
         expect(content).not.toContain('steamAppId:');

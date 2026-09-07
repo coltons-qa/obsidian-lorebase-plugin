@@ -2303,8 +2303,6 @@ class Localization {
             playing: this.t('statusPlaying'),
             dropped: this.t('statusDropped'),
             sandbox: this.t('statusSandbox'),
-            wishlist: this.t('statusWishlist'),
-            not_started: this.t('statusNotStarted'),
             planned: this.t('statusPlanned'),
             watching: this.t('statusWatching'),
             paused: this.t('statusPaused'),

@@ -16,8 +16,8 @@ import type { VideoService } from '../services/VideoService';
 /** Supported media types in the library */
 export type MediaType = 'game' | 'anime' | 'movie' | 'series' | 'book' | 'manga';
 
-/** Game completion status */
-export type GameStatus = 'completed' | 'playing' | 'dropped' | 'sandbox' | 'wishlist' | 'not_started';
+/** Game play status */
+export type GameStatus = 'planned' | 'playing' | 'completed' | 'dropped' | 'sandbox' | 'paused';
 
 /** Anime release format */
 export type AnimeFormat = 'tv' | 'movie' | 'ova' | 'ona' | 'special';
@@ -810,7 +810,6 @@ export interface SteamSyncSettings {
     duplicateMode: SteamSyncDuplicateMode;
     statusWithPlaytime: GameStatus;
     statusWithoutPlaytime: GameStatus;
-    statusWishlist: GameStatus;
     fields: {
         playtime: boolean;
         genres: boolean;
@@ -873,8 +872,8 @@ export interface GameStats {
     playing: number;
     dropped: number;
     sandbox: number;
-    wishlist: number;
-    notStarted: number;
+    planned: number;
+    paused: number;
     favorite: number;
     withRating: number;
     avgRating: number;

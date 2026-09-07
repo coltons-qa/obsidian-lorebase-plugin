@@ -512,11 +512,11 @@ export class ManualCreateModal extends Modal {
     private getStatusOptions(kind: MediaKind): Array<[string, string]> {
         if (kind === 'games') {
             return [
-                ['not_started', t('statusNotStarted')],
+                ['planned', t('statusPlanned')],
                 ['playing', t('statusPlaying')],
                 ['completed', t('statusPlayed')],
                 ['dropped', t('statusDropped')],
-                ['wishlist', t('statusWishlist')],
+                ['paused', t('statusPaused')],
                 ['sandbox', t('statusSandbox')],
             ];
         }
@@ -538,7 +538,7 @@ export class ManualCreateModal extends Modal {
             title: '',
             year: '',
             released: '',
-            status: kind === 'games' ? 'not_started' : 'planned',
+            status: 'planned',
             url: '',
             poster: '',
             posterHorizontal: '',

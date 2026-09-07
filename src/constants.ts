@@ -740,9 +740,8 @@ export const DEFAULT_SETTINGS: LorebaseSettings = {
         importOwnedGames: true,
         importWishlist: true,
         duplicateMode: 'skip',
-        statusWithPlaytime: 'not_started',
-        statusWithoutPlaytime: 'not_started',
-        statusWishlist: 'wishlist',
+        statusWithPlaytime: 'planned',
+        statusWithoutPlaytime: 'planned',
         fields: {
             playtime: true,
             genres: true,
@@ -767,12 +766,6 @@ export const STATUS_CONFIG: Record<MediaStatus, { pathD: string }> = {
     sandbox: {
         pathD: 'M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z',
     },
-    wishlist: {
-        pathD: 'M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z',
-    },
-    not_started: {
-        pathD: 'M12 2c5.52 0 10 4.48 10 10s-4.48 10-10 10S2 17.52 2 12 6.48 2 12 2z',
-    },
     planned: {
         pathD: 'M12 2c5.52 0 10 4.48 10 10s-4.48 10-10 10S2 17.52 2 12 6.48 2 12 2z',
     },
@@ -794,10 +787,8 @@ export const STATUS_CONFIG: Record<MediaStatus, { pathD: string }> = {
 /** Lucide icon names for status UI */
 export const STATUS_ICON_MAP: Record<MediaStatus, string> = {
     playing: 'play',
-    not_started: 'circle',
     dropped: 'x',
     sandbox: 'hexagon',
-    wishlist: 'bookmark',
     planned: 'circle',
     watching: 'play',
     completed: 'check',

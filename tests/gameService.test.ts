@@ -260,7 +260,7 @@ describe('GameService', () => {
             imageUrl: '',
             horizontalImageUrl: null,
             hasCustomPoster: false,
-            status: 'not_started',
+            status: 'planned',
             gameSeries: 'Same series',
             dateCompleted: null,
             tags: [],
@@ -291,43 +291,50 @@ describe('GameService', () => {
         });
     });
 
-    it('exposes wishlist as a first-class game status option', () => {
+    it('exposes paused as a game status option', () => {
         expect(getStatusOptionsForMediaType('game')).toContainEqual({
-            status: 'wishlist',
-            label: 'Wishlist',
+            status: 'paused',
+            label: 'Paused',
         });
     });
 
-    it('parses wishlist game status from status field and legacy flag', () => {
-        const statusFile = createMockFile('Games/Wish Status.md', 'Wish Status');
-        const flagFile = createMockFile('Games/Wish Flag.md', 'Wish Flag');
+    it('migrates legacy wishlist and not_started statuses to planned', () => {
+        const wishlistStatusFile = createMockFile('Games/Wish Status.md', 'Wish Status');
+        const wishlistFlagFile = createMockFile('Games/Wish Flag.md', 'Wish Flag');
+        const notStartedFile = createMockFile('Games/Not Started.md', 'Not Started');
         const app = createMockApp({
-            [statusFile.path]: {
+            [wishlistStatusFile.path]: {
                 frontmatter: {
                     status: 'wishlist',
                 },
             },
-            [flagFile.path]: {
+            [wishlistFlagFile.path]: {
                 frontmatter: {
                     wishlist: 'true',
+                },
+            },
+            [notStartedFile.path]: {
+                frontmatter: {
+                    status: 'not_started',
                 },
             },
         });
 
         const service = new GameService(app, createMetadataService(app));
 
-        expect(service.parseGameFromCache(statusFile)?.status).toBe('wishlist');
-        expect(service.parseGameFromCache(flagFile)?.status).toBe('wishlist');
+        expect(service.parseGameFromCache(wishlistStatusFile)?.status).toBe('planned');
+        expect(service.parseGameFromCache(wishlistFlagFile)?.status).toBe('planned');
+        expect(service.parseGameFromCache(notStartedFile)?.status).toBe('planned');
     });
 
-    it('counts wishlist games in statistics', () => {
+    it('counts planned and paused games in statistics', () => {
         const app = createMockApp({});
         const service = new GameService(app, createMetadataService(app));
-        const baseGame: GameItem = {
+        const plannedGame: GameItem = {
             type: 'game',
-            filePath: 'wish.md',
-            displayName: 'Wish',
-            nameLower: 'wish',
+            filePath: 'plan.md',
+            displayName: 'Planned',
+            nameLower: 'planned',
             year: 2026,
             description: '',
             userRating: null,
@@ -336,17 +343,20 @@ describe('GameService', () => {
             imageUrl: '',
             horizontalImageUrl: null,
             hasCustomPoster: false,
-            status: 'wishlist',
+            status: 'planned',
             gameSeries: '',
             dateCompleted: null,
             tags: [],
             genres: [],
         };
+        const pausedGame: GameItem = { ...plannedGame, filePath: 'pause.md', displayName: 'Paused', nameLower: 'paused', status: 'paused' };
 
-        const stats = service.calculateStats([baseGame]);
+        const stats = service.calculateStats([plannedGame, pausedGame]);
 
-        expect(stats.wishlist).toBe(1);
-        expect(stats.statusPercentages.wishlist).toBe(100);
+        expect(stats.planned).toBe(1);
+        expect(stats.paused).toBe(1);
+        expect(stats.statusPercentages.planned).toBe(50);
+        expect(stats.statusPercentages.paused).toBe(50);
     });
 
     it('filters plan presets as regular tags', () => {
@@ -366,7 +376,7 @@ describe('GameService', () => {
                 imageUrl: '',
                 horizontalImageUrl: null,
                 hasCustomPoster: false,
-                status: 'not_started',
+                status: 'planned',
                 gameSeries: '',
                 dateCompleted: null,
                 tags: ['next-in-queue'],
@@ -385,7 +395,7 @@ describe('GameService', () => {
                 imageUrl: '',
                 horizontalImageUrl: null,
                 hasCustomPoster: false,
-                status: 'not_started',
+                status: 'planned',
                 gameSeries: '',
                 dateCompleted: null,
                 tags: [],
@@ -433,7 +443,7 @@ describe('GameService', () => {
         const parsed = service.parseGameFromCache(file);
 
         expect(parsed).not.toBeNull();
-        expect(parsed?.status).toBe('not_started');
+        expect(parsed?.status).toBe('planned');
         expect(parsed?.favorite).toBe(false);
     });
 

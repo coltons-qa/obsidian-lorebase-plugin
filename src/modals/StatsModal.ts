@@ -164,12 +164,12 @@ export class StatsModal extends Modal {
                 { key: 'paused', icon: '\u{23F8}\u{FE0F}', label: t('statusPaused'), value: (this.stats as AnimeStats).paused, color: '#ffeb3b' },
             ]
             : [
-                { key: 'completed', icon: '\u{2705}', label: t('statusPlayed'), value: (this.stats as GameStats).completed, color: '#4caf50' },
+                { key: 'planned', icon: '\u{1F5D3}\u{FE0F}', label: t('statusPlanned'), value: (this.stats as GameStats).planned, color: '#9e9e9e' },
                 { key: 'playing', icon: '\u{1F3AE}', label: t('statusPlaying'), value: (this.stats as GameStats).playing, color: '#2196f3' },
+                { key: 'completed', icon: '\u{2705}', label: t('statusPlayed'), value: (this.stats as GameStats).completed, color: '#4caf50' },
                 { key: 'dropped', icon: '\u{1F6AB}', label: t('statusDropped'), value: (this.stats as GameStats).dropped, color: '#ff9800' },
-                { key: 'wishlist', icon: '\u{1F516}', label: t('statusWishlist'), value: (this.stats as GameStats).wishlist, color: 'var(--lorebase-wishlist-color)' },
-                { key: 'sandbox', icon: '\u{1F9E9}', label: t('statusSandbox'), value: (this.stats as GameStats).sandbox, color: '#ffeb3b' },
-                { key: 'notStarted', icon: '\u{23F8}\u{FE0F}', label: t('statusNotStarted'), value: (this.stats as GameStats).notStarted, color: '#9e9e9e' },
+                { key: 'paused', icon: '\u{23F8}\u{FE0F}', label: t('statusPaused'), value: (this.stats as GameStats).paused, color: '#ffeb3b' },
+                { key: 'sandbox', icon: '\u{1F9E9}', label: t('statusSandbox'), value: (this.stats as GameStats).sandbox, color: '#9c27b0' },
             ];
 
         for (const data of statusData) {

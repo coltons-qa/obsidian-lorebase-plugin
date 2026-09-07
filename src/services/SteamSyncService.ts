@@ -504,8 +504,8 @@ export class SteamSyncService {
         return playtimeForever > 0 ? settings.statusWithPlaytime : settings.statusWithoutPlaytime;
     }
 
-    mapWishlistStatus(settings: SteamSyncSettings): GameStatus {
-        return settings.statusWishlist;
+    mapWishlistStatus(): GameStatus {
+        return 'planned';
     }
 
     private async loadCandidates(settings: SteamSyncSettings): Promise<SteamImportCandidate[]> {
@@ -736,7 +736,7 @@ export class SteamSyncService {
 
     private toSyncGame(candidate: SteamImportCandidate, details: GameDetails, settings: SteamSyncSettings): SteamSyncGame {
         const status = candidate.source === 'wishlist'
-            ? this.mapWishlistStatus(settings)
+            ? this.mapWishlistStatus()
             : this.mapOwnedStatus(candidate.playtimeForever, settings);
 
         return {

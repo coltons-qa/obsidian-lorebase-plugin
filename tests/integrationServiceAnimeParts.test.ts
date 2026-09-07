@@ -385,7 +385,7 @@ function createManualDraft(kind: ManualCreateDraft['kind']): ManualCreateDraft {
         title: 'Manual',
         year: '',
         released: '',
-        status: kind === 'games' ? 'not_started' : 'planned',
+        status: 'planned',
         url: '',
         poster: '',
         posterHorizontal: '',

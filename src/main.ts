@@ -277,9 +277,16 @@ export default class LorebasePlugin extends Plugin {
         if (this.settings.steamSync.statusWithPlaytime === 'playing' || this.settings.steamSync.statusWithPlaytime === 'completed') {
             this.settings.steamSync.statusWithPlaytime = DEFAULT_SETTINGS.steamSync.statusWithPlaytime;
         }
-        if (this.settings.steamSync.statusWishlist === 'not_started') {
-            this.settings.steamSync.statusWishlist = DEFAULT_SETTINGS.steamSync.statusWishlist;
+        // Migrate removed statuses in Steam Sync settings
+        const steamSync = this.settings.steamSync as unknown as Record<string, unknown>;
+        if (steamSync.statusWithPlaytime === 'not_started' || steamSync.statusWithPlaytime === 'wishlist') {
+            this.settings.steamSync.statusWithPlaytime = 'planned';
         }
+        if (steamSync.statusWithoutPlaytime === 'not_started' || steamSync.statusWithoutPlaytime === 'wishlist') {
+            this.settings.steamSync.statusWithoutPlaytime = 'planned';
+        }
+        // Remove legacy statusWishlist setting
+        delete steamSync.statusWishlist;
         this.settings.statusLabels = {
             games: Object.assign({}, DEFAULT_SETTINGS.statusLabels.games, sanitized?.statusLabels?.games ?? {}),
             anime: Object.assign({}, DEFAULT_SETTINGS.statusLabels.anime, sanitized?.statusLabels?.anime ?? {}),

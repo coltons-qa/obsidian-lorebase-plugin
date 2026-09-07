@@ -18,7 +18,6 @@ import { HierarchicalDatePicker, validateDatePickers } from './HierarchicalDateP
 
 type GameDlcRefresh = (existing: GameDlc[]) => Promise<GameDlc[] | null>;
 type NotesMode = 'description' | 'myNotes';
-type RegularGameStatus = Exclude<GameStatus, 'wishlist'>;
 
 /**
  * Modal for editing game properties
@@ -34,7 +33,6 @@ export class EditModal extends Modal {
 
     private selectedRating: UserRating;
     private selectedStatus: GameStatus;
-    private statusBeforeWishlist: RegularGameStatus;
     private favorite: boolean;
     private title: string;
     private year: number | null;
@@ -104,7 +102,6 @@ export class EditModal extends Modal {
 
         this.selectedRating = game.userRating;
         this.selectedStatus = game.status;
-        this.statusBeforeWishlist = game.status === 'wishlist' ? 'not_started' : game.status;
         this.favorite = game.favorite;
         this.title = game.displayName;
         this.year = game.year;
@@ -229,16 +226,6 @@ export class EditModal extends Modal {
                                     <span class="lorebase-editmode-switch-label">${t('editFavorite')}</span>
                                     <button type="button" class="lorebase-editmode-switch lorebase-editmode-switch-favorite" data-toggle="favorite" aria-label="${t('editFavorite')}" aria-pressed="false"><span class="lorebase-editmode-switch-thumb"></span></button>
                                 </label>
-                                <div class="lorebase-editmode-switch-row">
-                                    <span class="lorebase-editmode-switch-label-row">
-                                        <span class="lorebase-editmode-switch-label" id="lorebase-wishlist-label">${t('statusWishlist')}</span>
-                                        <button type="button" class="lorebase-editmode-help" aria-labelledby="lorebase-wishlist-label" aria-describedby="lorebase-wishlist-tooltip">
-                                            <span aria-hidden="true">?</span>
-                                            <span class="lorebase-editmode-help-tooltip" id="lorebase-wishlist-tooltip" role="tooltip">${t('editWishlistStatusLock')}</span>
-                                        </button>
-                                    </span>
-                                    <button type="button" class="lorebase-editmode-switch lorebase-editmode-switch-wishlist" data-toggle="wishlist" aria-labelledby="lorebase-wishlist-label" aria-pressed="false"><span class="lorebase-editmode-switch-thumb"></span></button>
-                                </div>
                             </div>
                         </section>
 
@@ -301,9 +288,9 @@ export class EditModal extends Modal {
                             </div>
                             <div class="lorebase-editmode-status-shell">
                                 <div class="lorebase-editmode-segmented" role="tablist" aria-label="${t('editStatus')}">
-                                    <button type="button" class="lorebase-editmode-segment" data-status="not_started">
-                                        <span class="lorebase-editmode-segment-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="${STATUS_CONFIG.not_started.pathD}" /></svg></span>
-                                        <span class="lorebase-editmode-segment-label">${t('statusNotStarted')}</span>
+                                    <button type="button" class="lorebase-editmode-segment" data-status="planned">
+                                        <span class="lorebase-editmode-segment-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="${STATUS_CONFIG.planned.pathD}" /></svg></span>
+                                        <span class="lorebase-editmode-segment-label">${t('statusPlanned')}</span>
                                     </button>
                                     <button type="button" class="lorebase-editmode-segment" data-status="playing">
                                         <span class="lorebase-editmode-segment-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="${STATUS_CONFIG.playing.pathD}" /></svg></span>
@@ -317,12 +304,15 @@ export class EditModal extends Modal {
                                         <span class="lorebase-editmode-segment-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="${STATUS_CONFIG.dropped.pathD}" /></svg></span>
                                         <span class="lorebase-editmode-segment-label">${t('statusDropped')}</span>
                                     </button>
+                                    <button type="button" class="lorebase-editmode-segment" data-status="paused">
+                                        <span class="lorebase-editmode-segment-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="${STATUS_CONFIG.paused.pathD}" /></svg></span>
+                                        <span class="lorebase-editmode-segment-label">${t('statusPaused')}</span>
+                                    </button>
                                     <button type="button" class="lorebase-editmode-segment" data-status="sandbox">
                                         <span class="lorebase-editmode-segment-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="${STATUS_CONFIG.sandbox.pathD}" /></svg></span>
                                         <span class="lorebase-editmode-segment-label">${t('statusSandbox')}</span>
                                     </button>
                                 </div>
-                                <div class="lorebase-editmode-status-lock-note" data-role="status-lock-note" hidden>${t('editWishlistStatusLocked')}</div>
                             </div>
                             <div class="lorebase-editmode-rating-wrap">
                                 <div class="lorebase-editmode-rating-head">
@@ -588,25 +578,15 @@ export class EditModal extends Modal {
             btn.addEventListener('click', () => {
                 const key = btn.dataset.toggle;
                 if (key === 'favorite') this.favorite = !this.favorite;
-                if (key === 'wishlist') {
-                    if (this.selectedStatus === 'wishlist') {
-                        this.selectedStatus = this.statusBeforeWishlist;
-                    } else {
-                        this.statusBeforeWishlist = this.selectedStatus;
-                        this.selectedStatus = 'wishlist';
-                    }
-                }
                 this.updateQuickSettingSwitches(root);
                 this.updateStatusUI(root);
             });
         });
-
     }
 
     private bindStatus(root: HTMLElement): void {
         root.querySelectorAll<HTMLButtonElement>('.lorebase-editmode-segment').forEach(btn => {
             btn.addEventListener('click', () => {
-                if (this.selectedStatus === 'wishlist') return;
                 const status = btn.dataset.status as GameStatus | undefined;
                 if (!status) return;
                 this.selectedStatus = status;
@@ -1370,7 +1350,6 @@ export class EditModal extends Modal {
 
     private updateQuickSettingSwitches(root: HTMLElement): void {
         this.updateSwitch(root, 'favorite', this.favorite);
-        this.updateSwitch(root, 'wishlist', this.selectedStatus === 'wishlist');
     }
 
     private updateSwitch(root: HTMLElement, key: string, value: boolean): void {
@@ -1381,18 +1360,11 @@ export class EditModal extends Modal {
     }
 
     private updateStatusUI(root: HTMLElement): void {
-        const locked = this.selectedStatus === 'wishlist';
         root.querySelectorAll<HTMLButtonElement>('.lorebase-editmode-segment').forEach(btn => {
             const selected = btn.dataset.status === this.selectedStatus;
             btn.toggleClass('is-active', selected);
             btn.setAttr('aria-pressed', String(selected));
-            btn.disabled = locked;
-            btn.setAttr('aria-disabled', String(locked));
         });
-        const shell = this.qs<HTMLElement>(root, '.lorebase-editmode-status-shell');
-        shell?.toggleClass('is-wishlist-locked', locked);
-        const note = this.qs<HTMLElement>(root, '[data-role="status-lock-note"]');
-        if (note) note.hidden = !locked;
     }
 
     private updateRatingUI(root: HTMLElement): void {

@@ -1525,11 +1525,11 @@ function renderStatusLabelAndPlanSettings(context: SettingsSectionContext, conta
         label: string;
         icon: string;
     }> = [
-        { key: 'completed', label: t('statusPlayed'), icon: 'circle-check-big' },
+        { key: 'planned', label: t('statusPlanned'), icon: 'calendar-clock' },
         { key: 'playing', label: t('statusPlaying'), icon: 'play' },
+        { key: 'completed', label: t('statusPlayed'), icon: 'circle-check-big' },
         { key: 'dropped', label: t('statusDropped'), icon: 'circle-x' },
-        { key: 'wishlist', label: t('statusWishlist'), icon: 'bookmark' },
-        { key: 'not_started', label: t('statusNotStarted'), icon: 'circle-dashed' },
+        { key: 'paused', label: t('statusPaused'), icon: 'pause' },
         { key: 'sandbox', label: t('statusSandbox'), icon: 'box' },
     ];
 

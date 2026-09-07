@@ -34,11 +34,11 @@ export function getStatusOptionsForMediaType(
     }
 
     return [
-        { status: 'completed', label: labelFor('completed', t('statusPlayed')) },
+        { status: 'planned', label: labelFor('planned', t('statusPlanned')) },
         { status: 'playing', label: labelFor('playing', t('statusPlaying')) },
+        { status: 'completed', label: labelFor('completed', t('statusPlayed')) },
         { status: 'dropped', label: labelFor('dropped', t('statusDropped')) },
-        { status: 'wishlist', label: labelFor('wishlist', t('statusWishlist')) },
-        { status: 'not_started', label: labelFor('not_started', t('statusNotStarted')) },
+        { status: 'paused', label: labelFor('paused', t('statusPaused')) },
         { status: 'sandbox', label: labelFor('sandbox', t('statusSandbox')) },
     ];
 }
