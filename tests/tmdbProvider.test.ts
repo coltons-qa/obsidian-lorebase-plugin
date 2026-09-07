@@ -93,4 +93,94 @@ describe('TMDB provider', () => {
             episodeTotal: 8,
         });
     });
+
+    it('populates director from credits.crew for movies', async () => {
+        const fetchJson: JsonFetcher = async () => ({
+            id: 329865,
+            title: 'Arrival',
+            overview: 'Linguistics and time.',
+            release_date: '2016-11-11',
+            poster_path: '/arrival.jpg',
+            vote_average: 7.9,
+            genres: [{ name: 'Drama' }, { name: 'Science Fiction' }],
+            credits: {
+                cast: [{ name: 'Amy Adams' }, { name: 'Jeremy Renner' }],
+                crew: [
+                    { name: 'Denis Villeneuve', job: 'Director' },
+                    { name: 'Bradford Young', job: 'Director of Photography' },
+                    { name: 'Joe Walker', job: 'Editor' },
+                ],
+            },
+        });
+
+        const details = await getTmdbDetails(fetchJson, '329865', 'key', 'movies');
+
+        expect(details?.director).toBe('Denis Villeneuve');
+    });
+
+    it('joins multiple directors for movies with co-directors', async () => {
+        const fetchJson: JsonFetcher = async () => ({
+            id: 603,
+            title: 'The Matrix',
+            overview: 'Red pill or blue pill.',
+            release_date: '1999-03-31',
+            poster_path: '/matrix.jpg',
+            vote_average: 8.7,
+            genres: [],
+            credits: {
+                cast: [{ name: 'Keanu Reeves' }],
+                crew: [
+                    { name: 'Lana Wachowski', job: 'Director' },
+                    { name: 'Lilly Wachowski', job: 'Director' },
+                ],
+            },
+        });
+
+        const details = await getTmdbDetails(fetchJson, '603', 'key', 'movies');
+
+        expect(details?.director).toBe('Lana Wachowski, Lilly Wachowski');
+    });
+
+    it('populates director from created_by for TV series', async () => {
+        const fetchJson: JsonFetcher = async () => ({
+            id: 95396,
+            name: 'Severance',
+            overview: 'Work life balance, literally.',
+            first_air_date: '2022-02-18',
+            poster_path: '/severance.jpg',
+            vote_average: 8.4,
+            genres: [{ name: 'Drama' }],
+            created_by: [{ name: 'Dan Erickson' }],
+            seasons: [],
+            networks: [],
+            credits: {
+                cast: [{ name: 'Adam Scott' }],
+                crew: [{ name: 'Someone', job: 'Director' }],
+            },
+        });
+
+        const details = await getTmdbDetails(fetchJson, '95396', 'key', 'series');
+
+        expect(details?.director).toBe('Dan Erickson');
+    });
+
+    it('returns empty director when credits.crew has no Director entry', async () => {
+        const fetchJson: JsonFetcher = async () => ({
+            id: 999,
+            title: 'Unknown Film',
+            overview: '',
+            release_date: '',
+            poster_path: '',
+            vote_average: 0,
+            genres: [],
+            credits: {
+                cast: [],
+                crew: [{ name: 'Someone', job: 'Producer' }],
+            },
+        });
+
+        const details = await getTmdbDetails(fetchJson, '999', 'key', 'movies');
+
+        expect(details?.director).toBe('');
+    });
 });

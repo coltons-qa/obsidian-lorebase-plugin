@@ -38,14 +38,32 @@ function getGenres(item: Record<string, unknown>): string[] {
         .filter(Boolean);
 }
 
-function getCastNames(item: Record<string, unknown>): string {
-    const credits = item.credits && typeof item.credits === 'object'
+function getCredits(item: Record<string, unknown>): Record<string, unknown> {
+    return item.credits && typeof item.credits === 'object'
         ? item.credits as Record<string, unknown>
         : {};
-    return getArray(credits, 'cast')
+}
+
+function getCastNames(item: Record<string, unknown>): string {
+    return getArray(getCredits(item), 'cast')
         .map((entry) => clean(entry.name))
         .filter(Boolean)
         .slice(0, 8)
+        .join(', ');
+}
+
+function getDirectors(item: Record<string, unknown>): string {
+    return getArray(getCredits(item), 'crew')
+        .filter((entry) => clean(entry.job) === 'Director')
+        .map((entry) => clean(entry.name))
+        .filter(Boolean)
+        .join(', ');
+}
+
+function getCreators(item: Record<string, unknown>): string {
+    return getArray(item, 'created_by')
+        .map((entry) => clean(entry.name))
+        .filter(Boolean)
         .join(', ');
 }
 
@@ -134,7 +152,7 @@ export async function getTmdbDetails(
         year: toYear(isSeries ? show.first_air_date : show.release_date),
         released: clean(isSeries ? show.first_air_date : show.release_date),
         runtime: Number.isFinite(runtime) && runtime > 0 ? `${runtime} min` : '',
-        director: '',
+        director: isSeries ? getCreators(show) : getDirectors(show),
         actors: getCastNames(show),
         rating: Number.isFinite(Number(show.vote_average)) ? Number(show.vote_average).toFixed(1) : '',
         communityRating: Number.isFinite(Number(show.vote_average)) ? Number(show.vote_average).toFixed(1) : '',
