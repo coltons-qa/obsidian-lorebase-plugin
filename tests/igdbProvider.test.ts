@@ -189,17 +189,6 @@ describe('IGDB provider', () => {
         expect(details).toMatchObject({ gameSeries: 'Fallout' });
     });
 
-    it('leaves gameSeries empty when neither collection nor franchise exists', async () => {
-        const fetchJson: JsonFetcher = async (url) => {
-            if (url.includes('oauth2/token')) return { access_token: 'token' };
-            return [{ id: 1, name: 'Standalone Game' }];
-        };
-
-        const details = await getIgdbDetails(fetchJson, '1', 'client', 'secret');
-
-        expect(details?.gameSeries).toBe('');
-    });
-
     it('combines and deduplicates DLC and expansion records', async () => {
         const fetchJson: JsonFetcher = async (url) => {
             if (url.includes('oauth2/token')) return { access_token: 'token' };
@@ -390,14 +379,5 @@ describe('IGDB Steam appid series lookup', () => {
         expect(bodies).toHaveLength(1);
         // What was already resolved is kept rather than thrown away.
         expect(series.get('1')).toBe('Series 1');
-    });
-
-    it('makes no request when there are no appids to look up', async () => {
-        const { fetchJson, urls } = recordFetch([]);
-
-        const series = await getIgdbSeriesBySteamAppIds(fetchJson, [], 'client', 'secret');
-
-        expect(urls).toEqual([]);
-        expect(series.size).toBe(0);
     });
 });

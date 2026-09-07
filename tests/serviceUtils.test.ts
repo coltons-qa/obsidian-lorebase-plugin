@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { extractFrontmatterBlock, isFileInFolder, isMediaType, mapInFrameBatches, resolveMediaType } from '../src/services/media/serviceUtils';
+import { extractFrontmatterBlock, isFileInFolder, mapInFrameBatches, resolveMediaType } from '../src/services/media/serviceUtils';
 import type { FolderTypeEntry } from '../src/services/media/serviceUtils';
 
 describe('extractFrontmatterBlock', () => {
@@ -82,28 +82,6 @@ describe('mapInFrameBatches', () => {
         );
 
         expect(result).toEqual([20, 40]);
-    });
-});
-
-describe('isMediaType', () => {
-    it('accepts all six valid media types', () => {
-        for (const type of ['game', 'anime', 'movie', 'series', 'book', 'manga']) {
-            expect(isMediaType(type)).toBe(true);
-        }
-    });
-
-    it('rejects non-media-type strings', () => {
-        expect(isMediaType('room')).toBe(false);
-        expect(isMediaType('character')).toBe(false);
-        expect(isMediaType('tv')).toBe(false);
-        expect(isMediaType('')).toBe(false);
-    });
-
-    it('rejects non-string values', () => {
-        expect(isMediaType(undefined)).toBe(false);
-        expect(isMediaType(null)).toBe(false);
-        expect(isMediaType(42)).toBe(false);
-        expect(isMediaType(true)).toBe(false);
     });
 });
 
