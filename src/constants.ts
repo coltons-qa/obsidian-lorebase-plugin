@@ -212,6 +212,7 @@ communityRating: {{VALUE:communityRating}}
 communityVotes: {{VALUE:communityVotes}}
 communityRatingProvider: "{{VALUE:communityRatingProvider}}"
 status: "{{VALUE:status}}"
+owned: "{{VALUE:owned}}"
 favorite: false
 integration_provider: "{{VALUE:integrationProvider}}"
 integration_id: "{{VALUE:integrationId}}"
@@ -238,6 +239,7 @@ const DEFAULT_GAME_TEMPLATE_FIELDS = [
     'communityVotes',
     'communityRatingProvider',
     'status',
+    'owned',
     'favorite',
     'integrationSource',
     'url',

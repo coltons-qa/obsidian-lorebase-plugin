@@ -807,6 +807,7 @@ export class SteamSyncService {
             Year: this.toNumber(settings.fields.releaseDate ? details.year : extractYear(details.released)),
             url: details.url || `https://store.steampowered.com/app/${game.appId}/`,
             status: game.status,
+            owned: game.source === 'wishlist' ? 'wishlist' : '',
             playtime: settings.fields.playtime ? game.playtimeForever : '',
             steamAppId: game.appId,
             main: hltb?.main ?? '',
