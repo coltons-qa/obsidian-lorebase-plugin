@@ -21,6 +21,7 @@ export interface ManualCreateDraft {
     tags: string[];
     rating: UserRating;
     gameSeries: string;
+    bookSeries: string;
     format: AnimeFormat;
     animeParts: AnimePart[];
     activeAnimePartId: string | null;
@@ -105,7 +106,7 @@ export class AddModeModal extends Modal {
             case 'games': return t('settingsGames');
             case 'anime': return t('settingsAnime');
             case 'movies': return t('settingsMovies');
-            case 'series': return t('settingsSeries');
+            case 'tv': return t('settingsTv');
             case 'books': return t('settingsBooks');
             case 'manga': return t('settingsManga');
         }
@@ -178,7 +179,7 @@ export class ManualCreateModal extends Modal {
             ['games', t('settingsGames')],
             ['anime', t('settingsAnime')],
             ['movies', t('settingsMovies')],
-            ['series', t('settingsSeries')],
+            ['tv', t('settingsTv')],
             ['books', t('settingsBooks')],
             ['manga', t('settingsManga')],
         ], (value) => {
@@ -193,7 +194,7 @@ export class ManualCreateModal extends Modal {
             t('templateFieldReleased'),
             this.draft.released,
             (value) => this.draft.released = value,
-            this.draft.kind === 'movies' || this.draft.kind === 'series' ? 'date' : 'text'
+            this.draft.kind === 'movies' || this.draft.kind === 'tv' ? 'date' : 'text'
         );
         this.createStatusSelect(main);
         this.createRatingStars(main);
@@ -204,8 +205,8 @@ export class ManualCreateModal extends Modal {
             const progress = this.createSection(parent, t('manualSectionProgress'));
             if (this.draft.kind === 'anime') {
                 this.renderAnimePartsEditor(progress);
-            } else if (this.draft.kind === 'movies' || this.draft.kind === 'series') {
-                if (this.draft.kind === 'series') {
+            } else if (this.draft.kind === 'movies' || this.draft.kind === 'tv') {
+                if (this.draft.kind === 'tv') {
                     this.createNumberInput(progress, t('templateFieldSeasons'), this.draft.seasonNumber, (value) => this.draft.seasonNumber = value);
                 }
                 this.createNumberInput(progress, t('templateFieldEpisodeCurrent'), this.draft.episodeCurrent, (value) => this.draft.episodeCurrent = value);
@@ -226,6 +227,8 @@ export class ManualCreateModal extends Modal {
         const extra = this.createSection(parent, t('manualSectionExtra'));
         if (this.draft.kind === 'games') {
             this.createInput(extra, t('templateFieldGameSeries'), this.draft.gameSeries, (value) => this.draft.gameSeries = value);
+        } else if (this.draft.kind === 'books') {
+            this.createInput(extra, t('editSeries'), this.draft.bookSeries, (value) => this.draft.bookSeries = value);
         }
         this.createInput(extra, t('templateFieldUrl'), this.draft.url, (value) => this.draft.url = value);
         this.createChipEditor(extra, t('templateFieldGenres'), this.draft.genres, (values) => this.draft.genres = values);
@@ -547,10 +550,11 @@ export class ManualCreateModal extends Modal {
             tags: [],
             rating: null,
             gameSeries: '',
+            bookSeries: '',
             format: 'tv',
             animeParts: [this.createAnimePart('tv', 'Season 1', 1)],
             activeAnimePartId: 'tv-1',
-            seasonNumber: kind === 'series' ? 1 : null,
+            seasonNumber: kind === 'tv' ? 1 : null,
             episodeCurrent: 0,
             episodeTotal: kind === 'movies' ? 1 : null,
             pageCurrent: 0,

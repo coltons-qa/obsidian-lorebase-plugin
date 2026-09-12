@@ -98,8 +98,8 @@ function sortMediaItemsSafe<T extends FilterableMediaItem>(
                     comparison = compareNames(String(a.nameLower || '').toLowerCase(), String(b.nameLower || '').toLowerCase());
                     break;
                 case 'series': {
-                    const aSeries = String(a.gameSeries || '').trim();
-                    const bSeries = String(b.gameSeries || '').trim();
+                    const aSeries = String(a.bookSeries || a.gameSeries || '').trim();
+                    const bSeries = String(b.bookSeries || b.gameSeries || '').trim();
 
                     if (!aSeries && bSeries) {
                         comparison = order === 'asc' ? 1 : -1;

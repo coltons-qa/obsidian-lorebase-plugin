@@ -397,7 +397,7 @@ function createManualDraft(kind: ManualCreateDraft['kind']): ManualCreateDraft {
         format: 'tv',
         animeParts: [{ id: 'tv-1', kind: 'tv', title: 'Season 1', seasonNumber: 1, episodeCurrent: 0, episodeTotal: null, status: 'planned' }],
         activeAnimePartId: 'tv-1',
-        seasonNumber: kind === 'series' ? 1 : null,
+        seasonNumber: kind === 'tv' ? 1 : null,
         episodeCurrent: 0,
         episodeTotal: kind === 'movies' ? 1 : null,
         pageCurrent: 0,

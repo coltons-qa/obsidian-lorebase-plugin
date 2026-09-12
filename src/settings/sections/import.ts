@@ -165,7 +165,7 @@ function renderNoteImportSettings(
             { value: 'games', label: t('settingsGames') },
             { value: 'anime', label: t('settingsAnime') },
             { value: 'movies', label: t('settingsMovies') },
-            { value: 'series', label: t('settingsSeries') },
+            { value: 'tv', label: t('settingsTv') },
             { value: 'books', label: t('settingsBooks') },
             { value: 'manga', label: t('settingsManga') },
         ],

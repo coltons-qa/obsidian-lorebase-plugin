@@ -4,7 +4,7 @@
  */
 
 import { ItemView, Keymap, WorkspaceLeaf, TFile, TAbstractFile } from 'obsidian';
-import { AnimeItem, FieldDefinition, GameItem, LibraryViewState, MangaItem, MediaItem, MediaStatus, MediaType, FilterState, LorebaseSettings, LorebasePluginInterface, MovieItem, ReadingItem, SeriesItem, ViewMode, SortField } from '../types';
+import { AnimeItem, FieldDefinition, GameItem, LibraryViewState, MangaItem, MediaItem, MediaStatus, MediaType, FilterState, LorebaseSettings, LorebasePluginInterface, MovieItem, ReadingItem, TvItem, ViewMode, SortField } from '../types';
 import { GameService } from '../services/GameService';
 import { AnimeService } from '../services/AnimeService';
 import { VideoService } from '../services/VideoService';
@@ -71,7 +71,7 @@ export class LibraryView extends ItemView {
     private gameService: GameService;
     private animeService: AnimeService;
     private movieService: VideoService;
-    private seriesService: VideoService;
+    private tvService: VideoService;
     private bookService: ReadingService;
     private mangaService: ReadingService;
     private toolbar: Toolbar | null = null;
@@ -127,7 +127,7 @@ export class LibraryView extends ItemView {
         const sharedGameService = this.plugin.getGameService();
         const sharedAnimeService = this.plugin.getAnimeService();
         const sharedMovieService = this.plugin.getMovieService();
-        const sharedSeriesService = this.plugin.getSeriesService();
+        const sharedSeriesService = this.plugin.getTvService();
         const sharedBookService = this.plugin.getBookService();
         const sharedMangaService = this.plugin.getMangaService();
         const sharedMetadataService = this.plugin.getMetadataService() ?? new MetadataService(this.app);
@@ -141,9 +141,9 @@ export class LibraryView extends ItemView {
         this.movieService = sharedMovieService instanceof VideoService
             ? sharedMovieService
             : new VideoService(this.app, 'movie', this.plugin.settings.movies.folderPath, sharedMetadataService);
-        this.seriesService = sharedSeriesService instanceof VideoService
+        this.tvService = sharedSeriesService instanceof VideoService
             ? sharedSeriesService
-            : new VideoService(this.app, 'series', this.plugin.settings.series.folderPath, sharedMetadataService);
+            : new VideoService(this.app, 'tv', this.plugin.settings.tv.folderPath, sharedMetadataService);
         this.bookService = sharedBookService instanceof ReadingService
             ? sharedBookService
             : new ReadingService(this.app, 'book', this.plugin.settings.books.folderPath, sharedMetadataService);
@@ -182,7 +182,7 @@ export class LibraryView extends ItemView {
             this.gameService.setFolderPath(settings.games.folderPath);
             this.animeService.setFolderPath(settings.anime.folderPath);
             this.movieService.setFolderPath(settings.movies.folderPath);
-            this.seriesService.setFolderPath(settings.series.folderPath);
+            this.tvService.setFolderPath(settings.tv.folderPath);
             this.bookService.setFolderPath(settings.books.folderPath);
             this.mangaService.setFolderPath(settings.manga.folderPath);
             this.viewMode = activeSettings.orientation === 'horizontal' ? 'horizontal' : 'grid';
@@ -410,8 +410,8 @@ export class LibraryView extends ItemView {
             this.animeService.invalidateCache();
         } else if (this.mediaType === 'movie') {
             this.movieService.invalidateCache();
-        } else if (this.mediaType === 'series') {
-            this.seriesService.invalidateCache();
+        } else if (this.mediaType === 'tv') {
+            this.tvService.invalidateCache();
         } else if (this.mediaType === 'book') {
             this.bookService.invalidateCache();
         } else if (this.mediaType === 'manga') {
@@ -424,7 +424,7 @@ export class LibraryView extends ItemView {
     private parseActiveItemFromCache(file: TFile): MediaItem | null {
         if (this.mediaType === 'anime') return this.animeService.parseAnimeFromCache(file);
         if (this.mediaType === 'movie') return this.movieService.parseFromCache(file);
-        if (this.mediaType === 'series') return this.seriesService.parseFromCache(file);
+        if (this.mediaType === 'tv') return this.tvService.parseFromCache(file);
         if (this.mediaType === 'book') return this.bookService.parseFromCache(file);
         if (this.mediaType === 'manga') return this.mangaService.parseFromCache(file);
         return this.gameService.parseGameFromCache(file);
@@ -578,8 +578,8 @@ export class LibraryView extends ItemView {
                 games = await this.animeService.loadAnime();
             } else if (requestedMediaType === 'movie') {
                 games = await this.movieService.loadItems();
-            } else if (requestedMediaType === 'series') {
-                games = await this.seriesService.loadItems();
+            } else if (requestedMediaType === 'tv') {
+                games = await this.tvService.loadItems();
             } else if (requestedMediaType === 'book') {
                 games = await this.bookService.loadItems();
             } else if (requestedMediaType === 'manga') {
@@ -649,9 +649,9 @@ export class LibraryView extends ItemView {
                     this.viewState.sort.field,
                     this.viewState.sort.order
                 );
-            } else if (this.mediaType === 'series') {
-                this.filteredGames = this.seriesService.filterAndSort(
-                    this.games as SeriesItem[],
+            } else if (this.mediaType === 'tv') {
+                this.filteredGames = this.tvService.filterAndSort(
+                    this.games as TvItem[],
                     this.filter,
                     this.viewState.sort.field,
                     this.viewState.sort.order
@@ -800,7 +800,7 @@ export class LibraryView extends ItemView {
     private getEmptyStateText(): string {
         if (this.mediaType === 'anime') return t('noAnimeFound');
         if (this.mediaType === 'movie') return t('noMoviesFound');
-        if (this.mediaType === 'series') return t('noSeriesFound');
+        if (this.mediaType === 'tv') return t('noTvFound');
         if (this.mediaType === 'book') return t('noBooksFound');
         if (this.mediaType === 'manga') return t('noMangaFound');
         return t('noGamesFound');
@@ -1221,7 +1221,7 @@ export class LibraryView extends ItemView {
                 && this.areRelatedMediaEquivalent(left.relatedMedia, right.relatedMedia);
         }
 
-        if (left.type === 'series' && right.type === 'series') {
+        if (left.type === 'tv' && right.type === 'tv') {
             const leftParts = left.parts ?? [];
             const rightParts = right.parts ?? [];
             return left.summary === right.summary
@@ -1243,6 +1243,7 @@ export class LibraryView extends ItemView {
         if (left.type === 'book' && right.type === 'book') {
             return left.summary === right.summary
                 && left.sourceUrl === right.sourceUrl
+                && left.bookSeries === right.bookSeries
                 && left.publisher === right.publisher
                 && left.releaseDate === right.releaseDate
                 && left.pageCurrent === right.pageCurrent
@@ -1405,8 +1406,8 @@ export class LibraryView extends ItemView {
                         await this.animeService.deleteAnime(item);
                     } else if (item.type === 'movie') {
                         await this.movieService.deleteItem(item);
-                    } else if (item.type === 'series') {
-                        await this.seriesService.deleteItem(item);
+                    } else if (item.type === 'tv') {
+                        await this.tvService.deleteItem(item);
                     } else if (item.type === 'book') {
                         await this.bookService.deleteItem(item);
                     } else if (item.type === 'manga') {
@@ -1434,7 +1435,7 @@ export class LibraryView extends ItemView {
                 if (videoItem.type === 'movie') {
                     void this.movieService.updateItem(videoItem, updates);
                 } else {
-                    void this.seriesService.updateItem(videoItem, updates);
+                    void this.tvService.updateItem(videoItem, updates);
                 }
             },
             updateReading: (readingItem, updates) => {
@@ -1673,8 +1674,8 @@ export class LibraryView extends ItemView {
             ? this.animeService.getRandomAnime(this.filteredGames as AnimeItem[])
             : this.mediaType === 'movie'
                 ? this.movieService.getRandomItem(this.filteredGames as MovieItem[])
-                : this.mediaType === 'series'
-                    ? this.seriesService.getRandomItem(this.filteredGames as SeriesItem[])
+                : this.mediaType === 'tv'
+                    ? this.tvService.getRandomItem(this.filteredGames as TvItem[])
                     : this.mediaType === 'book'
                         ? this.bookService.getRandomItem(this.filteredGames as ReadingItem[])
                         : this.mediaType === 'manga'
@@ -1709,9 +1710,9 @@ export class LibraryView extends ItemView {
             this.plugin.showStatsModal(stats, 'movie');
             return;
         }
-        if (this.mediaType === 'series') {
-            const stats = this.seriesService.calculateStats(this.games as SeriesItem[]);
-            this.plugin.showStatsModal(stats, 'series');
+        if (this.mediaType === 'tv') {
+            const stats = this.tvService.calculateStats(this.games as TvItem[]);
+            this.plugin.showStatsModal(stats, 'tv');
             return;
         }
         if (this.mediaType === 'book') {
@@ -1774,7 +1775,7 @@ export class LibraryView extends ItemView {
         this.gameService.setFolderPath(settings.games.folderPath);
         this.animeService.setFolderPath(settings.anime.folderPath);
         this.movieService.setFolderPath(settings.movies.folderPath);
-        this.seriesService.setFolderPath(settings.series.folderPath);
+        this.tvService.setFolderPath(settings.tv.folderPath);
         this.bookService.setFolderPath(settings.books.folderPath);
         this.mangaService.setFolderPath(settings.manga.folderPath);
         this.invalidateActiveServiceCache();
@@ -1900,7 +1901,7 @@ export class LibraryView extends ItemView {
     private getActiveSettings(): LorebaseSettings['games'] {
         if (this.mediaType === 'anime') return this.plugin.settings.anime;
         if (this.mediaType === 'movie') return this.plugin.settings.movies;
-        if (this.mediaType === 'series') return this.plugin.settings.series;
+        if (this.mediaType === 'tv') return this.plugin.settings.tv;
         if (this.mediaType === 'book') return this.plugin.settings.books;
         if (this.mediaType === 'manga') return this.plugin.settings.manga;
         return this.plugin.settings.games;
@@ -1977,17 +1978,17 @@ export class LibraryView extends ItemView {
                     : this.plugin.settings.movieDescriptionLines,
             };
         }
-        if (mediaType === 'series') {
+        if (mediaType === 'tv') {
             return {
                 layout: this.viewMode === 'horizontal'
-                    ? this.plugin.settings.seriesHorizontalOverlayTextLayout
-                    : this.plugin.settings.seriesOverlayTextLayout,
+                    ? this.plugin.settings.tvHorizontalOverlayTextLayout
+                    : this.plugin.settings.tvOverlayTextLayout,
                 visibility: this.viewMode === 'horizontal'
-                    ? this.plugin.settings.seriesHorizontalOverlayTextVisibility
-                    : this.plugin.settings.seriesOverlayTextVisibility,
+                    ? this.plugin.settings.tvHorizontalOverlayTextVisibility
+                    : this.plugin.settings.tvOverlayTextVisibility,
                 descriptionLines: this.viewMode === 'horizontal'
-                    ? this.plugin.settings.seriesHorizontalDescriptionLines
-                    : this.plugin.settings.seriesDescriptionLines,
+                    ? this.plugin.settings.tvHorizontalDescriptionLines
+                    : this.plugin.settings.tvDescriptionLines,
             };
         }
         if (mediaType === 'book') {
@@ -2040,10 +2041,10 @@ export class LibraryView extends ItemView {
                 ? this.plugin.settings.movieHorizontalBadges
                 : this.plugin.settings.movieBadges;
         }
-        if (mediaType === 'series') {
+        if (mediaType === 'tv') {
             return this.viewMode === 'horizontal'
-                ? this.plugin.settings.seriesHorizontalBadges
-                : this.plugin.settings.seriesBadges;
+                ? this.plugin.settings.tvHorizontalBadges
+                : this.plugin.settings.tvBadges;
         }
         if (mediaType === 'book') {
             return this.viewMode === 'horizontal'
@@ -2106,8 +2107,8 @@ export class LibraryView extends ItemView {
             ? this.plugin.settings.statusLabels.anime
             : mediaType === 'movie'
                 ? this.plugin.settings.statusLabels.movies
-                : mediaType === 'series'
-                    ? this.plugin.settings.statusLabels.series
+                : mediaType === 'tv'
+                    ? this.plugin.settings.statusLabels.tv
                     : mediaType === 'book'
                         ? this.plugin.settings.statusLabels.books
                         : mediaType === 'manga'

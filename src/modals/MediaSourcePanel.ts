@@ -104,7 +104,7 @@ function resolveSourceUrl(item: MediaItem, identity = resolveSourceIdentity(item
         case 'anilist': return `https://anilist.co/anime/${encodedId}`;
         case 'jikan': return `https://myanimelist.net/anime/${encodedId}`;
         case 'shikimori': return `https://shikimori.one/animes/${encodedId}`;
-        case 'tmdb': return `https://www.themoviedb.org/${item.type === 'series' ? 'tv' : 'movie'}/${encodedId}`;
+        case 'tmdb': return `https://www.themoviedb.org/${item.type === 'tv' ? 'tv' : 'movie'}/${encodedId}`;
         case 'tvmaze': return `https://www.tvmaze.com/shows/${encodedId}`;
         case 'omdb': return `https://www.imdb.com/title/${encodedId}/`;
         case 'googlebooks': return `https://books.google.com/books?id=${encodedId}`;

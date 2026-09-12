@@ -40,17 +40,17 @@ export class DeleteModal extends Modal {
         const headerText = header.createDiv({ cls: 'lorebase-delete-header-text' });
         const isAnime = this.item.type === 'anime';
         const isMovie = this.item.type === 'movie';
-        const isSeries = this.item.type === 'series';
+        const isSeries = this.item.type === 'tv';
         const isReadingMedia = this.item.type === 'book' || this.item.type === 'manga';
         const title = isReadingMedia
             ? t('deleteTitleReading')
             : isMovie ? t('deleteTitleMovie')
-                : isSeries ? t('deleteTitleSeries')
+                : isSeries ? t('deleteTitleTv')
                     : isAnime ? t('deleteTitleAnime') : t('deleteTitle');
         const subtitle = isReadingMedia
             ? t('deleteSubtitleReading')
             : isMovie ? t('deleteSubtitleMovie')
-                : isSeries ? t('deleteSubtitleSeries')
+                : isSeries ? t('deleteSubtitleTv')
                     : isAnime ? t('deleteSubtitleAnime') : t('deleteSubtitle');
         headerText.createEl('h2', { text: title });
         headerText.createEl('p', { cls: 'lorebase-delete-subtitle', text: subtitle });
@@ -103,7 +103,7 @@ export class DeleteModal extends Modal {
         const confirmText = isReadingMedia
             ? t('deleteConfirmAckReading')
             : isMovie ? t('deleteConfirmAckMovie')
-                : isSeries ? t('deleteConfirmAckSeries')
+                : isSeries ? t('deleteConfirmAckTv')
                     : isAnime ? t('deleteConfirmAckAnime') : t('deleteConfirmAck');
         const confirmLabel = confirmRow.createEl('label', {
             text: confirmText,

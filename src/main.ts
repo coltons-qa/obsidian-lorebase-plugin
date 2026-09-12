@@ -57,7 +57,7 @@ export default class LorebasePlugin extends Plugin {
     private gameService: GameService | null = null;
     private animeService: AnimeService | null = null;
     private movieService: VideoService | null = null;
-    private seriesService: VideoService | null = null;
+    private tvService: VideoService | null = null;
     private bookService: ReadingService | null = null;
     private mangaService: ReadingService | null = null;
     private mediaType: MediaType = 'game';
@@ -84,7 +84,7 @@ export default class LorebasePlugin extends Plugin {
         this.animeService = new AnimeService(this.app, this.metadataService);
         this.animeService.setFolderPath(this.settings.anime.folderPath);
         this.movieService = new VideoService(this.app, 'movie', this.settings.movies.folderPath, this.metadataService);
-        this.seriesService = new VideoService(this.app, 'series', this.settings.series.folderPath, this.metadataService);
+        this.tvService = new VideoService(this.app, 'tv', this.settings.tv.folderPath, this.metadataService);
         this.bookService = new ReadingService(this.app, 'book', this.settings.books.folderPath, this.metadataService);
         this.mangaService = new ReadingService(this.app, 'manga', this.settings.manga.folderPath, this.metadataService);
         this.integrationService = new IntegrationService(this.app, () => this.settings, () => {
@@ -136,10 +136,10 @@ export default class LorebasePlugin extends Plugin {
             }
         });
 
-        this.addLocalizedCommand('commandAddSeries', {
-            id: 'add-series',
+        this.addLocalizedCommand('commandAddTv', {
+            id: 'add-tv',
             callback: () => {
-                void this.integrationService?.addSeries();
+                void this.integrationService?.addTv();
             }
         });
 
@@ -187,7 +187,7 @@ export default class LorebasePlugin extends Plugin {
         this.gameService = null;
         this.animeService = null;
         this.movieService = null;
-        this.seriesService = null;
+        this.tvService = null;
         this.bookService = null;
         this.mangaService = null;
 
@@ -208,6 +208,44 @@ export default class LorebasePlugin extends Plugin {
     async loadSettings(): Promise<void> {
         const loaded: unknown = await this.loadData();
         const sanitized = this.isSettingsRecord(loaded) ? { ...loaded } : {};
+
+        // Migration: rename persisted 'series' media type keys to 'tv'
+        const raw = sanitized as Record<string, unknown>;
+        if (raw.series && !raw.tv) {
+            raw.tv = raw.series;
+        }
+        delete raw.series;
+        const enabledRaw = raw.enabledMedia as Record<string, unknown> | undefined;
+        if (enabledRaw?.series !== undefined && enabledRaw.tv === undefined) {
+            enabledRaw.tv = enabledRaw.series;
+        }
+        if (enabledRaw) delete enabledRaw.series;
+        const statusRaw = raw.statusLabels as Record<string, unknown> | undefined;
+        if (statusRaw?.series && !statusRaw.tv) {
+            statusRaw.tv = statusRaw.series;
+        }
+        if (statusRaw) delete statusRaw.series;
+        const cdRaw = raw.completionDateBadgeFormats as Record<string, unknown> | undefined;
+        if (cdRaw?.series && !cdRaw.tv) {
+            cdRaw.tv = cdRaw.series;
+        }
+        if (cdRaw) delete cdRaw.series;
+        for (const [oldKey, newKey] of [
+            ['seriesDescriptionLines', 'tvDescriptionLines'],
+            ['seriesHorizontalDescriptionLines', 'tvHorizontalDescriptionLines'],
+            ['seriesOverlayTextLayout', 'tvOverlayTextLayout'],
+            ['seriesHorizontalOverlayTextLayout', 'tvHorizontalOverlayTextLayout'],
+            ['seriesOverlayTextVisibility', 'tvOverlayTextVisibility'],
+            ['seriesHorizontalOverlayTextVisibility', 'tvHorizontalOverlayTextVisibility'],
+            ['seriesBadges', 'tvBadges'],
+            ['seriesHorizontalBadges', 'tvHorizontalBadges'],
+        ] as const) {
+            if (raw[oldKey] !== undefined && raw[newKey] === undefined) {
+                raw[newKey] = raw[oldKey];
+            }
+            delete raw[oldKey];
+        }
+
         this.settings = Object.assign({}, DEFAULT_SETTINGS, sanitized);
         const particleIntensity = Number(sanitized.particleIntensity);
         this.settings.particleIntensity = Number.isFinite(particleIntensity)
@@ -227,7 +265,7 @@ export default class LorebasePlugin extends Plugin {
             games: normalizeCompletionDateBadgeFormat(sanitized?.completionDateBadgeFormats?.games),
             anime: normalizeCompletionDateBadgeFormat(sanitized?.completionDateBadgeFormats?.anime),
             movies: normalizeCompletionDateBadgeFormat(sanitized?.completionDateBadgeFormats?.movies),
-            series: normalizeCompletionDateBadgeFormat(sanitized?.completionDateBadgeFormats?.series),
+            tv: normalizeCompletionDateBadgeFormat(sanitized?.completionDateBadgeFormats?.tv),
             books: normalizeCompletionDateBadgeFormat(sanitized?.completionDateBadgeFormats?.books),
             manga: normalizeCompletionDateBadgeFormat(sanitized?.completionDateBadgeFormats?.manga),
         };
@@ -243,8 +281,8 @@ export default class LorebasePlugin extends Plugin {
         if (sanitized?.movies) {
             this.settings.movies = Object.assign({}, DEFAULT_SETTINGS.movies, sanitized.movies);
         }
-        if (sanitized?.series) {
-            this.settings.series = Object.assign({}, DEFAULT_SETTINGS.series, sanitized.series);
+        if (sanitized?.tv) {
+            this.settings.tv = Object.assign({}, DEFAULT_SETTINGS.tv, sanitized.tv);
         }
         if (sanitized?.books) {
             this.settings.books = Object.assign({}, DEFAULT_SETTINGS.books, sanitized.books);
@@ -252,7 +290,7 @@ export default class LorebasePlugin extends Plugin {
         if (sanitized?.manga) {
             this.settings.manga = Object.assign({}, DEFAULT_SETTINGS.manga, sanitized.manga);
         }
-        for (const key of ['games', 'anime', 'movies', 'series', 'books', 'manga'] as const) {
+        for (const key of ['games', 'anime', 'movies', 'tv', 'books', 'manga'] as const) {
             const normalizedView = normalizeLibraryViewSettings(sanitized?.[key], DEFAULT_SETTINGS[key].viewState);
             this.settings[key] = Object.assign({}, this.settings[key]);
             Object.assign(this.settings[key], normalizedView);
@@ -291,12 +329,12 @@ export default class LorebasePlugin extends Plugin {
             games: Object.assign({}, DEFAULT_SETTINGS.statusLabels.games, sanitized?.statusLabels?.games ?? {}),
             anime: Object.assign({}, DEFAULT_SETTINGS.statusLabels.anime, sanitized?.statusLabels?.anime ?? {}),
             movies: Object.assign({}, DEFAULT_SETTINGS.statusLabels.movies, sanitized?.statusLabels?.movies ?? {}),
-            series: Object.assign({}, DEFAULT_SETTINGS.statusLabels.series, sanitized?.statusLabels?.series ?? {}),
+            tv: Object.assign({}, DEFAULT_SETTINGS.statusLabels.tv, sanitized?.statusLabels?.tv ?? {}),
             books: Object.assign({}, DEFAULT_SETTINGS.statusLabels.books, sanitized?.statusLabels?.books ?? {}),
             manga: Object.assign({}, DEFAULT_SETTINGS.statusLabels.manga, sanitized?.statusLabels?.manga ?? {}),
         };
         const legacyCompletedLabel = t('statusPlayed').trim().toLowerCase();
-        for (const labels of [this.settings.statusLabels.movies, this.settings.statusLabels.series]) {
+        for (const labels of [this.settings.statusLabels.movies, this.settings.statusLabels.tv]) {
             if (labels.completed?.trim().toLowerCase() === legacyCompletedLabel) {
                 delete labels.completed;
             }
@@ -337,7 +375,7 @@ export default class LorebasePlugin extends Plugin {
         const settingsRecord = this.settings as unknown as Record<string, unknown>;
         const sanitizedRecord = sanitized as Record<string, unknown>;
         const defaultsRecord = DEFAULT_SETTINGS as unknown as Record<string, unknown>;
-        const mediaCustomization: Record<'game' | 'anime' | 'movie' | 'series' | 'book' | 'manga', Record<'vertical' | 'horizontal', CustomizationProfile>> = {
+        const mediaCustomization: Record<'game' | 'anime' | 'movie' | 'tv' | 'book' | 'manga', Record<'vertical' | 'horizontal', CustomizationProfile>> = {
             game: {
                 vertical: {
                     descriptionKey: 'descriptionLines',
@@ -399,25 +437,25 @@ export default class LorebasePlugin extends Plugin {
                     badgesFallbackKey: 'horizontalBadges',
                 },
             },
-            series: {
+            tv: {
                 vertical: {
-                    descriptionKey: 'seriesDescriptionLines',
+                    descriptionKey: 'tvDescriptionLines',
                     descriptionFallbackKey: 'descriptionLines',
-                    layoutKey: 'seriesOverlayTextLayout',
+                    layoutKey: 'tvOverlayTextLayout',
                     layoutFallbackKey: 'overlayTextLayout',
-                    visibilityKey: 'seriesOverlayTextVisibility',
+                    visibilityKey: 'tvOverlayTextVisibility',
                     visibilityFallbackKey: 'overlayTextVisibility',
-                    badgesKey: 'seriesBadges',
+                    badgesKey: 'tvBadges',
                     badgesFallbackKey: 'badges',
                 },
                 horizontal: {
-                    descriptionKey: 'seriesHorizontalDescriptionLines',
+                    descriptionKey: 'tvHorizontalDescriptionLines',
                     descriptionFallbackKey: 'horizontalDescriptionLines',
-                    layoutKey: 'seriesHorizontalOverlayTextLayout',
+                    layoutKey: 'tvHorizontalOverlayTextLayout',
                     layoutFallbackKey: 'horizontalOverlayTextLayout',
-                    visibilityKey: 'seriesHorizontalOverlayTextVisibility',
+                    visibilityKey: 'tvHorizontalOverlayTextVisibility',
                     visibilityFallbackKey: 'horizontalOverlayTextVisibility',
-                    badgesKey: 'seriesHorizontalBadges',
+                    badgesKey: 'tvHorizontalBadges',
                     badgesFallbackKey: 'horizontalBadges',
                 },
             },
@@ -470,7 +508,7 @@ export default class LorebasePlugin extends Plugin {
         const readDefault = <T>(key: keyof LorebaseSettings): T => defaultsRecord[key as string] as T;
         const readSanitized = <T>(key: keyof LorebaseSettings): T | undefined => sanitizedRecord[key as string] as T | undefined;
 
-        for (const media of ['game', 'anime', 'movie', 'series', 'book', 'manga'] as const) {
+        for (const media of ['game', 'anime', 'movie', 'tv', 'book', 'manga'] as const) {
             for (const orientation of ['vertical', 'horizontal'] as const) {
                 const profile = mediaCustomization[media][orientation];
                 settingsRecord[profile.descriptionKey as string] = normalizeDescriptionLines(
@@ -553,7 +591,7 @@ export default class LorebasePlugin extends Plugin {
                 integrations.media.games = Object.assign({}, defaultIntegrations.media.games, sanitized.integrations.media.games ?? {});
                 integrations.media.anime = Object.assign({}, defaultIntegrations.media.anime, sanitized.integrations.media.anime ?? {});
                 integrations.media.movies = Object.assign({}, defaultIntegrations.media.movies, sanitized.integrations.media.movies ?? {});
-                integrations.media.series = Object.assign({}, defaultIntegrations.media.series, sanitized.integrations.media.series ?? {});
+                integrations.media.tv = Object.assign({}, defaultIntegrations.media.tv, sanitized.integrations.media.tv ?? {});
                 integrations.media.books = Object.assign({}, defaultIntegrations.media.books, sanitized.integrations.media.books ?? {});
                 integrations.media.manga = Object.assign({}, defaultIntegrations.media.manga, sanitized.integrations.media.manga ?? {});
             }
@@ -656,7 +694,7 @@ export default class LorebasePlugin extends Plugin {
         stripMediaTemplateFields(media.anime, ['scoreImdb']);
 
         if (!this.settings.migrations?.templateTypeField) {
-            for (const mediaSettings of [media.anime, media.movies, media.series, media.books, media.manga]) {
+            for (const mediaSettings of [media.anime, media.movies, media.tv, media.books, media.manga]) {
                 if (mediaSettings?.templateMode === 'advanced') continue;
                 const fields = Array.isArray(mediaSettings?.templateFields)
                     ? mediaSettings.templateFields
@@ -687,10 +725,34 @@ export default class LorebasePlugin extends Plugin {
             }
         }
 
+        if (!this.settings.migrations?.bookSeriesTemplateFields) {
+            if (media.books?.templateMode !== 'advanced') {
+                const fields = Array.isArray(media.books?.templateFields)
+                    ? media.books.templateFields
+                    : [];
+                const plotIndex = fields.indexOf('plot');
+                const insertAt = plotIndex >= 0 ? plotIndex + 1 : fields.length;
+                if (!fields.includes('bookSeries')) {
+                    fields.splice(insertAt, 0, 'bookSeries');
+                    changed = true;
+                }
+                if (!fields.includes('seriesPosition')) {
+                    const seriesIndex = fields.indexOf('bookSeries');
+                    fields.splice(seriesIndex >= 0 ? seriesIndex + 1 : fields.length, 0, 'seriesPosition');
+                    changed = true;
+                }
+                media.books.templateFields = fields;
+            }
+            if (this.settings.migrations) {
+                this.settings.migrations.bookSeriesTemplateFields = true;
+                changed = true;
+            }
+        }
+
         syncSimpleTemplate('games', media.games, Boolean(media.games?.howLongToBeatEnabled));
         syncSimpleTemplate('anime', media.anime);
         syncSimpleTemplate('movies', media.movies);
-        syncSimpleTemplate('series', media.series);
+        syncSimpleTemplate('tv', media.tv);
         syncSimpleTemplate('books', media.books);
         syncSimpleTemplate('manga', media.manga);
 
@@ -724,8 +786,8 @@ export default class LorebasePlugin extends Plugin {
         if (this.movieService) {
             this.movieService.setFolderPath(this.settings.movies.folderPath);
         }
-        if (this.seriesService) {
-            this.seriesService.setFolderPath(this.settings.series.folderPath);
+        if (this.tvService) {
+            this.tvService.setFolderPath(this.settings.tv.folderPath);
         }
         if (this.bookService) {
             this.bookService.setFolderPath(this.settings.books.folderPath);
@@ -781,7 +843,7 @@ export default class LorebasePlugin extends Plugin {
             { type: 'game', id: 'open-games-library', key: 'commandOpenGamesLibrary' },
             { type: 'anime', id: 'open-anime-library', key: 'commandOpenAnimeLibrary' },
             { type: 'movie', id: 'open-movies-library', key: 'commandOpenMoviesLibrary' },
-            { type: 'series', id: 'open-series-library', key: 'commandOpenSeriesLibrary' },
+            { type: 'tv', id: 'open-tv-library', key: 'commandOpenTvLibrary' },
             { type: 'book', id: 'open-books-library', key: 'commandOpenBooksLibrary' },
             { type: 'manga', id: 'open-manga-library', key: 'commandOpenMangaLibrary' },
         ];
@@ -862,7 +924,7 @@ export default class LorebasePlugin extends Plugin {
         switch (mediaType) {
             case 'anime': return this.animeService?.parseAnimeFromCache(file) ?? null;
             case 'movie': return this.movieService?.parseFromCache(file) ?? null;
-            case 'series': return this.seriesService?.parseFromCache(file) ?? null;
+            case 'tv': return this.tvService?.parseFromCache(file) ?? null;
             case 'book': return this.bookService?.parseFromCache(file) ?? null;
             case 'manga': return this.mangaService?.parseFromCache(file) ?? null;
             case 'game': return this.gameService?.parseGameFromCache(file) ?? null;
@@ -950,8 +1012,8 @@ export default class LorebasePlugin extends Plugin {
             return;
         }
 
-        if (item.type === 'movie' || item.type === 'series') {
-            const service = item.type === 'movie' ? this.movieService : this.seriesService;
+        if (item.type === 'movie' || item.type === 'tv') {
+            const service = item.type === 'movie' ? this.movieService : this.tvService;
             const modalRef: { current: VideoEditModal | null } = { current: null };
             const modal: VideoEditModal = new VideoEditModal(
                 this.app,
@@ -1028,7 +1090,8 @@ export default class LorebasePlugin extends Plugin {
                     onSave,
                     () => modal.saveBeforeSourceRefresh()
                 ),
-                this.makeRelatedItemClickHandler(modalRef, onSave)
+                this.makeRelatedItemClickHandler(modalRef, onSave),
+                item.type === 'book' ? this.bookService?.getBookSeriesList() ?? [] : []
             );
             modalRef.current = modal;
             modal.open();
@@ -1261,8 +1324,8 @@ export default class LorebasePlugin extends Plugin {
             await this.animeService?.updateAnime(item, updates);
         } else if (item.type === 'movie') {
             await this.movieService?.updateItem(item, updates);
-        } else if (item.type === 'series') {
-            await this.seriesService?.updateItem(item, updates);
+        } else if (item.type === 'tv') {
+            await this.tvService?.updateItem(item, updates);
         } else if (item.type === 'book') {
             await this.bookService?.updateItem(item, updates);
         } else if (item.type === 'manga') {
@@ -1299,7 +1362,7 @@ export default class LorebasePlugin extends Plugin {
             { type: 'game', folderPath: this.settings.games.folderPath },
             { type: 'anime', folderPath: this.settings.anime.folderPath },
             { type: 'movie', folderPath: this.settings.movies.folderPath },
-            { type: 'series', folderPath: this.settings.series.folderPath },
+            { type: 'tv', folderPath: this.settings.tv.folderPath },
             { type: 'book', folderPath: this.settings.books.folderPath },
             { type: 'manga', folderPath: this.settings.manga.folderPath },
         ];
@@ -1398,8 +1461,8 @@ export default class LorebasePlugin extends Plugin {
             void this.integrationService?.addMovie();
             return;
         }
-        if (mediaType === 'series') {
-            void this.integrationService?.addSeries();
+        if (mediaType === 'tv') {
+            void this.integrationService?.addTv();
             return;
         }
         if (mediaType === 'book') {
@@ -1432,8 +1495,8 @@ export default class LorebasePlugin extends Plugin {
         return this.movieService;
     }
 
-    getSeriesService(): VideoService | null {
-        return this.seriesService;
+    getTvService(): VideoService | null {
+        return this.tvService;
     }
 
     getBookService(): ReadingService | null {
@@ -1480,7 +1543,7 @@ export default class LorebasePlugin extends Plugin {
         if (this.settings.enabledMedia?.games) enabled.push('game');
         if (this.settings.enabledMedia?.anime) enabled.push('anime');
         if (this.settings.enabledMedia?.movies) enabled.push('movie');
-        if (this.settings.enabledMedia?.series) enabled.push('series');
+        if (this.settings.enabledMedia?.tv) enabled.push('tv');
         if (this.settings.enabledMedia?.books) enabled.push('book');
         if (this.settings.enabledMedia?.manga) enabled.push('manga');
         return enabled;
@@ -1490,7 +1553,7 @@ export default class LorebasePlugin extends Plugin {
         if (mediaType === 'game') return Boolean(this.settings.enabledMedia?.games);
         if (mediaType === 'anime') return Boolean(this.settings.enabledMedia?.anime);
         if (mediaType === 'movie') return Boolean(this.settings.enabledMedia?.movies);
-        if (mediaType === 'series') return Boolean(this.settings.enabledMedia?.series);
+        if (mediaType === 'tv') return Boolean(this.settings.enabledMedia?.tv);
         if (mediaType === 'book') return Boolean(this.settings.enabledMedia?.books);
         return Boolean(this.settings.enabledMedia?.manga);
     }
@@ -1498,7 +1561,7 @@ export default class LorebasePlugin extends Plugin {
     private normalizeMediaType(): void {
         const enabled = this.getEnabledMedia();
         if (enabled.length === 0) {
-            this.settings.enabledMedia = { games: true, anime: false, movies: false, series: false, books: false, manga: false };
+            this.settings.enabledMedia = { games: true, anime: false, movies: false, tv: false, books: false, manga: false };
             this.mediaType = 'game';
             return;
         }
@@ -1613,7 +1676,7 @@ export default class LorebasePlugin extends Plugin {
                     games: this.settings.games.folderPath,
                     anime: this.settings.anime.folderPath,
                     movies: this.settings.movies.folderPath,
-                    series: this.settings.series.folderPath,
+                    tv: this.settings.tv.folderPath,
                     books: this.settings.books.folderPath,
                     manga: this.settings.manga.folderPath,
                 },
@@ -1669,7 +1732,7 @@ export default class LorebasePlugin extends Plugin {
         this.gameService?.invalidateCache();
         this.animeService?.invalidateCache();
         this.movieService?.invalidateCache();
-        this.seriesService?.invalidateCache();
+        this.tvService?.invalidateCache();
         this.bookService?.invalidateCache();
         this.mangaService?.invalidateCache();
     }
@@ -1711,7 +1774,7 @@ export default class LorebasePlugin extends Plugin {
             { type: 'game', enabled: this.settings.enabledMedia.games, label: t('contextGames'), icon: 'gamepad-2' },
             { type: 'anime', enabled: this.settings.enabledMedia.anime, label: t('contextAnime'), icon: 'clapperboard' },
             { type: 'movie', enabled: this.settings.enabledMedia.movies, label: t('settingsMovies'), icon: 'film' },
-            { type: 'series', enabled: this.settings.enabledMedia.series, label: t('settingsSeries'), icon: 'tv' },
+            { type: 'tv', enabled: this.settings.enabledMedia.tv, label: t('settingsTv'), icon: 'tv' },
             { type: 'book', enabled: this.settings.enabledMedia.books, label: t('settingsBooks'), icon: 'book-open' },
             { type: 'manga', enabled: this.settings.enabledMedia.manga, label: t('settingsManga'), icon: 'book-open-text' },
         ];

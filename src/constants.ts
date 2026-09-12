@@ -108,8 +108,8 @@ integration_id: "{{VALUE:integrationId}}"
 url: "{{VALUE:url}}"
 ---`;
 
-const DEFAULT_SERIES_TEMPLATE = `---
-type: "series"
+const DEFAULT_TV_TEMPLATE = `---
+type: "tv"
 title: "{{VALUE:name}}"
 poster: "{{VALUE:Poster}}"
 poster_b: "{{VALUE:PosterHorizontal}}"
@@ -124,7 +124,7 @@ seasons: {{VALUE:seasons}}
 episode_current: {{VALUE:episodeCurrent}}
 episode_total: {{VALUE:episodeTotal}}
 active_part_id: "{{VALUE:activePartId}}"
-series_parts:
+tv_parts:
 {{VALUE:videoPartsYaml}}
 rating: {{VALUE:rating}}
 communityRating: {{VALUE:communityRating}}
@@ -289,7 +289,7 @@ const DEFAULT_MOVIE_TEMPLATE_FIELDS = [
     'url',
 ];
 
-const DEFAULT_SERIES_TEMPLATE_FIELDS = [
+const DEFAULT_TV_TEMPLATE_FIELDS = [
     'type',
     'name',
     'poster',
@@ -300,7 +300,7 @@ const DEFAULT_SERIES_TEMPLATE_FIELDS = [
     'seasons',
     'episodeCurrent',
     'episodeTotal',
-    'seriesParts',
+    'tvParts',
     'rating',
     'communityRating',
     'communityVotes',
@@ -317,6 +317,8 @@ const DEFAULT_BOOK_TEMPLATE_FIELDS = [
     'poster',
     'posterHorizontal',
     'plot',
+    'bookSeries',
+    'seriesPosition',
     'authors',
     'publisher',
     'genres',
@@ -409,11 +411,11 @@ export const DEFAULT_SETTINGS: LorebaseSettings = {
         games: 'short',
         anime: 'short',
         movies: 'short',
-        series: 'short',
+        tv: 'short',
         books: 'short',
         manga: 'short',
     },
-    enabledMedia: { games: true, anime: true, movies: true, series: true, books: true, manga: true },
+    enabledMedia: { games: true, anime: true, movies: true, tv: true, books: true, manga: true },
     particleEffect: 'none',
     particleIntensity: PARTICLE_INTENSITY_MAX,
     descriptionLines: 4,
@@ -446,8 +448,8 @@ export const DEFAULT_SETTINGS: LorebaseSettings = {
     animeHorizontalDescriptionLines: 4,
     movieDescriptionLines: 4,
     movieHorizontalDescriptionLines: 4,
-    seriesDescriptionLines: 4,
-    seriesHorizontalDescriptionLines: 4,
+    tvDescriptionLines: 4,
+    tvHorizontalDescriptionLines: 4,
     bookDescriptionLines: 4,
     bookHorizontalDescriptionLines: 4,
     mangaDescriptionLines: 4,
@@ -476,13 +478,13 @@ export const DEFAULT_SETTINGS: LorebaseSettings = {
         format: { x: 30, y: 25.9 },
         description: { x: 2, y: 41.5 },
     },
-    seriesOverlayTextLayout: {
+    tvOverlayTextLayout: {
         title: { x: 7, y: 6.5 },
         year: { x: 7, y: 15 },
         format: { x: 30, y: 15 },
         description: { x: 2, y: 24 },
     },
-    seriesHorizontalOverlayTextLayout: {
+    tvHorizontalOverlayTextLayout: {
         title: { x: 7, y: 11.2 },
         year: { x: 7, y: 25.9 },
         format: { x: 30, y: 25.9 },
@@ -536,13 +538,13 @@ export const DEFAULT_SETTINGS: LorebaseSettings = {
         format: false,
         description: true,
     },
-    seriesOverlayTextVisibility: {
+    tvOverlayTextVisibility: {
         title: true,
         year: true,
         format: false,
         description: true,
     },
-    seriesHorizontalOverlayTextVisibility: {
+    tvHorizontalOverlayTextVisibility: {
         title: true,
         year: true,
         format: false,
@@ -579,8 +581,8 @@ export const DEFAULT_SETTINGS: LorebaseSettings = {
     animeHorizontalBadges: createDefaultBadges(),
     movieBadges: createDefaultBadges(),
     movieHorizontalBadges: createDefaultBadges(),
-    seriesBadges: createDefaultBadges(),
-    seriesHorizontalBadges: createDefaultBadges(),
+    tvBadges: createDefaultBadges(),
+    tvHorizontalBadges: createDefaultBadges(),
     bookBadges: createDefaultBadges(),
     bookHorizontalBadges: createDefaultBadges(),
     mangaBadges: createDefaultBadges(),
@@ -589,7 +591,7 @@ export const DEFAULT_SETTINGS: LorebaseSettings = {
         games: {},
         anime: {},
         movies: {},
-        series: {},
+        tv: {},
         books: {},
         manga: {},
     },
@@ -613,6 +615,7 @@ export const DEFAULT_SETTINGS: LorebaseSettings = {
         mangaTemplateAdultField: false,
         gameDefaultVisibilityFilters: false,
         jikanMangaProviderV1: false,
+        bookSeriesTemplateFields: false,
     },
     games: {
         ...DEFAULT_LIBRARY_SETTINGS,
@@ -649,9 +652,9 @@ export const DEFAULT_SETTINGS: LorebaseSettings = {
         viewState: { ...DEFAULT_LIBRARY_SETTINGS.viewState, sort: { ...DEFAULT_LIBRARY_SETTINGS.viewState.sort }, group: { ...DEFAULT_LIBRARY_SETTINGS.viewState.group }, rules: [], tags: [], genres: [] },
         savedViews: [],
     },
-    series: {
+    tv: {
         ...DEFAULT_LIBRARY_SETTINGS,
-        folderPath: 'Series',
+        folderPath: 'TV Series',
         viewState: { ...DEFAULT_LIBRARY_SETTINGS.viewState, sort: { ...DEFAULT_LIBRARY_SETTINGS.viewState.sort }, group: { ...DEFAULT_LIBRARY_SETTINGS.viewState.group }, rules: [], tags: [], genres: [] },
         savedViews: [],
     },
@@ -713,12 +716,12 @@ export const DEFAULT_SETTINGS: LorebaseSettings = {
                 templateFields: [...DEFAULT_MOVIE_TEMPLATE_FIELDS],
                 template: DEFAULT_MOVIE_TEMPLATE,
             },
-            series: {
+            tv: {
                 provider: 'tmdb',
                 templateEnabled: true,
                 templateMode: 'simple',
-                templateFields: [...DEFAULT_SERIES_TEMPLATE_FIELDS],
-                template: DEFAULT_SERIES_TEMPLATE,
+                templateFields: [...DEFAULT_TV_TEMPLATE_FIELDS],
+                template: DEFAULT_TV_TEMPLATE,
             },
             books: {
                 provider: 'hardcover',

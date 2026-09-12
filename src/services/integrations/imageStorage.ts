@@ -20,7 +20,7 @@ const IMAGE_FIELDS: Record<MediaKind, Array<{ key: ImageValueKey; label: string 
         { key: 'Poster', label: 'Poster' },
         { key: 'PosterHorizontal', label: 'Horizontal' },
     ],
-    series: [
+    tv: [
         { key: 'Poster', label: 'Poster' },
         { key: 'PosterHorizontal', label: 'Horizontal' },
     ],
@@ -49,7 +49,7 @@ const FRONTMATTER_IMAGE_FIELDS: Record<MediaKind, Array<{ key: string; label: st
         { key: 'poster', label: 'Poster' },
         { key: 'poster_b', label: 'Horizontal' },
     ],
-    series: [
+    tv: [
         { key: 'poster', label: 'Poster' },
         { key: 'poster_b', label: 'Horizontal' },
     ],
@@ -157,7 +157,7 @@ export async function localizeExistingNoteImages(
         ...getLibraryFiles(app, settings.games.folderPath, 'games'),
         ...getLibraryFiles(app, settings.anime.folderPath, 'anime'),
         ...getLibraryFiles(app, settings.movies.folderPath, 'movies'),
-        ...getLibraryFiles(app, settings.series.folderPath, 'series'),
+        ...getLibraryFiles(app, settings.tv.folderPath, 'tv'),
         ...getLibraryFiles(app, settings.books.folderPath, 'books'),
         ...getLibraryFiles(app, settings.manga.folderPath, 'manga'),
     ];

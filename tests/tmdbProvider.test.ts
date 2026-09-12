@@ -43,7 +43,7 @@ describe('TMDB provider', () => {
             };
         };
 
-        const results = await searchTmdb(fetchJson, 'the boys', 'key', { kind: 'series' });
+        const results = await searchTmdb(fetchJson, 'the boys', 'key', { kind: 'tv' });
 
         expect(results[0]).toMatchObject({
             id: '76479',
@@ -76,7 +76,7 @@ describe('TMDB provider', () => {
             };
         };
 
-        const details = await getTmdbDetails(fetchJson, '76479', 'key', 'series');
+        const details = await getTmdbDetails(fetchJson, '76479', 'key', 'tv');
 
         expect(details).toMatchObject({
             name: 'The Boys',
@@ -159,7 +159,7 @@ describe('TMDB provider', () => {
             },
         });
 
-        const details = await getTmdbDetails(fetchJson, '95396', 'key', 'series');
+        const details = await getTmdbDetails(fetchJson, '95396', 'key', 'tv');
 
         expect(details?.director).toBe('Dan Erickson');
     });

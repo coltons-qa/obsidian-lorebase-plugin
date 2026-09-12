@@ -66,6 +66,10 @@ const FIELD_ALIASES: Record<string, string[]> = {
     communityVotes: ['community-votes'],
     communityRatingProvider: ['community-rating-provider'],
     gameSeries: ['series'],
+    // bookSeries also maps to 'series'. Safe: enrichment operates per-note,
+    // and a book note never receives gameSeries values (or vice-versa).
+    bookSeries: ['series'],
+    seriesPosition: ['series-position'],
     steamAppId: ['steam-app-id'],
     main: ['hltb-main'],
     main_plus_sides: ['hltb-main-sides'],
@@ -258,7 +262,7 @@ export function mediaTypeToKind(type: string): MediaKind | null {
     if (type === 'game') return 'games';
     if (type === 'anime') return 'anime';
     if (type === 'movie') return 'movies';
-    if (type === 'series') return 'series';
+    if (type === 'tv') return 'tv';
     if (type === 'book') return 'books';
     if (type === 'manga') return 'manga';
     return null;
@@ -288,7 +292,7 @@ function isEmptyExisting(value: unknown, key: string): boolean {
 }
 
 function isPartField(key: string): boolean {
-    return key === 'anime_parts' || key === 'series_parts' || key === 'movie_parts' || key === 'manga_parts' || key === 'dlc';
+    return key === 'anime_parts' || key === 'tv_parts' || key === 'movie_parts' || key === 'manga_parts' || key === 'dlc';
 }
 
 function mergeStructuredList(

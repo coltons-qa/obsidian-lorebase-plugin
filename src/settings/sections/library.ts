@@ -17,7 +17,7 @@ const MEDIA_SETTINGS_OPTIONS: Array<{
     { key: 'games', label: () => t('settingsGames'), icon: 'gamepad-2' },
     { key: 'anime', label: () => t('settingsAnime'), icon: 'clapperboard' },
     { key: 'movies', label: () => t('settingsMovies'), icon: 'film' },
-    { key: 'series', label: () => t('settingsSeries'), icon: 'tv' },
+    { key: 'tv', label: () => t('settingsTv'), icon: 'tv' },
     { key: 'books', label: () => t('settingsBooks'), icon: 'book-open' },
     { key: 'manga', label: () => t('settingsManga'), icon: 'book-open-text' },
 ];
@@ -74,8 +74,8 @@ function renderLibrarySettingsPanel(
             ? t('settingsMediaAnime')
             : key === 'movies'
                 ? t('settingsMediaMovies')
-                : key === 'series'
-                    ? t('settingsMediaSeries')
+                : key === 'tv'
+                    ? t('settingsMediaTv')
                     : key === 'books'
                         ? t('settingsMediaBooks')
                         : t('settingsMediaManga');

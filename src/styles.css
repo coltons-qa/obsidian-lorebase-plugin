@@ -4100,7 +4100,7 @@ body {
     background: transparent;
 }
 
-.lorebase-editmode-series-parts .lorebase-editmode-anime-part-meta-rail {
+.lorebase-editmode-tv-parts .lorebase-editmode-anime-part-meta-rail {
     grid-template-columns: minmax(110px, 0.65fr) minmax(220px, 1.35fr);
 }
 
@@ -4233,7 +4233,7 @@ body {
         border-left: 0;
     }
 
-    .lorebase-editmode-series-parts .lorebase-editmode-anime-part-meta-rail {
+    .lorebase-editmode-tv-parts .lorebase-editmode-anime-part-meta-rail {
         grid-template-columns: 1fr;
     }
 }

@@ -208,7 +208,7 @@ describe('AnimeService', () => {
                     type: 'anime',
                     related_media: [
                         { type: 'movie', path: 'Movies/Film.md', title: 'Film' },
-                        { type: 'series', path: 'Series/Show.md' },
+                        { type: 'tv', path: 'Series/Show.md' },
                         { type: 'unknown', path: 'Bad.md', title: 'Bad' },
                     ],
                 },
@@ -220,7 +220,7 @@ describe('AnimeService', () => {
 
         expect(parsed?.relatedMedia).toEqual([
             { type: 'movie', path: 'Movies/Film.md', title: 'Film' },
-            { type: 'series', path: 'Series/Show.md', title: 'Show' },
+            { type: 'tv', path: 'Series/Show.md', title: 'Show' },
         ]);
     });
 

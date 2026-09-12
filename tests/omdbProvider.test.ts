@@ -15,7 +15,7 @@ describe('OMDb provider', () => {
             };
         };
 
-        const results = await searchOmdb(fetchJson, 'game of thrones', 'api key', { kind: 'series', page: 2, pageSize: 1 });
+        const results = await searchOmdb(fetchJson, 'game of thrones', 'api key', { kind: 'tv', page: 2, pageSize: 1 });
         const url = new URL(requestedUrl);
 
         expect(url.searchParams.get('apikey')).toBe('api key');
@@ -55,7 +55,7 @@ describe('OMDb provider', () => {
             };
         };
 
-        const details = await getOmdbDetails(fetchJson, 'tt0944947', 'key', 'series');
+        const details = await getOmdbDetails(fetchJson, 'tt0944947', 'key', 'tv');
 
         expect(details).toMatchObject({
             kind: 'video',

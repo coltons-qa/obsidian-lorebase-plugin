@@ -1,5 +1,5 @@
 import { App, TFile, TFolder } from 'obsidian';
-import { FilterState, MovieItem, SeriesItem, SortField, SortOrder, VideoPart, VideoStats, VideoStatus } from '../types';
+import { FilterState, MovieItem, TvItem, SortField, SortOrder, VideoPart, VideoStats, VideoStatus } from '../types';
 import { createRatingDistribution, DEFAULT_COVER } from '../constants';
 import { MetadataService } from './MetadataService';
 import { filterAndSortMedia } from './media/filtering';
@@ -8,8 +8,8 @@ import { getRandomItem, parseNumber, parseRelatedMedia, parseUserRating, parseYe
 import { collectFieldTags, collectTags, getAllMarkdownFiles, isTruthy, mapInFrameBatches, readFrontmatterValue } from './media/serviceUtils';
 import { upsertMarkdownSection } from './markdownSections';
 
-export type VideoMediaType = 'movie' | 'series';
-export type VideoItem = MovieItem | SeriesItem;
+export type VideoMediaType = 'movie' | 'tv';
+export type VideoItem = MovieItem | TvItem;
 
 export class VideoService {
     private app: App;
@@ -59,7 +59,8 @@ export class VideoService {
             const cache = this.app.metadataCache.getFileCache(file);
             const metadata = cache?.frontmatter || {};
             const rawType = typeof metadata.type === 'string' ? metadata.type.trim().toLowerCase() : '';
-            if (rawType && rawType !== this.mediaType) return null;
+            const normalizedType = rawType === 'series' ? 'tv' : rawType;
+            if (normalizedType && normalizedType !== this.mediaType) return null;
 
             const title = this.readText(metadata, ['title']) || file.basename?.trim() || 'Untitled';
             const description = this.readText(metadata, ['synopsis']) || '';
@@ -73,7 +74,7 @@ export class VideoService {
             const status = this.getStatus(this.readText(metadata, ['status']) || '') ?? 'planned';
             const parts = this.parseParts(readFrontmatterValue(
                 metadata,
-                this.mediaType === 'series' ? ['season-data'] : ['movie_parts']
+                this.mediaType === 'tv' ? ['season-data'] : ['movie_parts']
             ));
             const activePartId = this.readText(metadata, ['season-id-current']) || parts[0]?.id || null;
             const activePart = parts.find((part) => part.id === activePartId) ?? parts[0] ?? null;
@@ -112,10 +113,10 @@ export class VideoService {
                 rawFields: extractSimpleFrontmatter(metadata),
             };
 
-            if (this.mediaType === 'series') {
+            if (this.mediaType === 'tv') {
                 return {
                     ...base,
-                    type: 'series',
+                    type: 'tv',
                     releaseDate: this.readDateText(metadata, ['released']) || null,
                     runtime: this.readText(metadata, ['runtime']) || '',
                     director: this.readText(metadata, ['author']) || '',
@@ -241,7 +242,7 @@ export class VideoService {
         if ('seasons' in updates) frontmatterUpdates.seasons = updates.seasons;
         if ('networks' in updates) this.updateListField(frontmatterUpdates, frontmatter, ['networks', 'network'], updates.networks);
         if ('parts' in updates) {
-            if (this.mediaType === 'series') {
+            if (this.mediaType === 'tv') {
                 frontmatterUpdates['season-data'] = this.serializeParts(updates.parts ?? []);
                 if (this.hasKey(frontmatter, 'series_parts')) frontmatterUpdates.series_parts = null;
             } else {
@@ -250,7 +251,7 @@ export class VideoService {
             }
         }
         if ('activePartId' in updates) {
-            if (this.mediaType === 'series') {
+            if (this.mediaType === 'tv') {
                 frontmatterUpdates['season-id-current'] = updates.activePartId;
             }
             if (this.hasKey(frontmatter, 'active_part_id')) frontmatterUpdates.active_part_id = null;
@@ -279,7 +280,7 @@ export class VideoService {
             frontmatterUpdates['community-rating-provider'] = updates.communityRatingProvider;
             if (this.hasKey(frontmatter, 'communityRatingProvider')) frontmatterUpdates.communityRatingProvider = null;
         }
-        if (this.mediaType === 'series') {
+        if (this.mediaType === 'tv') {
             const activeId = typeof updates.activePartId === 'string' ? updates.activePartId : item.activePartId;
             const parts = Array.isArray(updates.parts) ? updates.parts : item.parts;
             const activePart = parts?.find((part) => part.id === activeId);
@@ -316,7 +317,7 @@ export class VideoService {
         if (!Array.isArray(raw)) return [];
         return raw.map((entry, index) => {
             const source = entry && typeof entry === 'object' ? entry as Record<string, unknown> : {};
-            const kind = this.mediaType === 'series' ? 'season' : 'movie';
+            const kind = this.mediaType === 'tv' ? 'season' : 'movie';
             const seasonNumber = parseNumber(readFrontmatterValue(source, ['season-number']));
             return {
                 id: this.readText(source, ['id']) || `${kind}-${index + 1}`,

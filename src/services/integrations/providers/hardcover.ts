@@ -77,6 +77,7 @@ export async function getHardcoverBookDetails(
     contributions {
       author { name }
     }
+    cached_featured_series
   }
 }`;
 
@@ -138,6 +139,12 @@ function mapHardcoverBookDetails(book: Record<string, unknown>): BookDetails {
     const pages = getString(edition, 'pages') || getString(book, 'pages');
     const authors = readContributors(book);
 
+    const featuredSeries = getObject(book, 'cached_featured_series');
+    const seriesName = getString(getObject(featuredSeries, 'series'), 'name');
+    const rawPosition = getString(featuredSeries, 'position');
+    const parsedPosition = rawPosition ? parseFloat(rawPosition) : null;
+    const seriesPosition = Number.isFinite(parsedPosition) ? parsedPosition : null;
+
     return {
         kind: 'book',
         name: getString(book, 'title') || getString(edition, 'title') || 'Untitled',
@@ -152,6 +159,8 @@ function mapHardcoverBookDetails(book: Record<string, unknown>): BookDetails {
         pages,
         rating: '',
         url: slug ? `https://hardcover.app/books/${slug}` : `https://hardcover.app/books/${getString(book, 'id')}`,
+        bookSeries: seriesName || undefined,
+        seriesPosition,
     };
 }
 

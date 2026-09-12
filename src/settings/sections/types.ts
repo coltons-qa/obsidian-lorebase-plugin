@@ -2,7 +2,7 @@ import type { App } from 'obsidian';
 import type { TranslationKey } from '../../localization';
 import type LorebasePlugin from '../../main';
 
-export type MediaTypeKey = 'games' | 'anime' | 'movies' | 'series' | 'books' | 'manga';
+export type MediaTypeKey = 'games' | 'anime' | 'movies' | 'tv' | 'books' | 'manga';
 export type MediaTabScope = 'statusLabels' | 'mediaSettings' | 'integrationTemplates';
 
 export interface TemplateFieldDef {

@@ -48,7 +48,7 @@ describe('TVmaze provider', () => {
             },
         ];
 
-        const results = await searchTvmaze(fetchJson, 'boys', '', { kind: 'series' });
+        const results = await searchTvmaze(fetchJson, 'boys', '', { kind: 'tv' });
 
         expect(results).toHaveLength(1);
         expect(results[0]).toMatchObject({

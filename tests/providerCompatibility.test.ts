@@ -9,7 +9,7 @@ describe('provider compatibility matrix', () => {
         ['games', ['rawg', 'steam', 'igdb']],
         ['anime', ['anilist', 'jikan', 'shikimori']],
         ['movies', ['tmdb', 'omdb']],
-        ['series', ['tmdb', 'tvmaze', 'omdb']],
+        ['tv', ['tmdb', 'tvmaze', 'omdb']],
         ['books', ['hardcover', 'googlebooks']],
         ['manga', ['anilist', 'shikimori', 'mangaupdates', 'mangadex']],
     ])('offers only compatible providers for %s', (kind, expected) => {

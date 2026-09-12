@@ -47,6 +47,8 @@ export class ReadingEditModal extends Modal {
     private genres: string[];
     private tags: string[];
     private authors: string[];
+    private bookSeries: string;
+    private seriesPosition: number | null;
     private illustrator: string;
     private owned: string;
     private count: number | null;
@@ -91,7 +93,8 @@ export class ReadingEditModal extends Modal {
         incomingRelated: RelatedMediaLink[] = [],
         private readonly onRefreshSource?: MediaSourceAction,
         private readonly onChangeSource?: MediaSourceAction,
-        private readonly onRelatedItemClick?: RelatedItemClickHandler
+        private readonly onRelatedItemClick?: RelatedItemClickHandler,
+        private readonly seriesOptions: string[] = []
     ) {
         super(app);
         this.item = item;
@@ -113,6 +116,8 @@ export class ReadingEditModal extends Modal {
         this.genres = this.normalizeList(item.genres);
         this.tags = this.normalizeList(item.tags);
         this.authors = this.normalizeList(item.authors);
+        this.bookSeries = item.type === 'book' ? (item.bookSeries ?? '') : '';
+        this.seriesPosition = item.type === 'book' ? (item.seriesPosition ?? null) : null;
         this.illustrator = item.type === 'book' ? (item.illustrator ?? '') : '';
         this.owned = item.owned ?? '';
         this.count = item.count ?? null;
@@ -350,6 +355,10 @@ export class ReadingEditModal extends Modal {
                                 </label>
                                 ${isBook ? `
                                 <label class="lorebase-editmode-field is-wide">
+                                    <span class="lorebase-editmode-field-label">${t('editSeries')}</span>
+                                    <div data-field="series"></div>
+                                </label>
+                                <label class="lorebase-editmode-field is-wide">
                                     <span class="lorebase-editmode-field-label">${t('templateFieldIllustrator')}</span>
                                     <input class="lorebase-editmode-input" data-field="illustrator" type="text" placeholder="${t('templateFieldIllustrator')}" />
                                 </label>
@@ -478,12 +487,139 @@ export class ReadingEditModal extends Modal {
             this.repeatable = (event.currentTarget as HTMLInputElement).checked;
         });
         if (this.item.type === 'book') {
+            this.renderSeriesCombobox(root);
             this.bindText(root, '[data-field="publisher"]', (value) => this.publisher = value);
         } else {
             this.bindText(root, '[data-field="artists"]', (value) => this.artists = this.splitList(value));
         }
 
         this.bindChipInput(root, '[data-field="new-tag"]', this.tags, () => this.renderTagChips(root), true);
+    }
+
+    private renderSeriesCombobox(root: HTMLElement): void {
+        const host = this.qs<HTMLElement>(root, '[data-field="series"]');
+        if (!host) return;
+        host.empty();
+        host.addClass('lorebase-settings-dropdown');
+
+        const input = host.createEl('input', {
+            cls: 'lorebase-editmode-input lorebase-editmode-combobox-input',
+            attr: {
+                type: 'text',
+                placeholder: t('editSeries'),
+                'aria-haspopup': 'listbox',
+                'aria-expanded': 'false',
+            },
+        });
+        input.value = this.bookSeries;
+
+        const toggle = host.createEl('button', {
+            cls: 'lorebase-editmode-combobox-toggle',
+            attr: { type: 'button', 'aria-label': t('editSeries') },
+        });
+        setIcon(toggle, 'chevron-down');
+
+        const panel = host.createDiv({
+            cls: 'lorebase-settings-dropdown-panel lorebase-editmode-combobox-panel',
+            attr: { role: 'listbox' },
+        });
+
+        const uniqueSeries = Array.from(new Set(
+            this.seriesOptions
+                .map((series) => series.trim())
+                .filter((series) => series.length > 0)
+        ));
+
+        const close = (): void => {
+            panel.removeClass('is-open');
+            toggle.removeClass('is-open');
+            input.setAttribute('aria-expanded', 'false');
+        };
+
+        const open = (): void => {
+            panel.addClass('is-open');
+            toggle.addClass('is-open');
+            input.setAttribute('aria-expanded', 'true');
+        };
+
+        const selectValue = (value: string): void => {
+            this.bookSeries = value.trim();
+            input.value = this.bookSeries;
+            close();
+        };
+
+        const renderOptions = (query = ''): void => {
+            panel.empty();
+            const values = query
+                ? uniqueSeries.filter((series) => series.toLowerCase().includes(query))
+                : uniqueSeries;
+            const clear = panel.createDiv({
+                cls: 'lorebase-settings-dropdown-option',
+                attr: {
+                    role: 'option',
+                    tabindex: '0',
+                    'aria-selected': String(this.bookSeries.length === 0),
+                },
+            });
+            clear.toggleClass('is-selected', this.bookSeries.length === 0);
+            clear.createSpan({ cls: 'lorebase-settings-dropdown-option-label', text: t('editNoSeries') });
+            if (this.bookSeries.length === 0) {
+                const check = clear.createSpan({ cls: 'lorebase-settings-dropdown-option-check' });
+                setIcon(check, 'check');
+            }
+            clear.addEventListener('click', () => selectValue(''));
+            clear.addEventListener('keydown', (event) => {
+                if (event.key !== 'Enter' && event.key !== ' ') return;
+                event.preventDefault();
+                selectValue('');
+            });
+
+            for (const value of values) {
+                const option = panel.createDiv({
+                    cls: 'lorebase-settings-dropdown-option',
+                    attr: {
+                        role: 'option',
+                        tabindex: '0',
+                        'aria-selected': String(value === this.bookSeries),
+                    },
+                });
+                option.toggleClass('is-selected', value === this.bookSeries);
+                option.createSpan({ cls: 'lorebase-settings-dropdown-option-label', text: value });
+                if (value === this.bookSeries) {
+                    const check = option.createSpan({ cls: 'lorebase-settings-dropdown-option-check' });
+                    setIcon(check, 'check');
+                }
+                option.addEventListener('click', () => selectValue(value));
+                option.addEventListener('keydown', (event) => {
+                    if (event.key !== 'Enter' && event.key !== ' ') return;
+                    event.preventDefault();
+                    selectValue(value);
+                });
+            }
+        };
+
+        input.addEventListener('input', () => {
+            this.bookSeries = input.value.trim();
+            renderOptions(this.bookSeries.toLowerCase());
+            open();
+        });
+        input.addEventListener('focus', () => {
+            renderOptions();
+            open();
+        });
+        toggle.addEventListener('click', (event) => {
+            event.preventDefault();
+            event.stopPropagation();
+            if (panel.hasClass('is-open')) {
+                close();
+            } else {
+                renderOptions();
+                open();
+            }
+        });
+        root.addEventListener('click', (event) => {
+            if (!host.contains(event.target as Node)) close();
+        });
     }
 
     private bindProgress(root: HTMLElement): void {
@@ -990,6 +1126,8 @@ export class ReadingEditModal extends Modal {
 
         if (this.item.type === 'book') {
             Object.assign(updates, {
+                bookSeries: this.bookSeries,
+                seriesPosition: this.seriesPosition,
                 illustrator: this.illustrator.trim(),
                 publisher: this.publisher,
                 releaseDate: this.releaseDate,

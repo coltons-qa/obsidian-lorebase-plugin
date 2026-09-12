@@ -35,13 +35,14 @@ export function parseRelatedMedia(raw: unknown): RelatedMediaLink[] {
         if (!entry || typeof entry !== 'object') continue;
         const source = entry as Record<string, unknown>;
         const type = typeof source.type === 'string' ? source.type.trim().toLowerCase() : '';
-        if (type !== 'anime' && type !== 'movie' && type !== 'series' && type !== 'book' && type !== 'manga' && type !== 'game') continue;
+        if (type !== 'anime' && type !== 'movie' && type !== 'tv' && type !== 'series' && type !== 'book' && type !== 'manga' && type !== 'game') continue;
+        const normalizedType = type === 'series' ? 'tv' as const : type;
         const path = typeof source.path === 'string' ? source.path.trim() : '';
         if (!path || seen.has(path)) continue;
         const title = typeof source.title === 'string' && source.title.trim()
             ? source.title.trim()
             : path.split('/').pop()?.replace(/\.md$/i, '') || path;
-        related.push({ type, path, title });
+        related.push({ type: normalizedType, path, title });
         seen.add(path);
     }
     return related;

@@ -81,8 +81,8 @@ export class IntegrationService {
         await this.addMedia('movies');
     }
 
-    async addSeries(): Promise<void> {
-        await this.addMedia('series');
+    async addTv(): Promise<void> {
+        await this.addMedia('tv');
     }
 
     async addBook(): Promise<void> {
@@ -223,9 +223,9 @@ export class IntegrationService {
                 episode_total: built.episodeTotal,
                 anime_parts: toAnimePartsFrontmatter(details.parts),
             };
-        } else if ((kind === 'movies' || kind === 'series') && this.isVideoDetails(details)) {
+        } else if ((kind === 'movies' || kind === 'tv') && this.isVideoDetails(details)) {
             const built = this.buildVideoValues(details, { provider: source.provider, id: source.id });
-            const partsKey = kind === 'series' ? 'series_parts' : 'movie_parts';
+            const partsKey = kind === 'tv' ? 'tv_parts' : 'movie_parts';
             values = {
                 ...sourceIdentity(source),
                 name: built.name,
@@ -266,6 +266,8 @@ export class IntegrationService {
                 released: built.released,
                 page_total: built.pageTotal,
                 url: built.url,
+                bookSeries: built.bookSeries,
+                seriesPosition: built.seriesPosition,
             };
         } else if (kind === 'manga' && this.isMangaDetails(details)) {
             const built = this.buildMangaValues(details, { provider: source.provider, id: source.id });
@@ -346,7 +348,7 @@ export class IntegrationService {
             providerSettings.clientSecret || '',
             {},
             providerId === 'tvmaze'
-                ? 'series'
+                ? 'tv'
                 : providerId === 'tmdb' || providerId === 'omdb'
                     ? 'movies'
                     : providerId === 'hardcover' || providerId === 'googlebooks'
@@ -696,7 +698,7 @@ export class IntegrationService {
             games: t('settingsPreviewGame'),
             anime: t('settingsPreviewAnime'),
             movies: t('settingsPreviewMovie'),
-            series: t('settingsPreviewSeries'),
+            tv: t('settingsPreviewTv'),
             books: t('settingsPreviewBook'),
             manga: t('settingsPreviewManga'),
         };
@@ -707,7 +709,7 @@ export class IntegrationService {
         if (kind === 'games') return t('promptSearchGame');
         if (kind === 'anime') return t('promptSearchAnime');
         if (kind === 'movies') return t('promptSearchMovie');
-        if (kind === 'series') return t('promptSearchSeries');
+        if (kind === 'tv') return t('promptSearchTv');
         if (kind === 'books') return t('promptSearchBook');
         return t('promptSearchManga');
     }
@@ -716,7 +718,7 @@ export class IntegrationService {
         if (kind === 'games') return 'gamepad-2';
         if (kind === 'anime') return 'clapperboard';
         if (kind === 'movies') return 'film';
-        if (kind === 'series') return 'tv';
+        if (kind === 'tv') return 'tv';
         if (kind === 'books') return 'book-open';
         return 'book-open-text';
     }
@@ -879,8 +881,8 @@ export class IntegrationService {
                 return settings.anime.folderPath;
             case 'movies':
                 return settings.movies.folderPath;
-            case 'series':
-                return settings.series.folderPath;
+            case 'tv':
+                return settings.tv.folderPath;
             case 'books':
                 return settings.books.folderPath;
             case 'manga':
@@ -888,14 +890,14 @@ export class IntegrationService {
         }
     }
 
-    private toDetailsKind(kind: MediaKind): 'movies' | 'series' | 'books' | 'manga' | undefined {
-        return kind === 'movies' || kind === 'series' || kind === 'books' || kind === 'manga'
+    private toDetailsKind(kind: MediaKind): 'movies' | 'tv' | 'books' | 'manga' | undefined {
+        return kind === 'movies' || kind === 'tv' || kind === 'books' || kind === 'manga'
             ? kind
             : undefined;
     }
 
-    private toVideoKind(kind: 'movies' | 'series' | 'books' | 'manga' | undefined): 'movies' | 'series' {
-        return kind === 'series' ? 'series' : 'movies';
+    private toVideoKind(kind: 'movies' | 'tv' | 'books' | 'manga' | undefined): 'movies' | 'tv' {
+        return kind === 'tv' ? 'tv' : 'movies';
     }
 
     private async chooseResults(
@@ -929,8 +931,8 @@ export class IntegrationService {
                         ? t('promptSearchAnime')
                         : kind === 'movies'
                             ? t('promptSearchMovie')
-                            : kind === 'series'
-                                ? t('promptSearchSeries')
+                            : kind === 'tv'
+                                ? t('promptSearchTv')
                                 : kind === 'books'
                                     ? t('promptSearchBook')
                                     : t('promptSearchManga'),
@@ -946,7 +948,7 @@ export class IntegrationService {
                         ? 'clapperboard'
                         : kind === 'movies'
                             ? 'film'
-                            : kind === 'series'
+                            : kind === 'tv'
                                 ? 'tv'
                                 : kind === 'books'
                                     ? 'book-open'
@@ -1010,7 +1012,7 @@ export class IntegrationService {
                         { id: 'tmdb', label: 'TMDB' },
                         { id: 'omdb', label: 'OMDb' },
                     ]
-                    : kind === 'series'
+                    : kind === 'tv'
                         ? [
                         { id: 'tmdb', label: 'TMDB' },
                         { id: 'tvmaze', label: 'TVmaze' },
@@ -1085,7 +1087,7 @@ export class IntegrationService {
         howLongToBeatEnabled: boolean
     ): string | null {
         if (!enabled) {
-            if (kind === 'movies' || kind === 'series' || kind === 'books' || kind === 'manga') {
+            if (kind === 'movies' || kind === 'tv' || kind === 'books' || kind === 'manga') {
                 return buildSimpleTemplate(kind, getDefaultTemplateFields(kind));
             }
             return null;
@@ -1104,7 +1106,7 @@ export class IntegrationService {
         apiKey: string,
         clientSecret = '',
         options: { includeDlc?: boolean; page?: number; pageSize?: number } = {},
-        kind?: 'movies' | 'series' | 'books' | 'manga'
+        kind?: 'movies' | 'tv' | 'books' | 'manga'
     ): Promise<SearchResult[]> {
         const cacheKey = [
             provider,
@@ -1238,7 +1240,7 @@ export class IntegrationService {
         id: string,
         apiKey: string,
         clientSecret = '',
-        kind?: 'movies' | 'series' | 'books' | 'manga',
+        kind?: 'movies' | 'tv' | 'books' | 'manga',
         options: { includeParts?: boolean } = {}
     ): Promise<GameDetails | AnimeDetails | VideoDetails | BookDetails | MangaDetails | null> {
         const fetchJson = this.jsonFetcher;
@@ -1380,7 +1382,7 @@ export class IntegrationService {
     private getCommunityRatingSource(item: MediaItem): {
         provider: ProviderId | 'mal';
         id: string;
-        kind?: 'movies' | 'series' | 'books' | 'manga';
+        kind?: 'movies' | 'tv' | 'books' | 'manga';
     } | null {
         const provider = this.getItemProvider(item);
         const id = this.getItemProviderId(item);
@@ -1408,7 +1410,7 @@ export class IntegrationService {
 
         const tmdb = url.match(/themoviedb\.org\/(movie|tv)\/(\d+)/i);
         if (tmdb?.[1] && tmdb[2]) {
-            return { provider: 'tmdb', id: tmdb[2], kind: tmdb[1].toLowerCase() === 'tv' ? 'series' : 'movies' };
+            return { provider: 'tmdb', id: tmdb[2], kind: tmdb[1].toLowerCase() === 'tv' ? 'tv' : 'movies' };
         }
 
         const rawg = url.match(/rawg\.io\/games\/([^/?#]+)/i);
@@ -1444,9 +1446,9 @@ export class IntegrationService {
         return '';
     }
 
-    private getDetailsKindForItem(item: MediaItem): 'movies' | 'series' | 'books' | 'manga' | undefined {
+    private getDetailsKindForItem(item: MediaItem): 'movies' | 'tv' | 'books' | 'manga' | undefined {
         if (item.type === 'movie') return 'movies';
-        if (item.type === 'series') return 'series';
+        if (item.type === 'tv') return 'tv';
         if (item.type === 'book') return 'books';
         if (item.type === 'manga') return 'manga';
         return undefined;
@@ -1654,6 +1656,8 @@ export class IntegrationService {
             chapterTotal: 0,
             rating: this.toNumberOrZero(details.rating),
             url: details.url,
+            bookSeries: details.bookSeries ?? '',
+            seriesPosition: details.seriesPosition ?? null,
             status: 'planned',
             integrationProvider: source?.provider ?? '',
             integrationId: source?.id ?? '',
@@ -1760,8 +1764,8 @@ export class IntegrationService {
             };
         }
 
-        if (draft.kind === 'movies' || draft.kind === 'series') {
-            const isSeries = draft.kind === 'series';
+        if (draft.kind === 'movies' || draft.kind === 'tv') {
+            const isSeries = draft.kind === 'tv';
             const seasonNumber = isSeries ? draft.seasonNumber ?? 1 : null;
             const part = {
                 id: isSeries ? `season-${seasonNumber ?? 1}` : 'movie-1',
@@ -1793,6 +1797,7 @@ export class IntegrationService {
                 ...common,
                 authors: [],
                 publisher: '',
+                bookSeries: draft.bookSeries ?? '',
                 pageCurrent: draft.pageCurrent ?? 0,
                 pageTotal: draft.pageTotal ?? 0,
                 chapterCurrent: draft.chapterCurrent ?? 0,
@@ -1969,7 +1974,7 @@ export class IntegrationService {
     }
 
     private needsFrontmatterFallback(kind: MediaKind, content: string): boolean {
-        if (kind !== 'movies' && kind !== 'series' && kind !== 'books' && kind !== 'manga') return false;
+        if (kind !== 'movies' && kind !== 'tv' && kind !== 'books' && kind !== 'manga') return false;
         return !this.hasFrontmatter(content);
     }
 

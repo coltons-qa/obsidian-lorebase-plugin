@@ -1,5 +1,5 @@
 import { Menu, MenuItem } from 'obsidian';
-import { AnimeItem, BookItem, GameItem, MediaItem, MediaStatus, MovieItem, RatingBadgeMode, ReadingItem, SeriesItem } from '../../types';
+import { AnimeItem, BookItem, GameItem, MediaItem, MediaStatus, MovieItem, RatingBadgeMode, ReadingItem, TvItem } from '../../types';
 import { FILTER_ICON_MAP, RATING_CONFIG, RATING_EMOJI, STATUS_ICON_MAP } from '../../constants';
 import { t } from '../../localization';
 import { incrementAnimeEpisode, incrementMangaChapter } from './progressActions';
@@ -19,7 +19,7 @@ export interface MediaContextMenuDeps {
     ratingMode: RatingBadgeMode;
     updateAnime: (anime: AnimeItem, updates: Partial<AnimeItem>) => void;
     updateGame: (game: GameItem, updates: Partial<GameItem>) => void;
-    updateVideo?: (item: MovieItem | SeriesItem, updates: Partial<MovieItem | SeriesItem>) => void;
+    updateVideo?: (item: MovieItem | TvItem, updates: Partial<MovieItem | TvItem>) => void;
     updateReading?: (item: ReadingItem, updates: Partial<ReadingItem>) => void;
 }
 
@@ -58,7 +58,7 @@ export function showMediaContextMenu(item: MediaItem, x: number, y: number, deps
                             item.userRating = rating.value;
                             deps.onItemMutated(item, ['userRating']);
                             deps.updateAnime(item, { userRating: rating.value });
-                        } else if (item.type === 'movie' || item.type === 'series') {
+                        } else if (item.type === 'movie' || item.type === 'tv') {
                             item.userRating = rating.value;
                             deps.onItemMutated(item, ['userRating']);
                             deps.updateVideo?.(item, { userRating: rating.value });
@@ -83,7 +83,7 @@ export function showMediaContextMenu(item: MediaItem, x: number, y: number, deps
                     deps.onItemMutated(item, ['userRating']);
                     if (item.type === 'anime') {
                         deps.updateAnime(item, { userRating: null });
-                    } else if (item.type === 'movie' || item.type === 'series') {
+                    } else if (item.type === 'movie' || item.type === 'tv') {
                         deps.updateVideo?.(item, { userRating: null });
                     } else if (item.type === 'book' || item.type === 'manga') {
                         deps.updateReading?.(item, { userRating: null });
@@ -117,7 +117,7 @@ export function showMediaContextMenu(item: MediaItem, x: number, y: number, deps
                             }
                             deps.onItemMutated(item, changedFields);
                             deps.updateAnime(item, updates);
-                        } else if (item.type === 'movie' || item.type === 'series') {
+                        } else if (item.type === 'movie' || item.type === 'tv') {
                             const nextStatus = status as MovieItem['status'];
                             const updates: Partial<MovieItem> = { status: nextStatus };
                             const changedFields = ['status'];
@@ -247,7 +247,7 @@ export function showMediaContextMenu(item: MediaItem, x: number, y: number, deps
                 deps.onItemMutated(item, ['favorite']);
                 if (item.type === 'anime') {
                     deps.updateAnime(item, { favorite: item.favorite });
-                } else if (item.type === 'movie' || item.type === 'series') {
+                } else if (item.type === 'movie' || item.type === 'tv') {
                     deps.updateVideo?.(item, { favorite: item.favorite });
                 } else if (item.type === 'book' || item.type === 'manga') {
                     deps.updateReading?.(item, { favorite: item.favorite });

@@ -64,7 +64,7 @@ function annotatePanels(root: HTMLElement): void {
             '.lorebase-editmode-tags',
             '.lorebase-editmode-reading-progress',
             '.lorebase-editmode-anime-parts',
-            '.lorebase-editmode-series-parts',
+            '.lorebase-editmode-tv-parts',
         ].join(', '))) {
             pane = 'personal';
         }

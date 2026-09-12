@@ -10,8 +10,8 @@ export function getStatusOptionsForMediaType(
             ? statusLabels?.anime
             : mediaType === 'movie'
                 ? statusLabels?.movies
-                : mediaType === 'series'
-                    ? statusLabels?.series
+                : mediaType === 'tv'
+                    ? statusLabels?.tv
                     : mediaType === 'book'
                         ? statusLabels?.books
                         : mediaType === 'manga'
@@ -20,7 +20,7 @@ export function getStatusOptionsForMediaType(
         const labelMap: Partial<Record<MediaStatus, string>> | undefined = labels;
         return labelMap?.[status]?.trim() || fallback;
     };
-    if (mediaType === 'anime' || mediaType === 'movie' || mediaType === 'series' || mediaType === 'book' || mediaType === 'manga') {
+    if (mediaType === 'anime' || mediaType === 'movie' || mediaType === 'tv' || mediaType === 'book' || mediaType === 'manga') {
         const plannedLabel = mediaType === 'book' || mediaType === 'manga' ? t('statusPlanToRead') : t('statusPlanned');
         const activeLabel = mediaType === 'book' || mediaType === 'manga' ? t('statusReading') : t('statusWatching');
         const completedLabel = mediaType === 'book' || mediaType === 'manga' ? t('statusReadCompleted') : t('statusCompleted');
@@ -44,7 +44,7 @@ export function getStatusOptionsForMediaType(
 }
 
 export function getSortOptionsForMediaType(mediaType: MediaType): Array<{ field: SortField; label: string }> {
-    if (mediaType === 'anime' || mediaType === 'movie' || mediaType === 'series' || mediaType === 'book' || mediaType === 'manga') {
+    if (mediaType === 'anime' || mediaType === 'movie' || mediaType === 'tv' || mediaType === 'book' || mediaType === 'manga') {
         const dateLabel = mediaType === 'book' || mediaType === 'manga'
             ? t('sortDateRead')
             : t('sortDateWatched');
@@ -131,7 +131,7 @@ export function getFilterFlagsForMediaType(mediaType: MediaType): { showCustom: 
     if (mediaType === 'manga') {
         return { showCustom: false };
     }
-    if (mediaType === 'movie' || mediaType === 'series' || mediaType === 'book') {
+    if (mediaType === 'movie' || mediaType === 'tv' || mediaType === 'book') {
         return { showCustom: false };
     }
     return { showCustom: true };
@@ -140,7 +140,7 @@ export function getFilterFlagsForMediaType(mediaType: MediaType): { showCustom: 
 export function getRandomLabelForMediaType(mediaType: MediaType): string {
     if (mediaType === 'anime') return t('randomAnime');
     if (mediaType === 'movie') return t('settingsMovies');
-    if (mediaType === 'series') return t('settingsSeries');
+    if (mediaType === 'tv') return t('settingsTv');
     if (mediaType === 'book') return t('randomBook');
     if (mediaType === 'manga') return t('randomManga');
     return t('random');
@@ -149,7 +149,7 @@ export function getRandomLabelForMediaType(mediaType: MediaType): string {
 export function getRandomTitleLabelForMediaType(mediaType: MediaType): string {
     if (mediaType === 'anime') return t('randomAnime');
     if (mediaType === 'movie') return t('settingsMovies');
-    if (mediaType === 'series') return t('settingsSeries');
+    if (mediaType === 'tv') return t('settingsTv');
     if (mediaType === 'book') return t('randomBook');
     if (mediaType === 'manga') return t('randomManga');
     return t('randomGame');

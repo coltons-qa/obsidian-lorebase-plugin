@@ -60,6 +60,10 @@ describe('reading providers', () => {
                             image: { url: 'https://img.example/wok-edition.jpg' },
                         },
                         contributions: [],
+                        cached_featured_series: {
+                            series: { name: 'The Stormlight Archive' },
+                            position: 1.0,
+                        },
                     },
                 },
             };
@@ -83,8 +87,38 @@ describe('reading providers', () => {
             year: '2010',
             description: 'Epic fantasy.',
             url: 'https://hardcover.app/books/the-way-of-kings',
+            bookSeries: 'The Stormlight Archive',
+            seriesPosition: 1,
         });
         expect(details?.poster).toBe('https://img.example/wok-edition.jpg');
+    });
+
+    it('returns undefined bookSeries when Hardcover has no series data', async () => {
+        const fetchJson: JsonFetcher = async () => {
+            return {
+                data: {
+                    books_by_pk: {
+                        id: 99,
+                        title: 'Standalone Novel',
+                        description: 'A book without a series.',
+                        pages: 300,
+                        release_date: '2020-01-01',
+                        slug: 'standalone-novel',
+                        cached_contributors: [{ name: 'Some Author' }],
+                        cached_tags: {},
+                        image: { url: 'https://img.example/standalone.jpg' },
+                        default_physical_edition: null,
+                        contributions: [],
+                        cached_featured_series: {},
+                    },
+                },
+            };
+        };
+
+        const details = await getHardcoverBookDetails(fetchJson, '99', 'token-1');
+        expect(details).not.toBeNull();
+        expect(details?.bookSeries).toBeUndefined();
+        expect(details?.seriesPosition).toBeNull();
     });
 
     it('does not call Google Books without an API key', async () => {

@@ -2,7 +2,7 @@ import { SearchResult, VideoDetails, IntegrationVideoPart } from '../types';
 import type { JsonFetcher } from './common';
 
 interface TmdbOptions {
-    kind: 'movies' | 'series';
+    kind: 'movies' | 'tv';
     page?: number;
     pageSize?: number;
 }
@@ -86,7 +86,7 @@ export async function searchTmdb(
 ): Promise<SearchResult[]> {
     if (!query.trim() || !apiKey.trim()) return [];
     const page = Math.max(1, options.page ?? 1);
-    const endpoint = options.kind === 'series' ? '/search/tv' : '/search/movie';
+    const endpoint = options.kind === 'tv' ? '/search/tv' : '/search/movie';
     const payload = await fetchJson(buildUrl(endpoint, apiKey, {
         query,
         page,
@@ -100,7 +100,7 @@ export async function searchTmdb(
         .slice(0, options.pageSize ?? 20)
         .map((entry) => {
             const item = entry && typeof entry === 'object' ? entry as Record<string, unknown> : {};
-            const isSeries = options.kind === 'series';
+            const isSeries = options.kind === 'tv';
             return {
                 id: String(item.id ?? ''),
                 title: clean(isSeries ? item.name : item.title) || clean(isSeries ? item.original_name : item.original_title),
@@ -117,14 +117,14 @@ export async function getTmdbDetails(
     fetchJson: JsonFetcher,
     id: string,
     apiKey: string,
-    kind: 'movies' | 'series'
+    kind: 'movies' | 'tv'
 ): Promise<VideoDetails | null> {
     if (!id || !apiKey.trim()) return null;
-    const endpoint = kind === 'series' ? `/tv/${encodeURIComponent(id)}` : `/movie/${encodeURIComponent(id)}`;
+    const endpoint = kind === 'tv' ? `/tv/${encodeURIComponent(id)}` : `/movie/${encodeURIComponent(id)}`;
     const item = await fetchJson(buildUrl(endpoint, apiKey, { append_to_response: 'credits' }));
     if (!item || typeof item !== 'object') return null;
     const show = item as Record<string, unknown>;
-    const isSeries = kind === 'series';
+    const isSeries = kind === 'tv';
     const runtime = isSeries
         ? Array.isArray(show.episode_run_time) ? Number(show.episode_run_time[0]) : NaN
         : Number(show.runtime);

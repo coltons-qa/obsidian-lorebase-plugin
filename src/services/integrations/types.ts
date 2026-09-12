@@ -2,7 +2,7 @@ import type { SearchItem } from '../../modals/IntegrationModals';
 import type { AnimeFormat, AnimeStatus, ReadingStatus, VideoStatus } from '../../types';
 
 export type ProviderId = 'rawg' | 'steam' | 'igdb' | 'anilist' | 'jikan' | 'shikimori' | 'tmdb' | 'tvmaze' | 'omdb' | 'hardcover' | 'googlebooks' | 'mangaupdates' | 'mangadex';
-export type MediaKind = 'games' | 'anime' | 'movies' | 'series' | 'books' | 'manga';
+export type MediaKind = 'games' | 'anime' | 'movies' | 'tv' | 'books' | 'manga';
 
 export interface SearchResult extends SearchItem {
     id: string;
@@ -99,6 +99,10 @@ export interface BookDetails {
     url: string;
     communityRating?: string;
     communityVotes?: string;
+    /** Book series name (e.g. "Harry Potter") */
+    bookSeries?: string;
+    /** Position/number within the series (e.g. 3 for "Prisoner of Azkaban") */
+    seriesPosition?: number | null;
 }
 
 export interface MangaDetails {

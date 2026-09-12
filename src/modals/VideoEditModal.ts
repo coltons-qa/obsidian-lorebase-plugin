@@ -1,7 +1,7 @@
 import { App, Menu, Modal, setIcon, TFile } from 'obsidian';
 import { DEFAULT_COVER, MAX_USER_RATING, STATUS_CONFIG } from '../constants';
 import { i18n, t } from '../localization';
-import { MovieItem, RelatedMediaLink, SeriesItem, UserRating, VideoPart, VideoStatus } from '../types';
+import { MovieItem, RelatedMediaLink, TvItem, UserRating, VideoPart, VideoStatus } from '../types';
 import { GenreEditModal } from './GenreEditModal';
 import { CommunityRatingRefresh, renderCommunityRatingPanel } from './CommunityRatingPanel';
 import { MediaSourceAction, renderMediaSourcePanel } from './MediaSourcePanel';
@@ -12,7 +12,7 @@ import { HierarchicalDatePicker, validateDatePickers } from './HierarchicalDateP
 import type { RelatedItemClickHandler } from './RelatedMediaEditor';
 import { reconcileRelatedTypes } from './RelatedMediaEditor';
 
-type VideoItem = MovieItem | SeriesItem;
+type VideoItem = MovieItem | TvItem;
 type VideoUpdates = Partial<VideoItem> & Record<string, unknown>;
 type PartDraft = VideoPart;
 type RelatedCandidate = RelatedMediaLink;
@@ -108,8 +108,8 @@ export class VideoEditModal extends Modal {
         this.runtime = item.runtime ?? '';
         this.director = item.director ?? '';
         this.actors = item.actors ?? '';
-        this.seasons = item.type === 'series' ? item.seasons : null;
-        this.networks = item.type === 'series' ? this.normalizeList(item.networks ?? []) : [];
+        this.seasons = item.type === 'tv' ? item.seasons : null;
+        this.networks = item.type === 'tv' ? this.normalizeList(item.networks ?? []) : [];
         this.owned = item.owned ?? '';
         this.count = item.count ?? null;
         this.repeatable = item.repeatable ?? false;
@@ -327,9 +327,9 @@ export class VideoEditModal extends Modal {
     private buildPartsSection(): string {
         if (this.item.type === 'movie') return '';
         return `
-            <section class="lorebase-editmode-panel lorebase-editmode-panel-glass lorebase-editmode-anime-parts lorebase-editmode-series-parts">
+            <section class="lorebase-editmode-panel lorebase-editmode-panel-glass lorebase-editmode-anime-parts lorebase-editmode-tv-parts">
                 <div class="lorebase-editmode-panel-title-row">
-                    <h3 class="lorebase-editmode-panel-title">${t('templateFieldSeriesParts')}</h3>
+                    <h3 class="lorebase-editmode-panel-title">${t('templateFieldTvParts')}</h3>
                 </div>
                 <div class="lorebase-editmode-anime-parts-navigation">
                     <div class="lorebase-editmode-chip-row lorebase-editmode-part-strip" data-role="part-strip"></div>
@@ -447,7 +447,7 @@ export class VideoEditModal extends Modal {
     }
 
     private bindStaticContent(root: HTMLElement): void {
-        this.setText(root, '[data-role="breadcrumb"]', `${this.item.type === 'movie' ? t('settingsMovies') : t('settingsSeries')} / ${this.item.displayName}`);
+        this.setText(root, '[data-role="breadcrumb"]', `${this.item.type === 'movie' ? t('settingsMovies') : t('settingsTv')} / ${this.item.displayName}`);
         const poster = this.qs<HTMLImageElement>(root, '[data-role="poster"]');
         if (poster) {
             poster.src = this.poster;
@@ -468,8 +468,8 @@ export class VideoEditModal extends Modal {
         if (repeatableInput) repeatableInput.checked = this.repeatable;
         this.setInput(root, '[data-field="actors"]', this.actors);
         this.setInput(root, '[data-field="seasons"]', this.seasons);
-        this.setInput(root, '[data-field="episode-current"]', this.item.type === 'series' ? this.item.episodeCurrent : null);
-        this.setInput(root, '[data-field="episode-total"]', this.item.type === 'series' ? this.item.episodeTotal : null);
+        this.setInput(root, '[data-field="episode-current"]', this.item.type === 'tv' ? this.item.episodeCurrent : null);
+        this.setInput(root, '[data-field="episode-total"]', this.item.type === 'tv' ? this.item.episodeTotal : null);
 
         this.renderStatusSegments(root, '[data-role="status-segments"]', this.getVideoStatusOptions());
         this.renderStatusSegments(root, '[data-role="part-status-segments"]', this.getVideoStatusOptions().filter((entry) => entry.status !== 'dropped' && entry.status !== 'paused'));
@@ -569,12 +569,12 @@ export class VideoEditModal extends Modal {
 
         addPartButton?.addEventListener('click', () => {
             const index = this.parts.length + 1;
-            const kind = this.item.type === 'series' ? 'season' : 'movie';
+            const kind = this.item.type === 'tv' ? 'season' : 'movie';
             const part: PartDraft = {
                 id: this.createPartId(kind),
                 kind,
-                title: this.item.type === 'series' ? `Season ${index}` : `Part ${index}`,
-                seasonNumber: this.item.type === 'series' ? index : null,
+                title: this.item.type === 'tv' ? `Season ${index}` : `Part ${index}`,
+                seasonNumber: this.item.type === 'tv' ? index : null,
                 episodeCurrent: 0,
                 episodeTotal: null,
                 status: 'planned',
@@ -598,12 +598,18 @@ export class VideoEditModal extends Modal {
             const part = this.getActivePart();
             if (!part) return;
             part.episodeCurrent = Math.max(0, (part.episodeCurrent ?? 0) - 1);
+            if (part.status === 'completed' && part.episodeTotal && part.episodeCurrent < part.episodeTotal) {
+                part.status = 'watching';
+            }
             this.refreshPartsUi(root);
         });
         this.qs<HTMLButtonElement>(root, '[data-action="episode-inc"]')?.addEventListener('click', () => {
             const part = this.getActivePart();
             if (!part) return;
             part.episodeCurrent = (part.episodeCurrent ?? 0) + 1;
+            if (part.episodeTotal && part.episodeCurrent > part.episodeTotal) {
+                part.episodeCurrent = part.episodeTotal;
+            }
             if (part.status === 'planned') part.status = 'watching';
             if (part.episodeTotal && part.episodeCurrent >= part.episodeTotal) part.status = 'completed';
             if (this.selectedStatus === 'planned') this.selectedStatus = 'watching';
@@ -622,6 +628,9 @@ export class VideoEditModal extends Modal {
                 const status = btn.dataset.status as VideoStatus | undefined;
                 if (!part || !status) return;
                 part.status = status;
+                if (status === 'completed' && part.episodeTotal && (part.episodeCurrent ?? 0) < part.episodeTotal) {
+                    part.episodeCurrent = part.episodeTotal;
+                }
                 this.refreshPartsUi(root);
             });
         });
@@ -784,7 +793,7 @@ export class VideoEditModal extends Modal {
         select.empty();
         const options: Array<{ value: PartDraft['kind']; label: string }> = [
             { value: 'movie', label: t('formatMovie') },
-            { value: 'season', label: t('settingsSeries') },
+            { value: 'season', label: t('settingsTv') },
         ];
         for (const option of options) select.createEl('option', { value: option.value, text: option.label });
     }
@@ -1026,7 +1035,7 @@ export class VideoEditModal extends Modal {
     private getRelatedTypeLabel(type: RelatedMediaLink['type']): string {
         if (type === 'anime') return t('settingsAnime');
         if (type === 'movie') return t('settingsMovies');
-        if (type === 'series') return t('settingsSeries');
+        if (type === 'tv') return t('settingsTv');
         if (type === 'book') return t('settingsBooks');
         if (type === 'manga') return t('settingsManga');
         return t('settingsGames');
@@ -1152,7 +1161,7 @@ export class VideoEditModal extends Modal {
 
     private normalizeParts(item: VideoItem): PartDraft[] {
         if (item.parts?.length) return item.parts.map((part) => ({ ...part }));
-        if (item.type === 'series') {
+        if (item.type === 'tv') {
             return [{
                 id: 'season-1',
                 kind: 'season',
@@ -1178,7 +1187,7 @@ export class VideoEditModal extends Modal {
         const current = part.episodeCurrent ?? 0;
         const total = part.episodeTotal ?? '?';
         if (part.kind === 'season') {
-            const season = part.seasonNumber ? `S${part.seasonNumber}` : t('settingsSeries');
+            const season = part.seasonNumber ? `S${part.seasonNumber}` : t('settingsTv');
             return `${season} ${current}/${total}`;
         }
         return part.title || t('formatMovie');
@@ -1190,7 +1199,7 @@ export class VideoEditModal extends Modal {
     }
 
     private getPartKindLabel(kind: PartDraft['kind']): string {
-        return kind === 'season' ? t('settingsSeries') : t('formatMovie');
+        return kind === 'season' ? t('settingsTv') : t('formatMovie');
     }
 
     private createPartId(kind: PartDraft['kind']): string {
@@ -1319,7 +1328,7 @@ export class VideoEditModal extends Modal {
     private async save(): Promise<boolean> {
         if (!validateDatePickers([this.startedDatePicker, this.finishedDatePicker, this.releaseDatePicker].filter((picker): picker is HierarchicalDatePicker => Boolean(picker)))) return false;
         const activePart = this.getActivePart();
-        const allPartsCompleted = this.item.type === 'series' && this.parts.length > 0 && this.parts.every((part) => part.status === 'completed');
+        const allPartsCompleted = this.item.type === 'tv' && this.parts.length > 0 && this.parts.every((part) => part.status === 'completed');
         const status = allPartsCompleted ? 'completed' : this.selectedStatus;
 
         const updates: VideoUpdates = {
@@ -1406,7 +1415,7 @@ class RelatedMediaPickerModal extends Modal {
             { value: 'game', label: t('settingsGames') },
             { value: 'anime', label: t('settingsAnime') },
             { value: 'movie', label: t('settingsMovies') },
-            { value: 'series', label: t('settingsSeries') },
+            { value: 'tv', label: t('settingsTv') },
             { value: 'book', label: t('settingsBooks') },
             { value: 'manga', label: t('settingsManga') },
         ];
@@ -1525,7 +1534,7 @@ class RelatedMediaPickerModal extends Modal {
     private getTypeLabel(type: RelatedMediaLink['type']): string {
         if (type === 'anime') return t('settingsAnime');
         if (type === 'movie') return t('settingsMovies');
-        if (type === 'series') return t('settingsSeries');
+        if (type === 'tv') return t('settingsTv');
         if (type === 'book') return t('settingsBooks');
         if (type === 'manga') return t('settingsManga');
         return t('settingsGames');

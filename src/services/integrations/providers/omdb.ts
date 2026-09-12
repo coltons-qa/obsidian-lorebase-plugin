@@ -2,7 +2,7 @@ import { SearchResult, VideoDetails, IntegrationVideoPart } from '../types';
 import type { JsonFetcher } from './common';
 
 interface OmdbOptions {
-    kind: 'movies' | 'series';
+    kind: 'movies' | 'tv';
     page?: number;
     pageSize?: number;
 }
@@ -29,7 +29,7 @@ export async function searchOmdb(
 ): Promise<SearchResult[]> {
     if (!query.trim() || !apiKey.trim()) return [];
     const page = Math.max(1, options.page ?? 1);
-    const type = options.kind === 'series' ? 'series' : 'movie';
+    const type = options.kind === 'tv' ? 'series' : 'movie';
     const payload = await fetchJson(`https://www.omdbapi.com/?apikey=${encodeURIComponent(apiKey)}&s=${encodeURIComponent(query)}&type=${type}&page=${page}`);
     if (!payload || typeof payload !== 'object') return [];
     const search = (payload as Record<string, unknown>).Search;
@@ -54,7 +54,7 @@ export async function getOmdbDetails(
     fetchJson: JsonFetcher,
     id: string,
     apiKey: string,
-    kind: 'movies' | 'series'
+    kind: 'movies' | 'tv'
 ): Promise<VideoDetails | null> {
     if (!id || !apiKey.trim()) return null;
     const payload = await fetchJson(`https://www.omdbapi.com/?apikey=${encodeURIComponent(apiKey)}&i=${encodeURIComponent(id)}&plot=full`);
@@ -62,7 +62,7 @@ export async function getOmdbDetails(
     const item = payload as Record<string, unknown>;
     if (item.Response === 'False') return null;
     const totalSeasons = Number.parseInt(clean(item.totalSeasons), 10);
-    const parts = kind === 'series' && Number.isFinite(totalSeasons)
+    const parts = kind === 'tv' && Number.isFinite(totalSeasons)
         ? await getOmdbSeasons(fetchJson, id, apiKey, totalSeasons)
         : [];
 

@@ -2,7 +2,7 @@ import { SearchResult, VideoDetails, IntegrationVideoPart } from '../types';
 import type { JsonFetcher } from './common';
 
 interface TvmazeOptions {
-    kind: 'movies' | 'series';
+    kind: 'movies' | 'tv';
     page?: number;
     pageSize?: number;
 }
@@ -91,7 +91,7 @@ export async function getTvmazeDetails(
     fetchJson: JsonFetcher,
     id: string,
     _apiKey: string,
-    kind: 'movies' | 'series'
+    kind: 'movies' | 'tv'
 ): Promise<VideoDetails | null> {
     if (!id) return null;
     const item = await fetchJson(`https://api.tvmaze.com/shows/${encodeURIComponent(id)}?embed[]=seasons&embed[]=cast`);
@@ -99,7 +99,7 @@ export async function getTvmazeDetails(
     const show = item as Record<string, unknown>;
     if (!matchesRequestedKind(show, kind)) return null;
 
-    const seasons = kind === 'series'
+    const seasons = kind === 'tv'
         ? normalizeEmbeddedList(show, 'seasons')
         .filter((season) => Number(season.number) > 0)
         .map((season): IntegrationVideoPart => ({

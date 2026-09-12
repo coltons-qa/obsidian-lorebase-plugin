@@ -17,7 +17,7 @@ const BADGES_PERSIST_DEBOUNCE_MS = 120;
 const VISUAL_REFRESH_DEBOUNCE_MS = 40;
 const MAX_PREVIEW_CARD_WIDTH = 340;
 const FAVORITE_BADGE_PATH = 'M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z';
-type PreviewMode = 'game' | 'anime' | 'movie' | 'series' | 'book' | 'manga';
+type PreviewMode = 'game' | 'anime' | 'movie' | 'tv' | 'book' | 'manga';
 
 function createSvgPathIcon(pathD: string, options: { fill?: string; stroke?: string; width?: string; height?: string } = {}): SVGElement {
     const svg = createSvg('svg');
@@ -253,14 +253,14 @@ function renderBadgesEditor(context: SettingsSectionContext, container: HTMLElem
     let persistTimer: number | null = null;
     let persistInFlight = false;
     let persistQueued = false;
-    type OverlayProfileKey = 'games' | 'anime' | 'movies' | 'series' | 'books' | 'manga';
+    type OverlayProfileKey = 'games' | 'anime' | 'movies' | 'tv' | 'books' | 'manga';
     type OverlayOrientationKey = 'vertical' | 'horizontal';
     let previewOrientation: OverlayOrientationKey = 'vertical';
 
     const getActiveOverlayProfile = (): OverlayProfileKey => {
         if (previewMode === 'anime') return 'anime';
         if (previewMode === 'movie') return 'movies';
-        if (previewMode === 'series') return 'series';
+        if (previewMode === 'tv') return 'tv';
         if (previewMode === 'book') return 'books';
         if (previewMode === 'manga') return 'manga';
         return 'games';
@@ -281,10 +281,10 @@ function renderBadgesEditor(context: SettingsSectionContext, container: HTMLElem
                 ? DEFAULT_SETTINGS.movieHorizontalOverlayTextLayout
                 : DEFAULT_SETTINGS.movieOverlayTextLayout;
         }
-        if (profile === 'series') {
+        if (profile === 'tv') {
             return orientation === 'horizontal'
-                ? DEFAULT_SETTINGS.seriesHorizontalOverlayTextLayout
-                : DEFAULT_SETTINGS.seriesOverlayTextLayout;
+                ? DEFAULT_SETTINGS.tvHorizontalOverlayTextLayout
+                : DEFAULT_SETTINGS.tvOverlayTextLayout;
         }
         if (profile === 'books') {
             return orientation === 'horizontal'
@@ -315,10 +315,10 @@ function renderBadgesEditor(context: SettingsSectionContext, container: HTMLElem
                 ? DEFAULT_SETTINGS.movieHorizontalOverlayTextVisibility
                 : DEFAULT_SETTINGS.movieOverlayTextVisibility;
         }
-        if (profile === 'series') {
+        if (profile === 'tv') {
             return orientation === 'horizontal'
-                ? DEFAULT_SETTINGS.seriesHorizontalOverlayTextVisibility
-                : DEFAULT_SETTINGS.seriesOverlayTextVisibility;
+                ? DEFAULT_SETTINGS.tvHorizontalOverlayTextVisibility
+                : DEFAULT_SETTINGS.tvOverlayTextVisibility;
         }
         if (profile === 'books') {
             return orientation === 'horizontal'
@@ -349,10 +349,10 @@ function renderBadgesEditor(context: SettingsSectionContext, container: HTMLElem
                 ? context.plugin.settings.movieHorizontalOverlayTextLayout
                 : context.plugin.settings.movieOverlayTextLayout;
         }
-        if (profile === 'series') {
+        if (profile === 'tv') {
             return orientation === 'horizontal'
-                ? context.plugin.settings.seriesHorizontalOverlayTextLayout
-                : context.plugin.settings.seriesOverlayTextLayout;
+                ? context.plugin.settings.tvHorizontalOverlayTextLayout
+                : context.plugin.settings.tvOverlayTextLayout;
         }
         if (profile === 'books') {
             return orientation === 'horizontal'
@@ -383,10 +383,10 @@ function renderBadgesEditor(context: SettingsSectionContext, container: HTMLElem
                 ? context.plugin.settings.movieHorizontalOverlayTextVisibility
                 : context.plugin.settings.movieOverlayTextVisibility;
         }
-        if (profile === 'series') {
+        if (profile === 'tv') {
             return orientation === 'horizontal'
-                ? context.plugin.settings.seriesHorizontalOverlayTextVisibility
-                : context.plugin.settings.seriesOverlayTextVisibility;
+                ? context.plugin.settings.tvHorizontalOverlayTextVisibility
+                : context.plugin.settings.tvOverlayTextVisibility;
         }
         if (profile === 'books') {
             return orientation === 'horizontal'
@@ -417,10 +417,10 @@ function renderBadgesEditor(context: SettingsSectionContext, container: HTMLElem
                 ? context.plugin.settings.movieHorizontalDescriptionLines
                 : context.plugin.settings.movieDescriptionLines;
         }
-        if (profile === 'series') {
+        if (profile === 'tv') {
             return orientation === 'horizontal'
-                ? context.plugin.settings.seriesHorizontalDescriptionLines
-                : context.plugin.settings.seriesDescriptionLines;
+                ? context.plugin.settings.tvHorizontalDescriptionLines
+                : context.plugin.settings.tvDescriptionLines;
         }
         if (profile === 'books') {
             return orientation === 'horizontal'
@@ -451,10 +451,10 @@ function renderBadgesEditor(context: SettingsSectionContext, container: HTMLElem
                 ? context.plugin.settings.movieHorizontalBadges
                 : context.plugin.settings.movieBadges;
         }
-        if (profile === 'series') {
+        if (profile === 'tv') {
             return orientation === 'horizontal'
-                ? context.plugin.settings.seriesHorizontalBadges
-                : context.plugin.settings.seriesBadges;
+                ? context.plugin.settings.tvHorizontalBadges
+                : context.plugin.settings.tvBadges;
         }
         if (profile === 'books') {
             return orientation === 'horizontal'
@@ -492,12 +492,12 @@ function renderBadgesEditor(context: SettingsSectionContext, container: HTMLElem
             context.plugin.settings.movieDescriptionLines = value;
             return;
         }
-        if (profile === 'series') {
+        if (profile === 'tv') {
             if (orientation === 'horizontal') {
-                context.plugin.settings.seriesHorizontalDescriptionLines = value;
+                context.plugin.settings.tvHorizontalDescriptionLines = value;
                 return;
             }
-            context.plugin.settings.seriesDescriptionLines = value;
+            context.plugin.settings.tvDescriptionLines = value;
             return;
         }
         if (profile === 'books') {
@@ -537,10 +537,10 @@ function renderBadgesEditor(context: SettingsSectionContext, container: HTMLElem
                 ? DEFAULT_SETTINGS.movieHorizontalDescriptionLines
                 : DEFAULT_SETTINGS.movieDescriptionLines;
         }
-        if (profile === 'series') {
+        if (profile === 'tv') {
             return orientation === 'horizontal'
-                ? DEFAULT_SETTINGS.seriesHorizontalDescriptionLines
-                : DEFAULT_SETTINGS.seriesDescriptionLines;
+                ? DEFAULT_SETTINGS.tvHorizontalDescriptionLines
+                : DEFAULT_SETTINGS.tvDescriptionLines;
         }
         if (profile === 'books') {
             return orientation === 'horizontal'
@@ -571,10 +571,10 @@ function renderBadgesEditor(context: SettingsSectionContext, container: HTMLElem
                 ? DEFAULT_SETTINGS.movieHorizontalBadges
                 : DEFAULT_SETTINGS.movieBadges;
         }
-        if (profile === 'series') {
+        if (profile === 'tv') {
             return orientation === 'horizontal'
-                ? DEFAULT_SETTINGS.seriesHorizontalBadges
-                : DEFAULT_SETTINGS.seriesBadges;
+                ? DEFAULT_SETTINGS.tvHorizontalBadges
+                : DEFAULT_SETTINGS.tvBadges;
         }
         if (profile === 'books') {
             return orientation === 'horizontal'
@@ -591,7 +591,7 @@ function renderBadgesEditor(context: SettingsSectionContext, container: HTMLElem
             : DEFAULT_SETTINGS.badges;
     };
 
-    const overlayProfiles: OverlayProfileKey[] = ['games', 'anime', 'movies', 'series', 'books', 'manga'];
+    const overlayProfiles: OverlayProfileKey[] = ['games', 'anime', 'movies', 'tv', 'books', 'manga'];
     const overlayOrientations: OverlayOrientationKey[] = ['vertical', 'horizontal'];
 
     const forPreviewTargets = (fn: (profile: OverlayProfileKey, orientation: OverlayOrientationKey) => void): void => {
@@ -643,9 +643,9 @@ function renderBadgesEditor(context: SettingsSectionContext, container: HTMLElem
             else context.plugin.settings.movieOverlayTextLayout = layout;
             return;
         }
-        if (profile === 'series') {
-            if (orientation === 'horizontal') context.plugin.settings.seriesHorizontalOverlayTextLayout = layout;
-            else context.plugin.settings.seriesOverlayTextLayout = layout;
+        if (profile === 'tv') {
+            if (orientation === 'horizontal') context.plugin.settings.tvHorizontalOverlayTextLayout = layout;
+            else context.plugin.settings.tvOverlayTextLayout = layout;
             return;
         }
         if (profile === 'books') {
@@ -677,9 +677,9 @@ function renderBadgesEditor(context: SettingsSectionContext, container: HTMLElem
             else context.plugin.settings.movieOverlayTextVisibility = visibility;
             return;
         }
-        if (profile === 'series') {
-            if (orientation === 'horizontal') context.plugin.settings.seriesHorizontalOverlayTextVisibility = visibility;
-            else context.plugin.settings.seriesOverlayTextVisibility = visibility;
+        if (profile === 'tv') {
+            if (orientation === 'horizontal') context.plugin.settings.tvHorizontalOverlayTextVisibility = visibility;
+            else context.plugin.settings.tvOverlayTextVisibility = visibility;
             return;
         }
         if (profile === 'books') {
@@ -711,9 +711,9 @@ function renderBadgesEditor(context: SettingsSectionContext, container: HTMLElem
             else context.plugin.settings.movieBadges = badges;
             return;
         }
-        if (profile === 'series') {
-            if (orientation === 'horizontal') context.plugin.settings.seriesHorizontalBadges = badges;
-            else context.plugin.settings.seriesBadges = badges;
+        if (profile === 'tv') {
+            if (orientation === 'horizontal') context.plugin.settings.tvHorizontalBadges = badges;
+            else context.plugin.settings.tvBadges = badges;
             return;
         }
         if (profile === 'books') {
@@ -881,7 +881,7 @@ function renderBadgesEditor(context: SettingsSectionContext, container: HTMLElem
             { value: 'game', label: t('settingsPreviewGame') },
             { value: 'anime', label: t('settingsPreviewAnime') },
             { value: 'movie', label: t('settingsPreviewMovie') },
-            { value: 'series', label: t('settingsPreviewSeries') },
+            { value: 'tv', label: t('settingsPreviewTv') },
             { value: 'book', label: t('settingsPreviewBook') },
             { value: 'manga', label: t('settingsPreviewManga') },
         ],
@@ -1000,7 +1000,7 @@ function renderBadgesEditor(context: SettingsSectionContext, container: HTMLElem
     const getActiveMediaSettings = (): LorebaseSettings['games'] => {
         if (previewMode === 'anime') return context.plugin.settings.anime;
         if (previewMode === 'movie') return context.plugin.settings.movies;
-        if (previewMode === 'series') return context.plugin.settings.series;
+        if (previewMode === 'tv') return context.plugin.settings.tv;
         if (previewMode === 'book') return context.plugin.settings.books;
         if (previewMode === 'manga') return context.plugin.settings.manga;
         return context.plugin.settings.games;
@@ -1008,7 +1008,7 @@ function renderBadgesEditor(context: SettingsSectionContext, container: HTMLElem
 
     const getActiveProgressSettings = (): LorebaseSettings['games'] | null => {
         if (previewMode === 'anime') return context.plugin.settings.anime;
-        if (previewMode === 'series') return context.plugin.settings.series;
+        if (previewMode === 'tv') return context.plugin.settings.tv;
         if (previewMode === 'book') return context.plugin.settings.books;
         if (previewMode === 'manga') return context.plugin.settings.manga;
         return null;
@@ -1402,7 +1402,7 @@ function renderBadgesEditor(context: SettingsSectionContext, container: HTMLElem
             ? 'LOREBASE Anime Preview'
             : previewMode === 'movie'
                 ? 'LOREBASE Movie Preview'
-                : previewMode === 'series'
+                : previewMode === 'tv'
                     ? 'LOREBASE Series Preview'
                     : previewMode === 'book'
                         ? 'LOREBASE Book Preview'
@@ -1412,7 +1412,7 @@ function renderBadgesEditor(context: SettingsSectionContext, container: HTMLElem
         const progressSettings = getActiveProgressSettings();
         const isProgressStyle = getActiveCardStyleSettings()?.cardStyle === 'progress';
         card.toggleClass('is-anime', isAnime);
-        card.toggleClass('is-series', previewMode === 'series');
+        card.toggleClass('is-series', previewMode === 'tv');
         card.toggleClass('is-book', previewMode === 'book');
         card.toggleClass('is-manga', previewMode === 'manga');
         card.toggleClass('lorebase-card-progress-style', isProgressStyle);
@@ -1429,7 +1429,7 @@ function renderBadgesEditor(context: SettingsSectionContext, container: HTMLElem
             ? previewDescriptionAnime
             : previewMode === 'movie'
                 ? previewDescriptionMovie
-                : previewMode === 'series'
+                : previewMode === 'tv'
                     ? previewDescriptionSeries
                     : previewMode === 'book'
                         ? previewDescriptionBook
@@ -1439,7 +1439,7 @@ function renderBadgesEditor(context: SettingsSectionContext, container: HTMLElem
         const showSeason = previewMode === 'book' ? false : Boolean(progressSettings?.showAnimeSeasonProgress);
         const showEpisode = Boolean(progressSettings?.showAnimeEpisodeProgress);
         const showProgress = Boolean(progressSettings && (showSeason || showEpisode));
-        previewSeasonBadge.textContent = previewMode === 'series'
+        previewSeasonBadge.textContent = previewMode === 'tv'
             ? 'S 2/4'
             : previewMode === 'manga'
                 ? 'Vol. 8/15'
@@ -1468,7 +1468,7 @@ function renderBadgesEditor(context: SettingsSectionContext, container: HTMLElem
             ? 39
             : previewMode === 'manga'
                 ? 24
-                : previewMode === 'series'
+                : previewMode === 'tv'
                     ? 50
                     : 67;
         previewProgressFill.setCssStyles({ width: `${fillPercent}%` });
@@ -1578,7 +1578,7 @@ function renderStatusLabelAndPlanSettings(context: SettingsSectionContext, conta
         { key: 'games', label: t('settingsGames'), icon: 'gamepad-2' },
         { key: 'anime', label: t('settingsAnime'), icon: 'clapperboard' },
         { key: 'movies', label: t('settingsMovies'), icon: 'film' },
-        { key: 'series', label: t('settingsSeries'), icon: 'tv' },
+        { key: 'tv', label: t('settingsTv'), icon: 'tv' },
         { key: 'books', label: t('settingsBooks'), icon: 'book-open' },
         { key: 'manga', label: t('settingsManga'), icon: 'panels-top-left' },
     ];
@@ -1679,7 +1679,7 @@ function renderStatusLabelAndPlanSettings(context: SettingsSectionContext, conta
     renderStatusCard('games', t('settingsGameStatusLabels'), 'gamepad-2', gameStatuses);
     renderStatusCard('anime', t('settingsAnimeStatusLabels'), 'clapperboard', animeStatuses);
     renderStatusCard('movies', t('settingsMovieStatusLabels'), 'film', animeStatuses);
-    renderStatusCard('series', t('settingsSeriesStatusLabels'), 'tv', animeStatuses);
+    renderStatusCard('tv', t('settingsTvStatusLabels'), 'tv', animeStatuses);
     renderStatusCard('books', t('settingsBookStatusLabels'), 'book-open', readingStatuses);
     renderStatusCard('manga', t('settingsMangaStatusLabels'), 'panels-top-left', readingStatuses);
     selectMediaTab(context.getActiveMediaTab('statusLabels'));
@@ -1807,14 +1807,14 @@ function renderBadgeOptions(
     container: HTMLElement,
     renderBadgesPreview: () => void
 ): void {
-    type BadgeProfileKey = 'games' | 'anime' | 'movies' | 'series' | 'books' | 'manga';
+    type BadgeProfileKey = 'games' | 'anime' | 'movies' | 'tv' | 'books' | 'manga';
     type BadgeOrientationKey = 'vertical' | 'horizontal';
 
     const getPreviewMode = (): PreviewMode => {
         const mode = container.dataset.previewMode;
         return mode === 'anime'
             || mode === 'movie'
-            || mode === 'series'
+            || mode === 'tv'
             || mode === 'book'
             || mode === 'manga'
             ? mode
@@ -1825,7 +1825,7 @@ function renderBadgeOptions(
         const mode = getPreviewMode();
         if (mode === 'anime') return 'anime';
         if (mode === 'movie') return 'movies';
-        if (mode === 'series') return 'series';
+        if (mode === 'tv') return 'tv';
         if (mode === 'book') return 'books';
         if (mode === 'manga') return 'manga';
         return 'games';
@@ -1834,7 +1834,7 @@ function renderBadgeOptions(
     const getActiveProgressSettings = (): LorebaseSettings['games'] | null => {
         const mode = getPreviewMode();
         if (mode === 'anime') return context.plugin.settings.anime;
-        if (mode === 'series') return context.plugin.settings.series;
+        if (mode === 'tv') return context.plugin.settings.tv;
         if (mode === 'book') return context.plugin.settings.books;
         if (mode === 'manga') return context.plugin.settings.manga;
         return null;
@@ -1843,7 +1843,7 @@ function renderBadgeOptions(
     const getActiveCardStyleSettings = (): LorebaseSettings['games'] | null => {
         const mode = getPreviewMode();
         if (mode === 'anime') return context.plugin.settings.anime;
-        if (mode === 'series') return context.plugin.settings.series;
+        if (mode === 'tv') return context.plugin.settings.tv;
         if (mode === 'book') return context.plugin.settings.books;
         if (mode === 'manga') return context.plugin.settings.manga;
         return null;
@@ -1881,10 +1881,10 @@ function renderBadgeOptions(
                 ? context.plugin.settings.movieHorizontalBadges
                 : context.plugin.settings.movieBadges;
         }
-        if (profile === 'series') {
+        if (profile === 'tv') {
             return orientation === 'horizontal'
-                ? context.plugin.settings.seriesHorizontalBadges
-                : context.plugin.settings.seriesBadges;
+                ? context.plugin.settings.tvHorizontalBadges
+                : context.plugin.settings.tvBadges;
         }
         if (profile === 'books') {
             return orientation === 'horizontal'
@@ -1901,7 +1901,7 @@ function renderBadgeOptions(
             : context.plugin.settings.badges;
     };
 
-    const badgeProfiles: BadgeProfileKey[] = ['games', 'anime', 'movies', 'series', 'books', 'manga'];
+    const badgeProfiles: BadgeProfileKey[] = ['games', 'anime', 'movies', 'tv', 'books', 'manga'];
     const badgeOrientations: BadgeOrientationKey[] = ['vertical', 'horizontal'];
 
     const forBadgeTargets = (fn: (profile: BadgeProfileKey, orientation: BadgeOrientationKey) => void): void => {

@@ -584,6 +584,9 @@ export class AnimeEditModal extends Modal {
             const part = this.getActivePart();
             if (!part) return;
             part.episodeCurrent = Math.max(0, (part.episodeCurrent ?? 0) - 1);
+            if (part.status === 'completed' && part.episodeTotal && part.episodeCurrent < part.episodeTotal) {
+                part.status = 'watching';
+            }
             this.renderActivePartEditor(root);
             this.renderPartStrip(root);
             this.updateProgressSummary(root);
@@ -593,6 +596,9 @@ export class AnimeEditModal extends Modal {
             const part = this.getActivePart();
             if (!part) return;
             part.episodeCurrent = (part.episodeCurrent ?? 0) + 1;
+            if (part.episodeTotal && part.episodeCurrent > part.episodeTotal) {
+                part.episodeCurrent = part.episodeTotal;
+            }
             if (part.status === 'planned') part.status = 'watching';
             if (part.episodeTotal && part.episodeCurrent >= part.episodeTotal) part.status = 'completed';
             if (this.selectedStatus === 'planned') this.selectedStatus = 'watching';
@@ -791,6 +797,9 @@ export class AnimeEditModal extends Modal {
                 const part = this.getActivePart();
                 if (!part) return;
                 part.status = option.status;
+                if (option.status === 'completed' && part.episodeTotal && (part.episodeCurrent ?? 0) < part.episodeTotal) {
+                    part.episodeCurrent = part.episodeTotal;
+                }
                 this.renderPartStatusSegments(root);
                 this.renderPartStrip(root);
                 this.updateProgressSummary(root);
@@ -1284,7 +1293,7 @@ export class AnimeEditModal extends Modal {
     private getRelatedTypeLabel(type: RelatedMediaLink['type']): string {
         if (type === 'anime') return t('settingsAnime');
         if (type === 'movie') return t('settingsMovies');
-        if (type === 'series') return t('settingsSeries');
+        if (type === 'tv') return t('settingsTv');
         if (type === 'book') return t('settingsBooks');
         if (type === 'manga') return t('settingsManga');
         return t('settingsGames');
@@ -1412,7 +1421,7 @@ class RelatedMediaPickerModal extends Modal {
         const filters = this.contentEl.createDiv({ cls: 'lorebase-related-picker-filters' });
         this.createFilterButton(filters, 'game', t('settingsGames'));
         this.createFilterButton(filters, 'movie', t('settingsMovies'));
-        this.createFilterButton(filters, 'series', t('settingsSeries'));
+        this.createFilterButton(filters, 'tv', t('settingsTv'));
         this.createFilterButton(filters, 'book', t('settingsBooks'));
         this.createFilterButton(filters, 'manga', t('settingsManga'));
         this.createFilterButton(filters, 'anime', t('settingsAnime'));
@@ -1519,7 +1528,7 @@ class RelatedMediaPickerModal extends Modal {
     private getTypeLabel(type: RelatedMediaLink['type']): string {
         if (type === 'anime') return t('settingsAnime');
         if (type === 'movie') return t('settingsMovies');
-        if (type === 'series') return t('settingsSeries');
+        if (type === 'tv') return t('settingsTv');
         if (type === 'book') return t('settingsBooks');
         if (type === 'manga') return t('settingsManga');
         return t('settingsGames');

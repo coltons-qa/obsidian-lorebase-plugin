@@ -12,7 +12,7 @@ import {
 import { getActiveIntegrationCooldowns } from '../../services/integrations/shared';
 import { buildSimpleTemplate, getEffectiveSimpleTemplateFields } from '../../services/integrations/templateUtils';
 import { renderSteamSyncSettings } from '../SteamSyncSettings';
-import { ANIME_TEMPLATE_FIELDS, BOOK_TEMPLATE_FIELDS, GAME_TEMPLATE_FIELDS, GAME_TEMPLATE_FIELDS_HLTB, ICON_INTEGRATIONS, MANGA_TEMPLATE_FIELDS, MOVIE_TEMPLATE_FIELDS, SERIES_TEMPLATE_FIELDS } from './constants';
+import { ANIME_TEMPLATE_FIELDS, BOOK_TEMPLATE_FIELDS, GAME_TEMPLATE_FIELDS, GAME_TEMPLATE_FIELDS_HLTB, ICON_INTEGRATIONS, MANGA_TEMPLATE_FIELDS, MOVIE_TEMPLATE_FIELDS, TV_TEMPLATE_FIELDS } from './constants';
 import { addLorebaseDropdown } from './customDropdown';
 import { createMediaTabs } from './mediaTabs';
 import type { MediaTypeKey, SettingsSectionContext, TemplateFieldDef } from './types';
@@ -500,7 +500,7 @@ export function renderIntegrationsSection(context: SettingsSectionContext, conta
 
     renderProviderGroup(t('settingsGames'), 'gamepad-2', gameProviders);
     renderProviderGroup(t('settingsAnime'), 'clapperboard', animeProviders);
-    renderProviderGroup(t('settingsMoviesSeries'), 'film', videoProviders);
+    renderProviderGroup(t('settingsMoviesTv'), 'film', videoProviders);
     renderProviderGroup(t('settingsBooks'), 'book-open', bookProviders);
     renderProviderGroup(t('settingsManga'), 'book-open-text', mangaProviders);
 
@@ -706,7 +706,7 @@ export function renderIntegrationsSection(context: SettingsSectionContext, conta
     renderTemplateSettings('games', 'settingsIntegrationsGamesTemplate', getGameTemplateFields(Boolean(integrations.media.games.howLongToBeatEnabled)));
     renderTemplateSettings('anime', 'settingsIntegrationsAnimeTemplate', ANIME_TEMPLATE_FIELDS);
     renderTemplateSettings('movies', 'settingsIntegrationsMoviesTemplate', MOVIE_TEMPLATE_FIELDS);
-    renderTemplateSettings('series', 'settingsIntegrationsSeriesTemplate', SERIES_TEMPLATE_FIELDS);
+    renderTemplateSettings('tv', 'settingsIntegrationsTvTemplate', TV_TEMPLATE_FIELDS);
     renderTemplateSettings('books', 'settingsIntegrationsBooksTemplate', BOOK_TEMPLATE_FIELDS);
     renderTemplateSettings('manga', 'settingsIntegrationsMangaTemplate', MANGA_TEMPLATE_FIELDS);
     createMediaTabs(
@@ -715,7 +715,7 @@ export function renderIntegrationsSection(context: SettingsSectionContext, conta
             { value: 'games', label: t('settingsGames'), icon: 'gamepad-2' },
             { value: 'anime', label: t('settingsAnime'), icon: 'clapperboard' },
             { value: 'movies', label: t('settingsMovies'), icon: 'film' },
-            { value: 'series', label: t('settingsSeries'), icon: 'tv' },
+            { value: 'tv', label: t('settingsTv'), icon: 'tv' },
             { value: 'books', label: t('settingsBooks'), icon: 'book-open' },
             { value: 'manga', label: t('settingsManga'), icon: 'book-open-text' },
         ],

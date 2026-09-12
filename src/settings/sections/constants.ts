@@ -87,7 +87,7 @@ export const MOVIE_TEMPLATE_FIELDS: TemplateFieldDef[] = [
     { key: 'url', label: 'templateFieldUrl' },
 ];
 
-export const SERIES_TEMPLATE_FIELDS: TemplateFieldDef[] = [
+export const TV_TEMPLATE_FIELDS: TemplateFieldDef[] = [
     { key: 'type', label: 'templateFieldType' },
     { key: 'name', label: 'templateFieldName' },
     { key: 'poster', label: 'templateFieldPoster' },
@@ -102,7 +102,7 @@ export const SERIES_TEMPLATE_FIELDS: TemplateFieldDef[] = [
     { key: 'seasons', label: 'templateFieldSeasons' },
     { key: 'episodeCurrent', label: 'templateFieldEpisodeCurrent' },
     { key: 'episodeTotal', label: 'templateFieldEpisodeTotal' },
-    { key: 'seriesParts', label: 'templateFieldSeriesParts' },
+    { key: 'tvParts', label: 'templateFieldTvParts' },
     { key: 'rating', label: 'templateFieldRating' },
     { key: 'communityRating', label: 'templateFieldCommunityRating' },
     { key: 'communityVotes', label: 'templateFieldCommunityVotes' },
@@ -122,6 +122,8 @@ export const BOOK_TEMPLATE_FIELDS: TemplateFieldDef[] = [
     { key: 'poster', label: 'templateFieldPoster' },
     { key: 'posterHorizontal', label: 'templateFieldPosterHorizontal' },
     { key: 'plot', label: 'templateFieldPlot' },
+    { key: 'bookSeries', label: 'templateFieldBookSeries' },
+    { key: 'seriesPosition', label: 'templateFieldSeriesPosition' },
     { key: 'authors', label: 'templateFieldAuthors' },
     { key: 'publisher', label: 'templateFieldPublisher' },
     { key: 'genres', label: 'templateFieldGenres' },

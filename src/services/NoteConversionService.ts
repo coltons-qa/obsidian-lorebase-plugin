@@ -251,7 +251,7 @@ export class NoteConversionService {
         if (raw === 'game' || raw === 'games') return 'games';
         if (raw === 'anime') return 'anime';
         if (raw === 'movie' || raw === 'movies') return 'movies';
-        if (raw === 'series' || raw === 'show' || raw === 'tv') return 'series';
+        if (raw === 'series' || raw === 'show' || raw === 'tv') return 'tv';
         if (raw === 'book' || raw === 'books') return 'books';
         if (raw === 'manga') return 'manga';
         return null;

@@ -88,6 +88,8 @@ export function getDefaultTemplateFields(kind: MediaKind): string[] {
             'poster',
             'posterHorizontal',
             'plot',
+            'bookSeries',
+            'seriesPosition',
             'authors',
             'publisher',
             'genres',
@@ -156,7 +158,7 @@ export function getDefaultTemplateFields(kind: MediaKind): string[] {
         'seasons',
         'episodeCurrent',
         'episodeTotal',
-        'seriesParts',
+        'tvParts',
         'rating',
         'communityRating',
         'communityVotes',
@@ -271,7 +273,7 @@ function getTemplateFieldForYamlKey(kind: MediaKind, yamlKey: string): string | 
             active_part_id: 'movieParts',
             movie_parts: 'movieParts',
         },
-        series: {
+        tv: {
             title: 'name',
             poster: 'poster',
             'poster-b': 'posterHorizontal',
@@ -288,16 +290,20 @@ function getTemplateFieldForYamlKey(kind: MediaKind, yamlKey: string): string | 
             episode_current: 'episodeCurrent',
             episodes: 'episodeTotal',
             episode_total: 'episodeTotal',
-            'season-id-current': 'seriesParts',
-            'season-data': 'seriesParts',
-            active_part_id: 'seriesParts',
-            series_parts: 'seriesParts',
+            'season-id-current': 'tvParts',
+            'season-data': 'tvParts',
+            active_part_id: 'tvParts',
+            series_parts: 'tvParts',
         },
         books: {
             title: 'name',
             poster: 'poster',
             'poster-b': 'posterHorizontal',
             poster_b: 'posterHorizontal',
+            series: 'bookSeries',
+            bookSeries: 'bookSeries',
+            'series-position': 'seriesPosition',
+            seriesPosition: 'seriesPosition',
             author: 'authors',
             authors: 'authors',
             publisher: 'publisher',
@@ -406,7 +412,7 @@ export function buildSimpleTemplate(kind: MediaKind, fields: string[]): string {
     // Games, movies, series and books were migrated to lower-kebab-case note keys.
     // Anime and manga were excluded from that migration and their services still read
     // only the legacy spellings, so they keep emitting the old keys.
-    const kebab = kind === 'games' || kind === 'movies' || kind === 'series' || kind === 'books';
+    const kebab = kind === 'games' || kind === 'movies' || kind === 'tv' || kind === 'books';
 
     if (kind === 'games') {
         if (set.has('type')) lines.push('type: "game"');
@@ -457,8 +463,8 @@ export function buildSimpleTemplate(kind: MediaKind, fields: string[]): string {
         if (set.has('favorite')) lines.push('favorite: false');
         if (set.has('integrationSource')) appendIntegrationSourceFields(lines, kebab);
         if (set.has('url')) lines.push('url: "{{VALUE:url}}"');
-    } else if (kind === 'movies' || kind === 'series') {
-        if (set.has('type')) lines.push(`type: "${kind === 'movies' ? 'movie' : 'series'}"`);
+    } else if (kind === 'movies' || kind === 'tv') {
+        if (set.has('type')) lines.push(`type: "${kind === 'movies' ? 'movie' : 'tv'}"`);
         if (set.has('name')) lines.push('title: "{{VALUE:name}}"');
         if (set.has('poster')) lines.push('poster: "{{VALUE:Poster}}"');
         if (set.has('posterHorizontal')) lines.push('poster-b: "{{VALUE:PosterHorizontal}}"');
@@ -480,7 +486,7 @@ export function buildSimpleTemplate(kind: MediaKind, fields: string[]): string {
             if (set.has('seasons')) lines.push('seasons: {{VALUE:seasons}}');
             if (set.has('episodeCurrent')) lines.push('episode-current: {{VALUE:episodeCurrent}}');
             if (set.has('episodeTotal')) lines.push('episodes: {{VALUE:episodeTotal}}');
-            if (set.has('seriesParts')) {
+            if (set.has('tvParts')) {
                 lines.push('season-id-current: "{{VALUE:activePartId}}"');
                 lines.push('season-data:');
                 lines.push('{{VALUE:videoPartsYaml}}');
@@ -499,6 +505,8 @@ export function buildSimpleTemplate(kind: MediaKind, fields: string[]): string {
         if (set.has('poster')) lines.push('poster: "{{VALUE:Poster}}"');
         if (set.has('posterHorizontal')) lines.push(`${kebab ? 'poster-b' : 'poster_b'}: "{{VALUE:PosterHorizontal}}"`);
         if (set.has('plot')) lines.push(`${kebab ? 'synopsis' : 'plot'}: "{{VALUE:Plot}}"`);
+        if (kind === 'books' && set.has('bookSeries')) lines.push('series: "{{VALUE:bookSeries}}"');
+        if (kind === 'books' && set.has('seriesPosition')) lines.push('series-position: {{VALUE:seriesPosition}}');
         if (set.has('authors')) lines.push(`${kebab ? 'author' : 'authors'}: "{{VALUE:authors}}"`);
         if (kind === 'manga' && set.has('artists')) lines.push('artists: "{{VALUE:artists}}"');
         if (kind === 'books' && set.has('publisher')) lines.push('publisher: "{{VALUE:publisher}}"');

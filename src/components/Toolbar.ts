@@ -286,7 +286,7 @@ export class Toolbar {
     private mediaOption(mediaType: MediaType): { label: string; icon: string } {
         if (mediaType === 'anime') return { label: t('contextAnime'), icon: 'clapperboard' };
         if (mediaType === 'movie') return { label: t('settingsMovies'), icon: 'film' };
-        if (mediaType === 'series') return { label: t('settingsSeries'), icon: 'tv' };
+        if (mediaType === 'tv') return { label: t('settingsTv'), icon: 'tv' };
         if (mediaType === 'book') return { label: t('settingsBooks'), icon: 'book-open' };
         if (mediaType === 'manga') return { label: t('settingsManga'), icon: 'book-open-text' };
         return { label: t('contextGames'), icon: 'gamepad-2' };

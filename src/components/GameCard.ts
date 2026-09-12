@@ -5,7 +5,7 @@ import { requestUrl } from 'obsidian';
  * Matches original 2.0.txt card structure exactly
  */
 
-import { AnimeItem, BookItem, MediaItem, CardSize, CardOrientation, CardStyle, SortField, LorebaseSettings, BadgePosition, MediaStatus, MangaItem, SeriesItem, CompletionDateBadgeFormat } from '../types';
+import { AnimeItem, BookItem, MediaItem, CardSize, CardOrientation, CardStyle, SortField, LorebaseSettings, BadgePosition, MediaStatus, MangaItem, TvItem, CompletionDateBadgeFormat } from '../types';
 import { t, i18n } from '../localization';
 import { STATUS_CONFIG, RATING_EMOJI, CARD_SIZES, DEFAULT_COVER, DEFAULT_SETTINGS, HORIZONTAL_CARD_SIZES } from '../constants';
 import {
@@ -126,7 +126,7 @@ export class GameCard {
         const isHorizontal = this.orientation === 'horizontal';
         const isProgressStyle = this.isProgressStyle();
         this.container.toggleClass('is-anime', this.game.type === 'anime');
-        this.container.toggleClass('is-series', this.game.type === 'series');
+        this.container.toggleClass('is-series', this.game.type === 'tv');
         this.container.toggleClass('is-book', this.game.type === 'book');
         this.container.toggleClass('is-manga', this.game.type === 'manga');
         this.container.toggleClass('lorebase-card-progress-style', isProgressStyle);
@@ -624,7 +624,7 @@ export class GameCard {
             && this.isProgressMedia(this.game);
     }
 
-    private getProgressPercent(item: AnimeItem | SeriesItem | BookItem | MangaItem): number {
+    private getProgressPercent(item: AnimeItem | TvItem | BookItem | MangaItem): number {
         if (this.isBook(item)) {
             const pagePercent = this.progressPercent(item.pageCurrent, item.pageTotal);
             if (pagePercent > 0) return pagePercent;
@@ -704,7 +704,7 @@ export class GameCard {
         return { ep: epText, season: seasonText };
     }
 
-    private getProgressTexts(item: AnimeItem | SeriesItem | BookItem | MangaItem): { ep: string | null; season: string | null } | null {
+    private getProgressTexts(item: AnimeItem | TvItem | BookItem | MangaItem): { ep: string | null; season: string | null } | null {
         if (this.isAnime(item)) return this.getAnimeProgressTexts(item);
         if (this.isBook(item)) {
             const pageCurrent = Number.isFinite(item.pageCurrent) ? Math.trunc(item.pageCurrent as number) : null;
@@ -778,8 +778,8 @@ export class GameCard {
         return item.type === 'anime';
     }
 
-    private isSeries(item: MediaItem): item is SeriesItem {
-        return item.type === 'series';
+    private isSeries(item: MediaItem): item is TvItem {
+        return item.type === 'tv';
     }
 
     private isBook(item: MediaItem): item is BookItem {
@@ -790,7 +790,7 @@ export class GameCard {
         return item.type === 'manga';
     }
 
-    private isProgressMedia(item: MediaItem): item is AnimeItem | SeriesItem | BookItem | MangaItem {
+    private isProgressMedia(item: MediaItem): item is AnimeItem | TvItem | BookItem | MangaItem {
         return this.isAnime(item) || this.isSeries(item) || this.isBook(item) || this.isManga(item);
     }
 

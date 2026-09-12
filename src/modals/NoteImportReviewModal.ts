@@ -337,7 +337,7 @@ export class NoteImportReviewModal extends Modal {
                 ['games', labels[0]],
                 ['anime', labels[1]],
                 ['movies', labels[2]],
-                ['series', labels[3]],
+                ['tv', labels[3]],
                 ['books', labels[4]],
                 ['manga', labels[5]],
             ];

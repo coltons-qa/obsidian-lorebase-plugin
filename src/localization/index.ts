@@ -41,9 +41,9 @@ export type TranslationKey =
     | 'settingsOrientation' | 'settingsOrientationVertical' | 'settingsOrientationHorizontal'
     | 'settingsColor' | 'settingsLanguage' | 'settingsReset'
     | 'settingsShowAddModeChoice' | 'settingsShowAddModeChoiceDesc'
-    | 'settingsMediaGames' | 'settingsMediaAnime' | 'settingsMediaMovies' | 'settingsMediaSeries' | 'settingsMediaBooks' | 'settingsMediaManga'
+    | 'settingsMediaGames' | 'settingsMediaAnime' | 'settingsMediaMovies' | 'settingsMediaTv' | 'settingsMediaBooks' | 'settingsMediaManga'
     | 'settingsParticle' | 'settingsParticleNone' | 'settingsParticleSakura' | 'settingsParticleSnow' | 'settingsParticleIntensity'
-    | 'settingsFolder' | 'settingsGames' | 'settingsAnime' | 'settingsMovies' | 'settingsSeries' | 'settingsBooks' | 'settingsManga' | 'settingsMedia' | 'settingsMediaDesc' | 'settingsMediaTabs'
+    | 'settingsFolder' | 'settingsGames' | 'settingsAnime' | 'settingsMovies' | 'settingsTv' | 'settingsBooks' | 'settingsManga' | 'settingsMedia' | 'settingsMediaDesc' | 'settingsMediaTabs'
     | 'settingsIntegrationTemplateTabs' | 'settingsExperiment'
     | 'settingsTitle' | 'settingsSupportTitle' | 'settingsSupportDesc' | 'settingsSupportUnavailable'
     | 'settingsLayoutMode' | 'settingsLayoutTabs' | 'settingsLayoutAccordion'
@@ -58,7 +58,7 @@ export type TranslationKey =
     | 'settingsDangerZone' | 'settingsDangerZoneWarning' | 'settingsResetAllButton'
     | 'settingsGeneral' | 'settingsShowAdult'
     | 'settingsBadges'
-    | 'settingsPreviewMode' | 'settingsPreviewGame' | 'settingsPreviewAnime' | 'settingsPreviewMovie' | 'settingsPreviewSeries' | 'settingsPreviewBook' | 'settingsPreviewManga'
+    | 'settingsPreviewMode' | 'settingsPreviewGame' | 'settingsPreviewAnime' | 'settingsPreviewMovie' | 'settingsPreviewTv' | 'settingsPreviewBook' | 'settingsPreviewManga'
     | 'settingsDescriptionLines' | 'settingsDescriptionLinesDesc'
     | 'settingsBookCoverEffect' | 'settingsBookCoverEffectDesc'
     | 'settingsBadgesStatus' | 'settingsBadgesRating' | 'settingsBadgesFavorite'
@@ -110,9 +110,9 @@ export type TranslationKey =
     | 'settingsIntegrationsImageStorageFolder' | 'settingsIntegrationsImageStorageFolderDesc'
     | 'settingsIntegrationsImageStorageDownloadExisting' | 'settingsIntegrationsImageStorageDownloadExistingDesc'
     | 'settingsIntegrationsImageStorageDownloadStarted' | 'settingsIntegrationsImageStorageDownloadDone'
-    | 'settingsIntegrationsGamesProvider' | 'settingsIntegrationsAnimeProvider' | 'settingsMoviesSeries'
+    | 'settingsIntegrationsGamesProvider' | 'settingsIntegrationsAnimeProvider' | 'settingsMoviesTv'
     | 'settingsIntegrationsGamesTemplate' | 'settingsIntegrationsAnimeTemplate'
-    | 'settingsIntegrationsMoviesTemplate' | 'settingsIntegrationsSeriesTemplate'
+    | 'settingsIntegrationsMoviesTemplate' | 'settingsIntegrationsTvTemplate'
     | 'settingsIntegrationsTemplateContent'
     | 'settingsIntegrationsGamesProviderDesc' | 'settingsIntegrationsAnimeProviderDesc'
     | 'settingsIntegrationsBooksTemplate' | 'settingsIntegrationsMangaTemplate'
@@ -126,12 +126,12 @@ export type TranslationKey =
     | 'templateFieldScoreImdb' | 'templateFieldCommunityRating' | 'templateFieldCommunityVotes' | 'templateFieldCommunityRatingProvider'
     | 'templateFieldTags' | 'templateFieldYear' | 'templateFieldStudios'
     | 'templateFieldFormat' | 'templateFieldRating' | 'templateFieldStatus' | 'templateFieldDropped'
-    | 'templateFieldFavorite' | 'templateFieldUrl' | 'templateFieldGameSeries' | 'templateFieldGenres'
+    | 'templateFieldFavorite' | 'templateFieldUrl' | 'templateFieldGameSeries' | 'templateFieldBookSeries' | 'templateFieldSeriesPosition' | 'templateFieldGenres'
     | 'templateFieldPlatforms' | 'templateFieldReleased' | 'templateFieldDevelopers' | 'templateFieldPublishers'
     | 'templateFieldMetacritic' | 'templateFieldUserRating' | 'templateFieldPlayed' | 'templateFieldPlaying'
     | 'templateFieldAnimeParts' | 'templateFieldIntegrationSource'
     | 'templateFieldRuntime' | 'templateFieldDirector' | 'templateFieldActors'
-    | 'templateFieldMovieParts' | 'templateFieldSeriesParts' | 'templateFieldSeasons'
+    | 'templateFieldMovieParts' | 'templateFieldTvParts' | 'templateFieldSeasons'
     | 'templateFieldEpisodeCurrent' | 'templateFieldEpisodeTotal'
     | 'templateFieldMain' | 'templateFieldMainPlusSides' | 'templateFieldCompletionist'
     | 'templateFieldAuthors' | 'templateFieldPublisher' | 'templateFieldArtists'
@@ -150,7 +150,7 @@ export type TranslationKey =
     | 'ratingBad' | 'ratingAtrocious' | 'ratingEvil'
     // Misc
     | 'year' | 'yearNotSpecified' | 'noDescription' | 'noSeries'
-    | 'randomGame' | 'noGamesFound' | 'noAnimeFound' | 'noMoviesFound' | 'noSeriesFound' | 'noBooksFound' | 'noMangaFound'
+    | 'randomGame' | 'noGamesFound' | 'noAnimeFound' | 'noMoviesFound' | 'noTvFound' | 'noBooksFound' | 'noMangaFound'
     // Context menu
     | 'contextChangeStatus' | 'contextChangeRating' | 'contextAddFavorite'
     | 'contextRemoveFavorite' | 'contextEdit' | 'contextDelete' | 'contextClear'
@@ -185,7 +185,7 @@ export type TranslationKey =
     | 'editDates' | 'editAdded' | 'editUpdated' | 'editUnknown'
     | 'editOverflow' | 'editRemoveHint' | 'editBreadcrumbGames' | 'editBreadcrumbAnime'
     | 'editBreadcrumbBooks' | 'editBreadcrumbManga'
-    | 'editMovieTitle' | 'editSeriesTitle' | 'editBookTitle' | 'editMangaTitle'
+    | 'editMovieTitle' | 'editTvTitle' | 'editBookTitle' | 'editMangaTitle'
     | 'editAnimeParts' | 'editAddPart' | 'editRemovePart' | 'editCannotRemoveLastPart'
     | 'editRelatedMedia' | 'editAddRelated' | 'editRelatedEmpty' | 'editRelatedPickerTitle'
     | 'editTotalEpisodes' | 'editTotalPages' | 'editTotalChapters' | 'editActivePart' | 'editActiveVolume'
@@ -193,7 +193,7 @@ export type TranslationKey =
     | 'animePartsNoNew' | 'animePartsSourceMissing' | 'animePartsApply'
     | 'planCheckLater' | 'planPlaySoon' | 'planWaitEarlyAccess' | 'planNextInQueue'
     | 'settingsStatusPlans' | 'settingsStatusPlansDesc' | 'settingsGameStatusLabels'
-    | 'settingsAnimeStatusLabels' | 'settingsMovieStatusLabels' | 'settingsSeriesStatusLabels' | 'settingsBookStatusLabels' | 'settingsMangaStatusLabels' | 'settingsGamePlanTags' | 'settingsGamePlanTagsDesc'
+    | 'settingsAnimeStatusLabels' | 'settingsMovieStatusLabels' | 'settingsTvStatusLabels' | 'settingsBookStatusLabels' | 'settingsMangaStatusLabels' | 'settingsGamePlanTags' | 'settingsGamePlanTagsDesc'
     | 'settingsStatusReset' | 'settingsPlanAdd' | 'settingsPlanRemove'
     | 'settingsPlanPlaceholder' | 'settingsPlanNew' | 'settingsStatusMediaTabs'
     | 'formatTv' | 'formatMovie' | 'formatOva' | 'formatOna' | 'formatSpecial'
@@ -201,18 +201,18 @@ export type TranslationKey =
     | 'deleteTitle' | 'deleteSubtitle' | 'deleteWarning' | 'deleteConfirmAck' | 'deleteConfirm' | 'deleteCancel'
     | 'deleteTitleAnime' | 'deleteSubtitleAnime' | 'deleteConfirmAckAnime'
     | 'deleteTitleMovie' | 'deleteSubtitleMovie' | 'deleteConfirmAckMovie'
-    | 'deleteTitleSeries' | 'deleteSubtitleSeries' | 'deleteConfirmAckSeries'
+    | 'deleteTitleTv' | 'deleteSubtitleTv' | 'deleteConfirmAckTv'
     | 'deleteTitleReading' | 'deleteSubtitleReading' | 'deleteConfirmAckReading'
     // Notifications
     | 'notifyLoading'
     | 'commandOpenLibrary'
     | 'commandOpenGamesLibrary' | 'commandOpenAnimeLibrary' | 'commandOpenMoviesLibrary'
-    | 'commandOpenSeriesLibrary' | 'commandOpenBooksLibrary' | 'commandOpenMangaLibrary'
-    | 'commandAddGame' | 'commandAddAnime' | 'commandAddMovie' | 'commandAddSeries' | 'commandAddBook' | 'commandAddManga'
+    | 'commandOpenTvLibrary' | 'commandOpenBooksLibrary' | 'commandOpenMangaLibrary'
+    | 'commandAddGame' | 'commandAddAnime' | 'commandAddMovie' | 'commandAddTv' | 'commandAddBook' | 'commandAddManga'
     | 'commandImportNotes'
     | 'ribbonLibrary'
     | 'errorInitView' | 'errorLoadingItems' | 'errorProcessingList'
-    | 'promptSearchGame' | 'promptSearchAnime' | 'promptSearchMovie' | 'promptSearchSeries' | 'promptSearchBook' | 'promptSearchManga' | 'promptSearchPlaceholder'
+    | 'promptSearchGame' | 'promptSearchAnime' | 'promptSearchMovie' | 'promptSearchTv' | 'promptSearchBook' | 'promptSearchManga' | 'promptSearchPlaceholder'
     | 'promptSelectResult'
     | 'promptIncludeDlc'
     | 'promptSearchAction' | 'promptAddSelected' | 'promptSelectedLabel'
@@ -296,7 +296,7 @@ const EN: Record<TranslationKey, string> = {
     settingsColumns: 'Columns',
     settingsCardSize: 'Card size',
     settingsCardStyle: 'Card style',
-    settingsCardStyleDesc: 'Anime, series, books and manga only',
+    settingsCardStyleDesc: 'Anime, TV series, books and manga only',
     settingsCardStyleHover: 'Hover preview',
     settingsCardStyleProgress: 'Progress footer',
     settingsCustomCardSize: 'Custom card size',
@@ -333,7 +333,7 @@ const EN: Record<TranslationKey, string> = {
     settingsMediaGames: 'Show games',
     settingsMediaAnime: 'Show anime',
     settingsMediaMovies: 'Show movies',
-    settingsMediaSeries: 'Show series',
+    settingsMediaTv: 'Show TV series',
     settingsMediaBooks: 'Show books',
     settingsMediaManga: 'Show manga',
     settingsParticle: 'Particle effect',
@@ -344,7 +344,7 @@ const EN: Record<TranslationKey, string> = {
     settingsFolder: 'Folder path',
     settingsGames: 'Games',
     settingsMovies: 'Movies',
-    settingsSeries: 'Series',
+    settingsTv: 'TV Series',
     settingsBooks: 'Books',
     settingsManga: 'Manga',
     settingsMedia: 'Media',
@@ -368,7 +368,7 @@ const EN: Record<TranslationKey, string> = {
     settingsSectionDangerDesc: 'Reset all LOREBASE settings.',
     settingsSectionAboutDesc: 'Version and plugin information.',
     settingsAbout: 'About',
-    settingsAboutDesc: 'LOREBASE is a media hub for games, anime, movies, series, books, and manga with customizable cards, progress, ratings, and metadata integrations.',
+    settingsAboutDesc: 'LOREBASE is a media hub for games, anime, movies, TV series, books, and manga with customizable cards, progress, ratings, and metadata integrations.',
     settingsAboutVersion: 'Version',
     settingsAboutAuthor: 'Author',
     settingsAboutObsidian: 'Obsidian',
@@ -393,7 +393,7 @@ const EN: Record<TranslationKey, string> = {
     settingsPreviewGame: 'Game',
     settingsPreviewAnime: 'Anime',
     settingsPreviewMovie: 'Movie',
-    settingsPreviewSeries: 'Series',
+    settingsPreviewTv: 'TV Series',
     settingsPreviewBook: 'Book',
     settingsPreviewManga: 'Manga',
     settingsDescriptionLines: 'Description lines',
@@ -469,9 +469,9 @@ const EN: Record<TranslationKey, string> = {
     settingsIntegrationsProviderAnilist: 'AniList (Anime)',
     settingsIntegrationsProviderJikan: 'Jikan / MyAnimeList (Anime)',
     settingsIntegrationsProviderShikimori: 'Shikimori (Anime)',
-    settingsIntegrationsProviderTmdb: 'TMDB (Movies & Series)',
-    settingsIntegrationsProviderTvmaze: 'TVmaze (Series)',
-    settingsIntegrationsProviderOmdb: 'OMDb (Movies & Series)',
+    settingsIntegrationsProviderTmdb: 'TMDB (Movies & TV Series)',
+    settingsIntegrationsProviderTvmaze: 'TVmaze (TV Series)',
+    settingsIntegrationsProviderOmdb: 'OMDb (Movies & TV Series)',
     settingsIntegrationsProviderHardcover: 'Hardcover (Books)',
     settingsIntegrationsProviderGooglebooks: 'Google Books (Books)',
     settingsIntegrationsProviderMangaupdates: 'MangaUpdates (Manga)',
@@ -516,13 +516,13 @@ const EN: Record<TranslationKey, string> = {
     settingsIntegrationsImageStorageDownloadDone: 'Existing image download complete',
     settingsIntegrationsGamesProvider: 'Games provider',
     settingsIntegrationsAnimeProvider: 'Anime provider',
-    settingsMoviesSeries: 'Movies & Series',
+    settingsMoviesTv: 'Movies & TV Series',
     settingsIntegrationsGamesProviderDesc: 'Choose a provider for games',
     settingsIntegrationsAnimeProviderDesc: 'Choose a provider for anime',
     settingsIntegrationsGamesTemplate: 'Games template',
     settingsIntegrationsAnimeTemplate: 'Anime template',
     settingsIntegrationsMoviesTemplate: 'Movies template',
-    settingsIntegrationsSeriesTemplate: 'Series template',
+    settingsIntegrationsTvTemplate: 'TV series template',
     settingsIntegrationsBooksTemplate: 'Books template',
     settingsIntegrationsMangaTemplate: 'Manga template',
     settingsIntegrationsTemplateContent: 'Template content',
@@ -560,6 +560,8 @@ const EN: Record<TranslationKey, string> = {
     templateFieldFavorite: 'Favorite',
     templateFieldUrl: 'Source URL',
     templateFieldGameSeries: 'Game series',
+    templateFieldBookSeries: 'Book series',
+    templateFieldSeriesPosition: 'Series position',
     templateFieldGenres: 'Genres',
     templateFieldPlatforms: 'Platforms',
     templateFieldReleased: 'Release date',
@@ -575,7 +577,7 @@ const EN: Record<TranslationKey, string> = {
     editRepeatBook: 'Reread?',
     templateFieldActors: 'Actors',
     templateFieldMovieParts: 'Movie parts',
-    templateFieldSeriesParts: 'Series seasons',
+    templateFieldTvParts: 'TV series seasons',
     templateFieldSeasons: 'Seasons',
     templateFieldEpisodeCurrent: 'Current episode',
     templateFieldEpisodeTotal: 'Total episodes',
@@ -643,7 +645,7 @@ const EN: Record<TranslationKey, string> = {
     noGamesFound: 'No games found',
     noAnimeFound: 'No anime found',
     noMoviesFound: 'No movies found',
-    noSeriesFound: 'No series found',
+    noTvFound: 'No TV series found',
     noBooksFound: 'No books found',
     noMangaFound: 'No manga found',
 
@@ -754,7 +756,7 @@ const EN: Record<TranslationKey, string> = {
     editBreadcrumbBooks: 'Editing / Books',
     editBreadcrumbManga: 'Editing / Manga',
     editMovieTitle: 'Edit movie',
-    editSeriesTitle: 'Edit series',
+    editTvTitle: 'Edit TV series',
     editBookTitle: 'Edit book',
     editMangaTitle: 'Edit manga',
     editAnimeParts: 'Title parts',
@@ -786,7 +788,7 @@ const EN: Record<TranslationKey, string> = {
     settingsGameStatusLabels: 'Game status labels',
     settingsAnimeStatusLabels: 'Anime status labels',
     settingsMovieStatusLabels: 'Movie status labels',
-    settingsSeriesStatusLabels: 'Series status labels',
+    settingsTvStatusLabels: 'TV series status labels',
     settingsBookStatusLabels: 'Book status labels',
     settingsMangaStatusLabels: 'Manga status labels',
     settingsGamePlanTags: 'Game plan tags',
@@ -816,9 +818,9 @@ const EN: Record<TranslationKey, string> = {
     deleteTitleMovie: 'Delete movie?',
     deleteSubtitleMovie: 'You are about to permanently delete this movie.',
     deleteConfirmAckMovie: 'I understand that this will permanently delete the movie',
-    deleteTitleSeries: 'Delete series?',
-    deleteSubtitleSeries: 'You are about to permanently delete this series.',
-    deleteConfirmAckSeries: 'I understand that this will permanently delete the series',
+    deleteTitleTv: 'Delete TV series?',
+    deleteSubtitleTv: 'You are about to permanently delete this TV series.',
+    deleteConfirmAckTv: 'I understand that this will permanently delete the TV series',
     deleteTitleReading: 'Delete reading item?',
     deleteSubtitleReading: 'You are about to permanently delete this reading item.',
     deleteConfirmAckReading: 'I understand that this reading item will be permanently deleted',
@@ -829,13 +831,13 @@ const EN: Record<TranslationKey, string> = {
     commandOpenGamesLibrary: 'Open Games',
     commandOpenAnimeLibrary: 'Open Anime',
     commandOpenMoviesLibrary: 'Open Movies',
-    commandOpenSeriesLibrary: 'Open Series',
+    commandOpenTvLibrary: 'Open TV Series',
     commandOpenBooksLibrary: 'Open Books',
     commandOpenMangaLibrary: 'Open Manga',
     commandAddGame: 'Add game',
     commandAddAnime: 'Add anime',
     commandAddMovie: 'Add movie',
-    commandAddSeries: 'Add series',
+    commandAddTv: 'Add TV series',
     commandAddBook: 'Add book',
     commandAddManga: 'Add manga',
     commandSteamSync: 'Steam Sync',
@@ -847,7 +849,7 @@ const EN: Record<TranslationKey, string> = {
     promptSearchGame: 'Enter game title',
     promptSearchAnime: 'Enter anime title',
     promptSearchMovie: 'Enter movie title',
-    promptSearchSeries: 'Enter series title',
+    promptSearchTv: 'Enter TV series title',
     promptSearchBook: 'Enter book title',
     promptSearchManga: 'Enter manga title',
     promptSearchPlaceholder: 'Type a title...',
@@ -1006,7 +1008,7 @@ const RU: Record<TranslationKey, string> = {
     settingsMediaGames: 'Показывать игры',
     settingsMediaAnime: 'Показывать аниме',
     settingsMediaMovies: 'Показывать фильмы',
-    settingsMediaSeries: 'Показывать сериалы',
+    settingsMediaTv: 'Показывать сериалы',
     settingsMediaBooks: 'Показывать книги',
     settingsMediaManga: 'Показывать мангу',
     settingsParticle: 'Эффект частиц',
@@ -1017,7 +1019,7 @@ const RU: Record<TranslationKey, string> = {
     settingsFolder: 'Путь к папке',
     settingsGames: 'Игры',
     settingsMovies: 'Фильмы',
-    settingsSeries: 'Сериалы',
+    settingsTv: 'Сериалы',
     settingsBooks: 'Книги',
     settingsManga: 'Манга',
     settingsMedia: 'Медиа',
@@ -1066,7 +1068,7 @@ const RU: Record<TranslationKey, string> = {
     settingsPreviewGame: 'Игра',
     settingsPreviewAnime: 'Аниме',
     settingsPreviewMovie: 'Фильм',
-    settingsPreviewSeries: 'Сериал',
+    settingsPreviewTv: 'Сериал',
     settingsPreviewBook: 'Книга',
     settingsPreviewManga: 'Манга',
     settingsDescriptionLines: 'Строк описания',
@@ -1189,13 +1191,13 @@ const RU: Record<TranslationKey, string> = {
     settingsIntegrationsImageStorageDownloadDone: 'Скачивание существующих изображений завершено',
     settingsIntegrationsGamesProvider: 'Провайдер игр',
     settingsIntegrationsAnimeProvider: 'Провайдер аниме',
-    settingsMoviesSeries: 'Фильмы и сериалы',
+    settingsMoviesTv: 'Фильмы и сериалы',
     settingsIntegrationsGamesProviderDesc: 'Выберите провайдера для игр',
     settingsIntegrationsAnimeProviderDesc: 'Выберите провайдера для аниме',
     settingsIntegrationsGamesTemplate: 'Шаблон игр',
     settingsIntegrationsAnimeTemplate: 'Шаблон аниме',
     settingsIntegrationsMoviesTemplate: 'Шаблон фильмов',
-    settingsIntegrationsSeriesTemplate: 'Шаблон сериалов',
+    settingsIntegrationsTvTemplate: 'Шаблон сериалов',
     settingsIntegrationsBooksTemplate: 'Шаблон книг',
     settingsIntegrationsMangaTemplate: 'Шаблон манги',
     settingsIntegrationsTemplateContent: 'Содержимое шаблона',
@@ -1233,6 +1235,8 @@ const RU: Record<TranslationKey, string> = {
     templateFieldFavorite: 'Избранное',
     templateFieldUrl: 'Источник URL',
     templateFieldGameSeries: 'Серия',
+    templateFieldBookSeries: 'Книжная серия',
+    templateFieldSeriesPosition: 'Позиция в серии',
     templateFieldGenres: 'Жанры',
     templateFieldPlatforms: 'Платформы',
     templateFieldReleased: 'Дата релиза',
@@ -1248,7 +1252,7 @@ const RU: Record<TranslationKey, string> = {
     editRepeatBook: 'Перечитать?',
     templateFieldActors: 'Актёры',
     templateFieldMovieParts: 'Части фильма',
-    templateFieldSeriesParts: 'Сезоны сериала',
+    templateFieldTvParts: 'Сезоны сериала',
     templateFieldSeasons: 'Сезоны',
     templateFieldEpisodeCurrent: 'Текущий эпизод',
     templateFieldEpisodeTotal: 'Всего эпизодов',
@@ -1316,7 +1320,7 @@ const RU: Record<TranslationKey, string> = {
     noGamesFound: 'Игр не найдено',
     noAnimeFound: 'Аниме не найдено',
     noMoviesFound: 'Фильмы не найдены',
-    noSeriesFound: 'Сериалы не найдены',
+    noTvFound: 'Сериалы не найдены',
     noBooksFound: 'Книги не найдены',
     noMangaFound: 'Манга не найдена',
 
@@ -1427,7 +1431,7 @@ const RU: Record<TranslationKey, string> = {
     editBreadcrumbBooks: 'Редактирование / Книги',
     editBreadcrumbManga: 'Редактирование / Манга',
     editMovieTitle: 'Редактирование фильма',
-    editSeriesTitle: 'Редактирование сериала',
+    editTvTitle: 'Редактирование сериала',
     editBookTitle: 'Редактирование книги',
     editMangaTitle: 'Редактирование манги',
     editAnimeParts: 'Состав тайтла',
@@ -1459,7 +1463,7 @@ const RU: Record<TranslationKey, string> = {
     settingsGameStatusLabels: 'Названия статусов игр',
     settingsAnimeStatusLabels: 'Названия статусов аниме',
     settingsMovieStatusLabels: 'Названия статусов фильмов',
-    settingsSeriesStatusLabels: 'Названия статусов сериалов',
+    settingsTvStatusLabels: 'Названия статусов сериалов',
     settingsBookStatusLabels: 'Названия статусов книг',
     settingsMangaStatusLabels: 'Названия статусов манги',
     settingsGamePlanTags: 'План-метки игр',
@@ -1489,9 +1493,9 @@ const RU: Record<TranslationKey, string> = {
     deleteTitleMovie: 'Удалить фильм?',
     deleteSubtitleMovie: 'Фильм будет удалён навсегда.',
     deleteConfirmAckMovie: 'Я понимаю, что фильм будет удалён навсегда',
-    deleteTitleSeries: 'Удалить сериал?',
-    deleteSubtitleSeries: 'Сериал будет удалён навсегда.',
-    deleteConfirmAckSeries: 'Я понимаю, что сериал будет удалён навсегда',
+    deleteTitleTv: 'Удалить сериал?',
+    deleteSubtitleTv: 'Сериал будет удалён навсегда.',
+    deleteConfirmAckTv: 'Я понимаю, что сериал будет удалён навсегда',
     deleteTitleReading: 'Удалить запись чтения?',
     deleteSubtitleReading: 'Эта запись будет удалена навсегда.',
     deleteConfirmAckReading: 'Я понимаю, что запись будет удалена навсегда',
@@ -1502,13 +1506,13 @@ const RU: Record<TranslationKey, string> = {
     commandOpenGamesLibrary: 'Открыть игры',
     commandOpenAnimeLibrary: 'Открыть аниме',
     commandOpenMoviesLibrary: 'Открыть фильмы',
-    commandOpenSeriesLibrary: 'Открыть сериалы',
+    commandOpenTvLibrary: 'Открыть сериалы',
     commandOpenBooksLibrary: 'Открыть книги',
     commandOpenMangaLibrary: 'Открыть мангу',
     commandAddGame: 'Добавить игру',
     commandAddAnime: 'Добавить аниме',
     commandAddMovie: 'Добавить фильм',
-    commandAddSeries: 'Добавить сериал',
+    commandAddTv: 'Добавить сериал',
     commandAddBook: 'Добавить книгу',
     commandAddManga: 'Добавить мангу',
     commandSteamSync: 'Синхронизация Steam',
@@ -1520,7 +1524,7 @@ const RU: Record<TranslationKey, string> = {
     promptSearchGame: 'Введите название игры',
     promptSearchAnime: 'Введите название аниме',
     promptSearchMovie: 'Введите название фильма',
-    promptSearchSeries: 'Введите название сериала',
+    promptSearchTv: 'Введите название сериала',
     promptSearchBook: 'Введите название книги',
     promptSearchManga: 'Введите название манги',
     promptSearchPlaceholder: 'Введите название...',
@@ -1680,7 +1684,7 @@ const UK: Record<TranslationKey, string> = {
     settingsMediaGames: 'Показувати ігри',
     settingsMediaAnime: 'Показувати аніме',
     settingsMediaMovies: 'Показувати фільми',
-    settingsMediaSeries: 'Показувати серіали',
+    settingsMediaTv: 'Показувати серіали',
     settingsMediaBooks: 'Показувати книги',
     settingsMediaManga: 'Показувати мангу',
     settingsParticle: 'Ефект частинок',
@@ -1692,7 +1696,7 @@ const UK: Record<TranslationKey, string> = {
     settingsGames: 'Ігри',
     settingsAnime: 'Аніме',
     settingsMovies: 'Фільми',
-    settingsSeries: 'Серіали',
+    settingsTv: 'Серіали',
     settingsBooks: 'Книги',
     settingsManga: 'Манга',
     settingsMedia: 'Медіа',
@@ -1740,7 +1744,7 @@ const UK: Record<TranslationKey, string> = {
     settingsPreviewGame: 'Гра',
     settingsPreviewAnime: 'Аніме',
     settingsPreviewMovie: 'Фільм',
-    settingsPreviewSeries: 'Серіал',
+    settingsPreviewTv: 'Серіал',
     settingsPreviewBook: 'Книга',
     settingsPreviewManga: 'Манга',
     settingsDescriptionLines: 'Рядки опису',
@@ -1865,13 +1869,13 @@ const UK: Record<TranslationKey, string> = {
     settingsIntegrationsImageStorageDownloadDone: 'Завантаження існуючих зображень завершено',
     settingsIntegrationsGamesProvider: 'Провайдер ігор',
     settingsIntegrationsAnimeProvider: 'Провайдер аніме',
-    settingsMoviesSeries: 'Фільми та серіали',
+    settingsMoviesTv: 'Фільми та серіали',
     settingsIntegrationsGamesProviderDesc: 'Виберіть провайдера для ігор',
     settingsIntegrationsAnimeProviderDesc: 'Виберіть провайдера для аніме',
     settingsIntegrationsGamesTemplate: 'Шаблон ігор',
     settingsIntegrationsAnimeTemplate: 'Шаблон аніме',
     settingsIntegrationsMoviesTemplate: 'Шаблон фільмів',
-    settingsIntegrationsSeriesTemplate: 'Шаблон серіалів',
+    settingsIntegrationsTvTemplate: 'Шаблон серіалів',
     settingsIntegrationsBooksTemplate: 'Шаблон книг',
     settingsIntegrationsMangaTemplate: 'Шаблон манги',
     settingsIntegrationsTemplateContent: 'Вміст шаблону',
@@ -1911,6 +1915,8 @@ const UK: Record<TranslationKey, string> = {
     templateFieldFavorite: 'Обране',
     templateFieldUrl: 'URL джерела',
     templateFieldGameSeries: 'Серія ігор',
+    templateFieldBookSeries: 'Серія книг',
+    templateFieldSeriesPosition: 'Позиція в серії',
     templateFieldGenres: 'Жанри',
     templateFieldPlatforms: 'Платформи',
     templateFieldReleased: 'Дата релізу',
@@ -1926,7 +1932,7 @@ const UK: Record<TranslationKey, string> = {
     editRepeatBook: 'Перечитати?',
     templateFieldActors: 'Актори',
     templateFieldMovieParts: 'Частини фільму',
-    templateFieldSeriesParts: 'Сезони серіалу',
+    templateFieldTvParts: 'Сезони серіалу',
     templateFieldSeasons: 'Сезони',
     templateFieldEpisodeCurrent: 'Поточний епізод',
     templateFieldEpisodeTotal: 'Усього епізодів',
@@ -1989,7 +1995,7 @@ const UK: Record<TranslationKey, string> = {
     noGamesFound: 'Ігри не знайдені',
     noAnimeFound: 'Аніме не знайдено',
     noMoviesFound: 'Фільми не знайдені',
-    noSeriesFound: 'Серіали не знайдені',
+    noTvFound: 'Серіали не знайдені',
     noBooksFound: 'Книги не знайдені',
     noMangaFound: 'Манга не знайдена',
 
@@ -2098,7 +2104,7 @@ const UK: Record<TranslationKey, string> = {
     editBreadcrumbBooks: 'Редагування / Книги',
     editBreadcrumbManga: 'Редагування / Манга',
     editMovieTitle: 'Редагувати фільм',
-    editSeriesTitle: 'Редагувати серіал',
+    editTvTitle: 'Редагувати серіал',
     editBookTitle: 'Редагувати книгу',
     editMangaTitle: 'Редагувати мангу',
     editAnimeParts: 'Частини назви',
@@ -2132,7 +2138,7 @@ const UK: Record<TranslationKey, string> = {
     settingsGameStatusLabels: 'Назви статусів ігор',
     settingsAnimeStatusLabels: 'Назви статусів аніме',
     settingsMovieStatusLabels: 'Назви статусів фільмів',
-    settingsSeriesStatusLabels: 'Назви статусів серіалів',
+    settingsTvStatusLabels: 'Назви статусів серіалів',
     settingsBookStatusLabels: 'Назви статусів книг',
     settingsMangaStatusLabels: 'Назви статусів манги',
     settingsGamePlanTags: 'Теги планів ігор',
@@ -2162,9 +2168,9 @@ const UK: Record<TranslationKey, string> = {
     deleteTitleMovie: 'Видалити фільм?',
     deleteSubtitleMovie: 'Фільм буде видалено назавжди.',
     deleteConfirmAckMovie: 'Я розумію, що фільм буде видалено назавжди',
-    deleteTitleSeries: 'Видалити серіал?',
-    deleteSubtitleSeries: 'Серіал буде видалено назавжди.',
-    deleteConfirmAckSeries: 'Я розумію, що серіал буде видалено назавжди',
+    deleteTitleTv: 'Видалити серіал?',
+    deleteSubtitleTv: 'Серіал буде видалено назавжди.',
+    deleteConfirmAckTv: 'Я розумію, що серіал буде видалено назавжди',
     deleteTitleReading: 'Видалити запис читання?',
     deleteSubtitleReading: 'Цей запис буде видалено назавжди.',
     deleteConfirmAckReading: 'Я розумію, що запис буде видалено назавжди',
@@ -2173,13 +2179,13 @@ const UK: Record<TranslationKey, string> = {
     commandOpenGamesLibrary: 'Відкрити ігри',
     commandOpenAnimeLibrary: 'Відкрити аніме',
     commandOpenMoviesLibrary: 'Відкрити фільми',
-    commandOpenSeriesLibrary: 'Відкрити серіали',
+    commandOpenTvLibrary: 'Відкрити серіали',
     commandOpenBooksLibrary: 'Відкрити книги',
     commandOpenMangaLibrary: 'Відкрити мангу',
     commandAddGame: 'Додати гру',
     commandAddAnime: 'Додати аніме',
     commandAddMovie: 'Додати фільм',
-    commandAddSeries: 'Додати серіал',
+    commandAddTv: 'Додати серіал',
     commandAddBook: 'Додати книгу',
     commandAddManga: 'Додати мангу',
     commandImportNotes: 'Імпортувати нотатки в LOREBASE',
@@ -2190,7 +2196,7 @@ const UK: Record<TranslationKey, string> = {
     promptSearchGame: 'Введіть назву гри',
     promptSearchAnime: 'Введіть назву аніме',
     promptSearchMovie: 'Введіть назву фільму',
-    promptSearchSeries: 'Введіть назву серіалу',
+    promptSearchTv: 'Введіть назву серіалу',
     promptSearchBook: 'Введіть назву книги',
     promptSearchManga: 'Введіть назву манги',
     promptSearchPlaceholder: 'Пошук...',

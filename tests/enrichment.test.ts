@@ -445,4 +445,53 @@ describe('media enrichment merge', () => {
         });
 
     });
+
+    describe('book series alias', () => {
+        it('maps bookSeries to the series frontmatter key', () => {
+            const current: Record<string, unknown> = {
+                type: 'book',
+                title: 'The Way of Kings',
+                poster: 'https://img.example/wok.jpg',
+                author: 'Brandon Sanderson',
+                status: 'planned',
+            };
+            const incoming: Record<string, unknown> = {
+                name: 'The Way of Kings',
+                poster: 'https://img.example/wok.jpg',
+                bookSeries: 'The Stormlight Archive',
+                seriesPosition: 1,
+            };
+            const source = { provider: 'hardcover', id: '42' };
+
+            const result = mergeProviderMetadata(current, incoming, source);
+
+            expect(result.values.series).toBe('The Stormlight Archive');
+            expect(result.values['series-position']).toBe(1);
+            // The provider key should not appear in the output — only the alias.
+            expect(result.values).not.toHaveProperty('bookSeries');
+            expect(result.values).not.toHaveProperty('seriesPosition');
+        });
+
+        it('preserves existing series value when provider sends the same', () => {
+            const current: Record<string, unknown> = {
+                type: 'book',
+                title: 'The Way of Kings',
+                series: 'The Stormlight Archive',
+                'series-position': 1,
+                status: 'reading',
+            };
+            const incoming: Record<string, unknown> = {
+                name: 'The Way of Kings',
+                bookSeries: 'The Stormlight Archive',
+                seriesPosition: 1,
+            };
+            const source = { provider: 'hardcover', id: '42' };
+
+            const result = synchronizeProviderMetadata(current, incoming, source);
+
+            expect(result.values.series).toBe('The Stormlight Archive');
+            expect(result.values['series-position']).toBe(1);
+            expect(result.values.status).toBe('reading');
+        });
+    });
 });

@@ -14,7 +14,7 @@ import type { VideoService } from '../services/VideoService';
 // =============================================================================
 
 /** Supported media types in the library */
-export type MediaType = 'game' | 'anime' | 'movie' | 'series' | 'book' | 'manga';
+export type MediaType = 'game' | 'anime' | 'movie' | 'tv' | 'book' | 'manga';
 
 /** Game play status */
 export type GameStatus = 'planned' | 'playing' | 'completed' | 'dropped' | 'sandbox' | 'paused';
@@ -45,7 +45,7 @@ export type StatusLabelSettings = {
     games: Partial<Record<GameStatus, string>>;
     anime: Partial<Record<AnimeStatus, string>>;
     movies: Partial<Record<VideoStatus, string>>;
-    series: Partial<Record<VideoStatus, string>>;
+    tv: Partial<Record<VideoStatus, string>>;
     books: Partial<Record<ReadingStatus, string>>;
     manga: Partial<Record<ReadingStatus, string>>;
 };
@@ -67,7 +67,7 @@ interface TagPresetSettings {
 export type NoteImportWriteMode = 'copy' | 'replace';
 
 /** Existing-note import target library */
-export type NoteImportTargetMedia = 'auto' | 'games' | 'anime' | 'movies' | 'series' | 'books' | 'manga';
+export type NoteImportTargetMedia = 'auto' | 'games' | 'anime' | 'movies' | 'tv' | 'books' | 'manga';
 
 /** User-editable frontmatter alias mapping for existing-note import */
 export interface NoteImportFieldMapping {
@@ -255,7 +255,7 @@ interface CompletionDateBadgeFormatSettings {
     games: CompletionDateBadgeFormat;
     anime: CompletionDateBadgeFormat;
     movies: CompletionDateBadgeFormat;
-    series: CompletionDateBadgeFormat;
+    tv: CompletionDateBadgeFormat;
     books: CompletionDateBadgeFormat;
     manga: CompletionDateBadgeFormat;
 }
@@ -466,8 +466,8 @@ export interface MovieItem extends BaseMediaItem {
     relatedMedia?: RelatedMediaLink[];
 }
 
-export interface SeriesItem extends BaseMediaItem {
-    type: 'series';
+export interface TvItem extends BaseMediaItem {
+    type: 'tv';
     status: VideoStatus;
     summary: string;
     releaseDate?: string | null;
@@ -494,6 +494,10 @@ export interface BookItem extends BaseMediaItem {
     status: ReadingStatus;
     summary: string;
     authors: string[];
+    /** Book series name (e.g. "Harry Potter") */
+    bookSeries?: string;
+    /** Position/number within the series (e.g. 3 for "Prisoner of Azkaban") */
+    seriesPosition?: number | null;
     illustrator?: string;
     publisher?: string;
     releaseDate?: string | null;
@@ -536,7 +540,7 @@ export interface MangaItem extends BaseMediaItem {
 
 /** Union for all media item types */
 export type ReadingItem = BookItem | MangaItem;
-export type MediaItem = GameItem | AnimeItem | MovieItem | SeriesItem | BookItem | MangaItem;
+export type MediaItem = GameItem | AnimeItem | MovieItem | TvItem | BookItem | MangaItem;
 
 // =============================================================================
 // SETTINGS INTERFACES
@@ -606,7 +610,7 @@ export interface LorebaseSettings {
         games: boolean;
         anime: boolean;
         movies: boolean;
-        series: boolean;
+        tv: boolean;
         books: boolean;
         manga: boolean;
     };
@@ -634,10 +638,10 @@ export interface LorebaseSettings {
     movieDescriptionLines: number;
     /** Max lines for horizontal movie card description in hover overlay */
     movieHorizontalDescriptionLines: number;
-    /** Max lines for series card description in hover overlay */
-    seriesDescriptionLines: number;
-    /** Max lines for horizontal series card description in hover overlay */
-    seriesHorizontalDescriptionLines: number;
+    /** Max lines for TV series card description in hover overlay */
+    tvDescriptionLines: number;
+    /** Max lines for horizontal TV series card description in hover overlay */
+    tvHorizontalDescriptionLines: number;
     /** Max lines for book card description in hover overlay */
     bookDescriptionLines: number;
     /** Max lines for horizontal book card description in hover overlay */
@@ -654,10 +658,10 @@ export interface LorebaseSettings {
     movieOverlayTextLayout: OverlayTextLayout;
     /** Hover overlay text positions for horizontal movie cards */
     movieHorizontalOverlayTextLayout: OverlayTextLayout;
-    /** Hover overlay text positions for series */
-    seriesOverlayTextLayout: OverlayTextLayout;
-    /** Hover overlay text positions for horizontal series cards */
-    seriesHorizontalOverlayTextLayout: OverlayTextLayout;
+    /** Hover overlay text positions for TV series */
+    tvOverlayTextLayout: OverlayTextLayout;
+    /** Hover overlay text positions for horizontal TV series cards */
+    tvHorizontalOverlayTextLayout: OverlayTextLayout;
     /** Hover overlay text positions for books */
     bookOverlayTextLayout: OverlayTextLayout;
     /** Hover overlay text positions for horizontal book cards */
@@ -674,10 +678,10 @@ export interface LorebaseSettings {
     movieOverlayTextVisibility: OverlayTextVisibility;
     /** Hover overlay field visibility for horizontal movie cards */
     movieHorizontalOverlayTextVisibility: OverlayTextVisibility;
-    /** Hover overlay field visibility for series */
-    seriesOverlayTextVisibility: OverlayTextVisibility;
-    /** Hover overlay field visibility for horizontal series cards */
-    seriesHorizontalOverlayTextVisibility: OverlayTextVisibility;
+    /** Hover overlay field visibility for TV series */
+    tvOverlayTextVisibility: OverlayTextVisibility;
+    /** Hover overlay field visibility for horizontal TV series cards */
+    tvHorizontalOverlayTextVisibility: OverlayTextVisibility;
     /** Hover overlay field visibility for books */
     bookOverlayTextVisibility: OverlayTextVisibility;
     /** Hover overlay field visibility for horizontal book cards */
@@ -700,10 +704,10 @@ export interface LorebaseSettings {
     movieBadges: BadgeSettings;
     /** Badge rendering settings for horizontal movie cards */
     movieHorizontalBadges: BadgeSettings;
-    /** Badge rendering settings for series */
-    seriesBadges: BadgeSettings;
-    /** Badge rendering settings for horizontal series cards */
-    seriesHorizontalBadges: BadgeSettings;
+    /** Badge rendering settings for TV series */
+    tvBadges: BadgeSettings;
+    /** Badge rendering settings for horizontal TV series cards */
+    tvHorizontalBadges: BadgeSettings;
     /** Badge rendering settings for books */
     bookBadges: BadgeSettings;
     /** Badge rendering settings for horizontal book cards */
@@ -727,6 +731,8 @@ export interface LorebaseSettings {
         gameDefaultVisibilityFilters?: boolean;
         /** One-time migration from the removed Jikan manga search provider. */
         jikanMangaProviderV1?: boolean;
+        /** Ensure bookSeries/seriesPosition appear in book template fields. */
+        bookSeriesTemplateFields?: boolean;
     };
     /** Games library settings */
     games: LibrarySettings;
@@ -734,8 +740,8 @@ export interface LorebaseSettings {
     anime: LibrarySettings;
     /** Movies library settings */
     movies: LibrarySettings;
-    /** Series library settings */
-    series: LibrarySettings;
+    /** TV series library settings */
+    tv: LibrarySettings;
     /** Books library settings */
     books: LibrarySettings;
     /** Manga library settings */
@@ -795,7 +801,7 @@ interface IntegrationsSettings {
         games: IntegrationTemplateSettings;
         anime: IntegrationTemplateSettings;
         movies: IntegrationTemplateSettings;
-        series: IntegrationTemplateSettings;
+        tv: IntegrationTemplateSettings;
         books: IntegrationTemplateSettings;
         manga: IntegrationTemplateSettings;
     };
@@ -835,7 +841,7 @@ export interface LorebasePluginInterface {
     getAnimeService(): AnimeService | null;
     getMetadataService(): MetadataService | null;
     getMovieService(): VideoService | null;
-    getSeriesService(): VideoService | null;
+    getTvService(): VideoService | null;
     getBookService(): ReadingService | null;
     getMangaService(): ReadingService | null;
     getMediaType(): MediaType;
@@ -898,7 +904,7 @@ export interface AnimeStats {
     statusPercentages: Record<string, number>;
 }
 
-/** Statistics for movies and series */
+/** Statistics for movies and TV series */
 export type VideoStats = AnimeStats;
 
 /** Statistics for books and manga */

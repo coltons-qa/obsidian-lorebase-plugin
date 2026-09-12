@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { App, TFile } from 'obsidian';
 import { VideoService } from '../src/services/VideoService';
-import type { MovieItem, SeriesItem } from '../src/types';
+import type { MovieItem, TvItem } from '../src/types';
 import { createMetadataService, createMockApp, createMockFile } from './helpers/testHelpers';
 
 describe('VideoService', () => {
@@ -29,7 +29,7 @@ describe('VideoService', () => {
                     'integration-provider': 'tmdb',
                     'integration-id': 78,
                     'related-media': [
-                        { type: 'series', path: 'Series/Blade Runner Black Lotus.md', title: 'Black Lotus' },
+                        { type: 'tv', path: 'Series/Blade Runner Black Lotus.md', title: 'Black Lotus' },
                     ],
                 },
                 tags: [{ tag: '#Classic' }],
@@ -54,7 +54,7 @@ describe('VideoService', () => {
         expect(parsed?.integrationProvider).toBe('tmdb');
         expect(parsed?.integrationId).toBe('78');
         expect(parsed?.relatedMedia).toEqual([
-            { type: 'series', path: 'Series/Blade Runner Black Lotus.md', title: 'Black Lotus' },
+            { type: 'tv', path: 'Series/Blade Runner Black Lotus.md', title: 'Black Lotus' },
         ]);
     });
 
@@ -109,7 +109,7 @@ describe('VideoService', () => {
                     if (target.path !== file.path) return null;
                     return {
                         frontmatter: {
-                            type: 'series',
+                            type: 'tv',
                             title: 'Shameless',
                             poster: posterPath,
                         },
@@ -129,7 +129,7 @@ describe('VideoService', () => {
             },
         } as unknown as App;
         const metadataService = createMetadataService(app);
-        const service = new VideoService(app, 'series', 'Series', metadataService);
+        const service = new VideoService(app, 'tv', 'Series', metadataService);
 
         expect(service.parseFromCache(file)?.imageUrl).toBe(posterPath);
 
@@ -142,7 +142,7 @@ describe('VideoService', () => {
         const app = createMockApp({
             [file.path]: {
                 frontmatter: {
-                    type: 'series',
+                    type: 'tv',
                     title: 'Show',
                     status: 'watching',
                     'season-id-current': 'season-2',
@@ -168,11 +168,11 @@ describe('VideoService', () => {
             },
         });
 
-        const service = new VideoService(app, 'series', 'Series', createMetadataService(app));
-        const parsed = service.parseFromCache(file) as SeriesItem | null;
+        const service = new VideoService(app, 'tv', 'Series', createMetadataService(app));
+        const parsed = service.parseFromCache(file) as TvItem | null;
 
         expect(parsed).not.toBeNull();
-        expect(parsed?.type).toBe('series');
+        expect(parsed?.type).toBe('tv');
         expect(parsed?.parts).toHaveLength(2);
         expect(parsed?.activePartId).toBe('season-2');
         expect(parsed?.episodeCurrent).toBe(3);
@@ -292,11 +292,11 @@ describe('VideoService', () => {
     describe('kebab-case frontmatter (migration stage 1)', () => {
         // Stage 1 of the frontmatter migration: readers must accept the new kebab-case
         // keys so the bulk data rewrite in stage 2 cannot break the library.
-        function parseSeries(frontmatter: Record<string, unknown>): SeriesItem | null {
+        function parseSeries(frontmatter: Record<string, unknown>): TvItem | null {
             const file = createMockFile('Library/Severance.md', 'Severance');
             const app = createMockApp({ [file.path]: { frontmatter } });
-            const service = new VideoService(app, 'series', 'Library', createMetadataService(app));
-            return service.parseFromCache(file) as SeriesItem | null;
+            const service = new VideoService(app, 'tv', 'Library', createMetadataService(app));
+            return service.parseFromCache(file) as TvItem | null;
         }
 
         function parseMovie(frontmatter: Record<string, unknown>): MovieItem | null {

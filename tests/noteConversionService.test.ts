@@ -102,10 +102,10 @@ describe('NoteConversionService', () => {
         );
         const fixedResult = service.buildFrontmatter(
             { title: 'Twin Peaks' },
-            cloneImportSettings({ targetMedia: 'series' })
+            cloneImportSettings({ targetMedia: 'tv' })
         );
 
-        expect(autoResult.nextFrontmatter.type).toBe('series');
+        expect(autoResult.nextFrontmatter.type).toBe('tv');
         expect(fixedResult.nextFrontmatter).not.toHaveProperty('type');
     });
 

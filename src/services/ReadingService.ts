@@ -1,5 +1,5 @@
 import { App, TFile, TFolder } from 'obsidian';
-import { FilterState, MangaItem, MangaPart, ReadingItem, ReadingStatus, ReadingStats, SortField, SortOrder } from '../types';
+import { BookItem, FilterState, MangaItem, MangaPart, ReadingItem, ReadingStatus, ReadingStats, SortField, SortOrder } from '../types';
 import { createRatingDistribution, DEFAULT_COVER } from '../constants';
 import { MetadataService } from './MetadataService';
 import { filterAndSortMedia } from './media/filtering';
@@ -107,6 +107,8 @@ export class ReadingService {
                     ...base,
                     type: 'book',
                     authors: this.toStringArray(readFrontmatterValue(metadata, ['author'])),
+                    bookSeries: this.readText(metadata, ['series']) || '',
+                    seriesPosition: parseNumber(readFrontmatterValue(metadata, ['series-position'])),
                     illustrator: this.readText(metadata, ['illustrator']) || '',
                     publisher: this.readText(metadata, ['publisher']) || '',
                     releaseDate: this.readDateText(metadata, ['released']),
@@ -274,6 +276,12 @@ export class ReadingService {
                 const authors = this.toDisplayList(updates.authors);
                 frontmatterUpdates.author = authors.length > 0 ? authors : null;
                 if (this.hasKey(frontmatter, 'authors')) frontmatterUpdates.authors = null;
+            }
+            if ('bookSeries' in updates) {
+                frontmatterUpdates.series = String(updates.bookSeries ?? '').trim() || null;
+            }
+            if ('seriesPosition' in updates) {
+                frontmatterUpdates['series-position'] = updates.seriesPosition ?? null;
             }
             if ('illustrator' in updates) {
                 frontmatterUpdates.illustrator = String(updates.illustrator ?? '').trim() || null;
@@ -579,6 +587,17 @@ export class ReadingService {
             .map((value) => (removeHashPrefix ? value.replace(/^#+/, '') : value).trim().toLowerCase())
             .filter((value, index, source) => Boolean(value) && source.indexOf(value) === index);
         updates[key] = normalized.length ? normalized : null;
+    }
+
+    getBookSeriesList(): string[] {
+        if (this.cache.length === 0) return [];
+        const seriesSet = new Set<string>();
+        for (const item of this.cache) {
+            if (item.type !== 'book') continue;
+            const series = (item as BookItem).bookSeries?.trim();
+            if (series) seriesSet.add(series);
+        }
+        return Array.from(seriesSet.values()).sort((a, b) => a.localeCompare(b));
     }
 
     private toStringArray(value: unknown): string[] {

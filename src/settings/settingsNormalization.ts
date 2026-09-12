@@ -167,12 +167,13 @@ function readMediaTypeKey(value: unknown): NoteImportSettings['targetMedia'] | u
         || value === 'games'
         || value === 'anime'
         || value === 'movies'
-        || value === 'series'
+        || value === 'tv'
         || value === 'books'
         || value === 'manga'
     ) {
         return value;
     }
+    if (value === 'series') return 'tv';
     return undefined;
 }
 

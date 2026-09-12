@@ -369,7 +369,7 @@ function getRelatedTypeOptions(): Array<{ value: RelatedMediaLink['type']; label
         { value: 'game', label: t('settingsGames') },
         { value: 'anime', label: t('settingsAnime') },
         { value: 'movie', label: t('settingsMovies') },
-        { value: 'series', label: t('settingsSeries') },
+        { value: 'tv', label: t('settingsTv') },
         { value: 'book', label: t('settingsBooks') },
         { value: 'manga', label: t('settingsManga') },
     ];
