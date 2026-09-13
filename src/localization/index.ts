@@ -21,7 +21,7 @@ export type TranslationKey =
     | 'sort' | 'sortName' | 'sortSeries' | 'sortRating' | 'sortYear' | 'sortDateCompleted' | 'sortOrder' | 'sortAsc' | 'sortDesc'
     | 'sortDateWatched' | 'sortDateRead'
     | 'status' | 'filter' | 'filterAdult' | 'filterFlags' | 'tags' | 'genres' | 'plans' | 'tagsEmpty' | 'view'
-    | 'random' | 'randomAnime' | 'randomBook' | 'randomManga' | 'stats' | 'settings' | 'commandSteamSync'
+    | 'random' | 'randomAnime' | 'randomBook' | 'randomManga' | 'stats' | 'settings' | 'commandSteamSync' | 'checkNewSeasons' | 'badgeNew'
     // View modes
     | 'viewGrid' | 'viewHorizontal'
     // Display modes
@@ -209,7 +209,7 @@ export type TranslationKey =
     | 'commandOpenGamesLibrary' | 'commandOpenAnimeLibrary' | 'commandOpenMoviesLibrary'
     | 'commandOpenTvLibrary' | 'commandOpenBooksLibrary' | 'commandOpenMangaLibrary'
     | 'commandAddGame' | 'commandAddAnime' | 'commandAddMovie' | 'commandAddTv' | 'commandAddBook' | 'commandAddManga'
-    | 'commandImportNotes'
+    | 'commandImportNotes' | 'commandCheckNewSeasons'
     | 'ribbonLibrary'
     | 'errorInitView' | 'errorLoadingItems' | 'errorProcessingList'
     | 'promptSearchGame' | 'promptSearchAnime' | 'promptSearchMovie' | 'promptSearchTv' | 'promptSearchBook' | 'promptSearchManga' | 'promptSearchPlaceholder'
@@ -229,6 +229,7 @@ export type TranslationKey =
     | 'noticeCreated' | 'noticeSkipped'
     | 'noticeProviderTestSuccess' | 'noticeProviderTestFail'
     | 'noticeIntegrationsError' | 'noticeSourceUpdated' | 'noticeSourceNoChanges' | 'noticeSourceFailed'
+    | 'noticeCheckingNewSeasons' | 'noticeNewSeasonsFound' | 'noticeAllUpToDate' | 'noticeNewSeasonCheckFailed'
     | 'promptRateLimitTitle' | 'promptRateLimitBody'
     | 'promptFileExistsTitle' | 'promptFileExistsBody' | 'promptFileExistsUpdate' | 'promptFileExistsSeparate' | 'promptFileExistsSkip'
     | 'commonOk' | 'commonRetry' | 'commonCancel' | 'commonBack';
@@ -841,6 +842,9 @@ const EN: Record<TranslationKey, string> = {
     commandAddBook: 'Add book',
     commandAddManga: 'Add manga',
     commandSteamSync: 'Steam Sync',
+    checkNewSeasons: 'Check for new seasons',
+    badgeNew: 'NEW',
+    commandCheckNewSeasons: 'Check TV for new seasons',
     commandImportNotes: 'Import notes into LOREBASE',
     ribbonLibrary: 'LOREBASE Library',
     errorInitView: 'Error initializing view',
@@ -898,6 +902,10 @@ const EN: Record<TranslationKey, string> = {
     noticeSourceUpdated: 'Source linked and metadata updated',
     noticeSourceNoChanges: 'Source linked; there were no empty metadata fields',
     noticeSourceFailed: 'Could not update metadata source',
+    noticeCheckingNewSeasons: 'Checking for new TV seasons...',
+    noticeNewSeasonsFound: 'New seasons found!',
+    noticeAllUpToDate: 'All shows are up to date.',
+    noticeNewSeasonCheckFailed: 'New season check failed. See console for details.',
     promptRateLimitTitle: 'Provider requests paused',
     promptRateLimitBody: "The remaining items weren't requested to avoid a longer provider block. Wait for the stated cooldown before trying again.",
     promptFileExistsTitle: 'Card already exists',
@@ -1516,6 +1524,9 @@ const RU: Record<TranslationKey, string> = {
     commandAddBook: 'Добавить книгу',
     commandAddManga: 'Добавить мангу',
     commandSteamSync: 'Синхронизация Steam',
+    checkNewSeasons: 'Проверить новые сезоны',
+    badgeNew: 'НОВОЕ',
+    commandCheckNewSeasons: 'Проверить ТВ на новые сезоны',
     commandImportNotes: 'Импортировать заметки в LOREBASE',
     ribbonLibrary: 'Библиотека LOREBASE',
     errorInitView: 'Ошибка инициализации представления',
@@ -1573,6 +1584,10 @@ const RU: Record<TranslationKey, string> = {
     noticeSourceUpdated: 'Источник связан, метаданные обновлены',
     noticeSourceNoChanges: 'Источник связан, пустых полей для заполнения не было',
     noticeSourceFailed: 'Не удалось обновить источник метаданных',
+    noticeCheckingNewSeasons: 'Проверка новых сезонов ТВ...',
+    noticeNewSeasonsFound: 'Найдены новые сезоны!',
+    noticeAllUpToDate: 'Все сериалы актуальны.',
+    noticeNewSeasonCheckFailed: 'Ошибка проверки новых сезонов. Подробности в консоли.',
     promptRateLimitTitle: 'Запросы к провайдеру приостановлены',
     promptRateLimitBody: 'Оставшиеся элементы не запрашивались, чтобы не продлить блокировку. Повторите попытку после указанного времени ожидания.',
     promptFileExistsTitle: 'Карточка уже есть',
@@ -1637,6 +1652,9 @@ const UK: Record<TranslationKey, string> = {
     stats: 'Статистика',
     settings: 'Налаштування',
     commandSteamSync: 'Синхронізація Steam',
+    checkNewSeasons: 'Перевірити нові сезони',
+    badgeNew: 'НОВЕ',
+    commandCheckNewSeasons: 'Перевірити ТВ на нові сезони',
 
     // View and display modes
     viewGrid: 'Вертикальний',
@@ -2245,6 +2263,10 @@ const UK: Record<TranslationKey, string> = {
     noticeSourceUpdated: 'Джерело прив’язано, метадані оновлено',
     noticeSourceNoChanges: 'Джерело прив’язано, порожніх полів для заповнення не було',
     noticeSourceFailed: 'Не вдалося оновити джерело метаданих',
+    noticeCheckingNewSeasons: 'Перевірка нових сезонів ТВ...',
+    noticeNewSeasonsFound: 'Знайдено нові сезони!',
+    noticeAllUpToDate: 'Усі серіали актуальні.',
+    noticeNewSeasonCheckFailed: 'Помилка перевірки нових сезонів. Деталі в консолі.',
     promptRateLimitTitle: 'Запити до провайдера призупинено',
     promptRateLimitBody: 'Решту елементів не запитували, щоб не подовжити блокування. Повторіть спробу після вказаного часу очікування.',
     promptFileExistsTitle: 'Картка вже існує',

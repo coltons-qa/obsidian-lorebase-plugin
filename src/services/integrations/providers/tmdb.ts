@@ -163,5 +163,6 @@ export async function getTmdbDetails(
         networks,
         url: `https://www.themoviedb.org/${isSeries ? 'tv' : 'movie'}/${id}`,
         parts,
+        showStatus: isSeries ? clean(show.status) : '',
     };
 }

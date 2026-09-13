@@ -177,6 +177,9 @@ export class Toolbar {
         this.renderAddButton(centerControls);
 
         this.renderRandomButton(rightControls);
+        if (this.currentMediaType === 'tv' && this.callbacks.onCheckNewSeasons) {
+            this.renderCheckNewSeasonsButton(rightControls);
+        }
         this.renderViewModeControl(rightControls);
         this.renderSettingsControl(rightControls);
 
@@ -893,6 +896,19 @@ export class Toolbar {
         setIcon(randomBtn, 'dice');
         this.addMobileButtonLabel(randomBtn, this.randomLabel);
         randomBtn.addEventListener('click', () => this.callbacks.onRandom());
+    }
+
+    private renderCheckNewSeasonsButton(parent: HTMLElement): void {
+        const btn = parent.createEl('button', {
+            cls: 'lorebase-toolbar-btn',
+            attr: {
+                type: 'button',
+                'aria-label': t('checkNewSeasons'),
+            },
+        });
+        setIcon(btn, 'refresh-cw');
+        this.addMobileButtonLabel(btn, t('checkNewSeasons'));
+        btn.addEventListener('click', () => this.callbacks.onCheckNewSeasons?.());
     }
 
     private renderViewModeControl(parent: HTMLElement): void {

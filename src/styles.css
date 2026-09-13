@@ -2122,6 +2122,24 @@ body {
     50% { transform: scale(1.12); }
 }
 
+/* New content badge */
+.lorebase-card-new-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 8px;
+    border-radius: 15px;
+    font-size: 0.8em;
+    font-weight: 700;
+    background: rgba(19, 19, 19, 0.65);
+    color: var(--lorebase-new-badge-color, #a0d9b4);
+}
+
+.lorebase-card-new-badge svg {
+    width: 12px;
+    height: 12px;
+}
+
 
 /* =============================================================================
    MODALS

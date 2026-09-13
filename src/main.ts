@@ -28,6 +28,7 @@ import { IntegrationService } from './services/IntegrationService';
 import { SteamSyncService } from './services/SteamSyncService';
 import { MetadataService } from './services/MetadataService';
 import { NoteConversionService } from './services/NoteConversionService';
+import { NewSeasonCheckService } from './services/newSeasonCheck';
 import {
     mergeOverlayLayout,
     mergeOverlayVisibility,
@@ -67,6 +68,7 @@ export default class LorebasePlugin extends Plugin {
     private steamSyncRunning = false;
     private metadataService: MetadataService | null = null;
     private noteConversionService: NoteConversionService | null = null;
+    private newSeasonCheckService: NewSeasonCheckService | null = null;
     private readonly localizedCommands: Array<{ command: Command; key: TranslationKey }> = [];
 
     async onload(): Promise<void> {
@@ -91,6 +93,9 @@ export default class LorebasePlugin extends Plugin {
             void this.runSteamSync();
         });
         this.steamSyncService = new SteamSyncService(this.app, this.metadataService);
+        this.newSeasonCheckService = new NewSeasonCheckService(
+            this.app, this.tvService, this.integrationService, this.metadataService
+        );
         this.noteConversionService = new NoteConversionService(this.app);
         addIcon(LOREBASE_ICON_ID, LOREBASE_ICON_SVG);
 
@@ -164,6 +169,13 @@ export default class LorebasePlugin extends Plugin {
             }
         });
 
+        this.addLocalizedCommand('commandCheckNewSeasons', {
+            id: 'check-new-seasons',
+            callback: () => {
+                void this.runNewSeasonCheck();
+            }
+        });
+
         this.addLocalizedCommand('commandImportNotes', {
             id: 'import-existing-notes',
             callback: () => {
@@ -200,6 +212,7 @@ export default class LorebasePlugin extends Plugin {
         this.steamSyncService = null;
         this.metadataService = null;
         this.noteConversionService = null;
+        this.newSeasonCheckService = null;
     }
 
     /**
@@ -1650,6 +1663,27 @@ export default class LorebasePlugin extends Plugin {
             new Notice(`Steam Sync failed${message}`);
         } finally {
             this.steamSyncRunning = false;
+        }
+    }
+
+    async runNewSeasonCheck(): Promise<void> {
+        if (!this.newSeasonCheckService) return;
+        try {
+            new Notice(t('noticeCheckingNewSeasons'));
+            const result = await this.newSeasonCheckService.checkForNewSeasons();
+            this.tvService?.invalidateCache();
+            this.refreshViews();
+            if (result.updated.length > 0) {
+                new Notice(
+                    `${t('noticeNewSeasonsFound')}\n${result.updated.join(', ')}`,
+                    8000
+                );
+            } else {
+                new Notice(t('noticeAllUpToDate'));
+            }
+        } catch (error) {
+            console.error('[LOREBASE] New season check failed:', error);
+            new Notice(t('noticeNewSeasonCheckFailed'));
         }
     }
 

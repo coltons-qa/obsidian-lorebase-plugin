@@ -538,6 +538,9 @@ export class LibraryView extends ItemView {
             onMediaTypeChange: (mediaType) => {
                 void this.plugin.switchMediaType(mediaType);
             },
+            onCheckNewSeasons: () => {
+                void this.plugin.runNewSeasonCheck();
+            },
         };
 
         const activeSettings = this.getActiveSettings();
@@ -1505,6 +1508,7 @@ export class LibraryView extends ItemView {
         this.updateStatusBadge(imageEl, item, badgeProfile);
         this.updateRatingBadge(imageEl, item, badgeProfile);
         this.updateFavoriteBadge(imageEl, item, badgeProfile);
+        this.updateNewBadge(imageEl, item);
     }
 
     private updateStatusBadge(
@@ -1563,6 +1567,18 @@ export class LibraryView extends ItemView {
             'M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z',
             { fill: '#ffffff', stroke: 'none', width: '12', height: '12' }
         ));
+    }
+
+    private updateNewBadge(imageEl: HTMLElement, item: MediaItem): void {
+        imageEl.querySelector('.lorebase-card-new-badge')?.remove();
+        if (!item.tags?.includes('new')) return;
+
+        const group = this.getOrCreateBadgeGroup(imageEl, 'top-right');
+        const badge = group.createDiv({ cls: 'lorebase-card-new-badge' });
+        badge.appendChild(this.createBadgeSvg(
+            'M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z'
+        ));
+        badge.createSpan({ text: t('badgeNew') });
     }
 
     private getOrCreateBadgeGroup(

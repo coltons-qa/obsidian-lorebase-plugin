@@ -75,6 +75,7 @@ const FIELD_ALIASES: Record<string, string[]> = {
     main_plus_sides: ['hltb-main-sides'],
     perfectionist: ['hltb-perfectionist'],
     series_parts: ['season-data'],
+    showStatus: ['show-status'],
     integration_provider: ['integration-provider'],
     integration_id: ['integration-id'],
 };

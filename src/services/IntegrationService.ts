@@ -244,6 +244,7 @@ export class IntegrationService {
                 rating: built.rating,
                 url: built.url,
                 [partsKey]: toVideoPartsFrontmatter(details.parts),
+                showStatus: details.showStatus ?? '',
             };
         } else if (kind === 'books' && this.isBookDetails(details)) {
             const built = this.buildBookValues(details, {

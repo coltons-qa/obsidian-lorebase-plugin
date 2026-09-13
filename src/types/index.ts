@@ -847,6 +847,7 @@ export interface LorebasePluginInterface {
     getMediaType(): MediaType;
     getEnabledMediaTypes(): MediaType[];
     switchMediaType(mediaType: MediaType): Promise<void>;
+    runNewSeasonCheck(): Promise<void>;
 }
 
 // =============================================================================

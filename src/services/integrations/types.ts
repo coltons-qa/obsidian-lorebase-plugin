@@ -81,6 +81,8 @@ export interface VideoDetails {
     parts?: IntegrationVideoPart[];
     communityRating?: string;
     communityVotes?: string;
+    /** TMDB series status: "Returning Series", "Ended", "Canceled", "In Production", "Planned" */
+    showStatus?: string;
 }
 
 export interface BookDetails {
