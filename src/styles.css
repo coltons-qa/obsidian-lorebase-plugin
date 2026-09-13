@@ -2359,9 +2359,14 @@ body {
    Header padding-top = 10px, button padding = 7px, line-height = 1 → button
    vertical center ≈ 24px from modal top.  We force the close control to sit
    at the same row so it reads as a natural continuation of the header-right. */
-/* The editor modal's default Obsidian close button is removed via JS in
-   onOpen (all four editor modals). Save / Cancel / Escape cover every
-   close path, and the 'x' can silently discard unsaved work. */
+/* The editor modal has explicit Save / Cancel buttons and Escape to discard,
+   so the default Obsidian close button is redundant and can silently lose
+   unsaved work. Also removed via JS in onOpen as a belt-and-suspenders.
+   Obsidian 1.12+ uses .modal-header-button instead of .modal-close-button. */
+.modal.lorebase-editmode-modal-shell > .modal-close-button,
+.lorebase-editmode-modal-shell .modal-header-button {
+    display: none !important;
+}
 
 .lorebase-context-rating-star {
     display: inline-block;
