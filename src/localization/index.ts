@@ -125,7 +125,7 @@ export type TranslationKey =
     | 'templateFieldPoster' | 'templateFieldPosterHorizontal' | 'templateFieldPlot'
     | 'templateFieldScoreImdb' | 'templateFieldCommunityRating' | 'templateFieldCommunityVotes' | 'templateFieldCommunityRatingProvider'
     | 'templateFieldTags' | 'templateFieldYear' | 'templateFieldStudios'
-    | 'templateFieldFormat' | 'templateFieldRating' | 'templateFieldStatus' | 'templateFieldDropped'
+    | 'templateFieldFormat' | 'overlayAuthor' | 'templateFieldRating' | 'templateFieldStatus' | 'templateFieldDropped'
     | 'templateFieldFavorite' | 'templateFieldUrl' | 'templateFieldGameSeries' | 'templateFieldBookSeries' | 'templateFieldSeriesPosition' | 'templateFieldGenres'
     | 'templateFieldPlatforms' | 'templateFieldReleased' | 'templateFieldDevelopers' | 'templateFieldPublishers'
     | 'templateFieldMetacritic' | 'templateFieldUserRating' | 'templateFieldPlayed' | 'templateFieldPlaying'
@@ -555,6 +555,7 @@ const EN: Record<TranslationKey, string> = {
     templateFieldYear: 'Year',
     templateFieldStudios: 'Studios',
     templateFieldFormat: 'Format',
+    overlayAuthor: 'Author',
     templateFieldRating: 'Rating (user)',
     templateFieldStatus: 'Status',
     templateFieldDropped: 'Dropped',
@@ -1238,6 +1239,7 @@ const RU: Record<TranslationKey, string> = {
     templateFieldYear: 'Год',
     templateFieldStudios: 'Студии',
     templateFieldFormat: 'Формат',
+    overlayAuthor: 'Автор',
     templateFieldRating: 'Оценка (польз.)',
     templateFieldStatus: 'Статус',
     templateFieldDropped: 'Заброшено',
@@ -1929,6 +1931,7 @@ const UK: Record<TranslationKey, string> = {
     templateFieldYear: 'Рік',
     templateFieldStudios: 'Студії',
     templateFieldFormat: 'Формат',
+    overlayAuthor: 'Автор',
     templateFieldRating: 'Рейтинг користувача',
     templateFieldStatus: 'Статус',
     templateFieldDropped: 'Покинуто',

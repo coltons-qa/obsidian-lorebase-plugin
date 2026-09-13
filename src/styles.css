@@ -1443,6 +1443,22 @@ body {
     color: var(--lorebase-text-muted);
 }
 
+/* Author */
+.lorebase-card-author {
+    position: absolute;
+    left: var(--overlay-x, 7%);
+    top: var(--overlay-y, 68%);
+    margin: 0;
+    max-width: var(--overlay-max-width, none);
+    box-sizing: border-box;
+    padding: 2px 6px;
+    font-size: 0.8em;
+    color: var(--lorebase-text-muted);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
 /* Description */
 .lorebase-card-description {
     position: absolute;

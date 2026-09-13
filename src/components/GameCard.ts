@@ -327,6 +327,7 @@ export class GameCard {
         let titleEl: HTMLElement | null = null;
         let yearEl: HTMLElement | null = null;
         let formatEl: HTMLElement | null = null;
+        let authorEl: HTMLElement | null = null;
         let descriptionEl: HTMLElement | null = null;
 
         if (this.overlayTextVisibility.title) {
@@ -348,6 +349,15 @@ export class GameCard {
                 this.applyOverlayPosition(formatEl, 'format');
             }
 
+            if (this.overlayTextVisibility.author) {
+                const authorText = this.getAuthorText(this.game);
+                if (authorText) {
+                    authorEl = overlay.createDiv({ cls: 'lorebase-card-author' });
+                    authorEl.textContent = authorText;
+                    this.applyOverlayPosition(authorEl, 'author');
+                }
+            }
+
             if (this.overlayTextVisibility.description) {
                 descriptionEl = overlay.createDiv({ cls: 'lorebase-card-description' });
                 descriptionEl.textContent = this.game.summary || this.game.description || t('noDescription');
@@ -361,6 +371,15 @@ export class GameCard {
                 this.applyOverlayPosition(yearEl, 'year');
             }
 
+            if (this.overlayTextVisibility.author) {
+                const authorText = this.getAuthorText(this.game);
+                if (authorText) {
+                    authorEl = overlay.createDiv({ cls: 'lorebase-card-author' });
+                    authorEl.textContent = authorText;
+                    this.applyOverlayPosition(authorEl, 'author');
+                }
+            }
+
             if (this.overlayTextVisibility.description) {
                 descriptionEl = overlay.createDiv({ cls: 'lorebase-card-description' });
                 descriptionEl.textContent = this.game.description || t('noDescription');
@@ -369,7 +388,7 @@ export class GameCard {
             }
         }
 
-        this.applyTitleFlowOffset(overlay, titleEl, yearEl, formatEl, descriptionEl);
+        this.applyTitleFlowOffset(overlay, titleEl, yearEl, formatEl, authorEl, descriptionEl);
     }
 
     private renderProgressBadge(parent: HTMLElement): void {
@@ -570,7 +589,7 @@ export class GameCard {
 
     private applyOverlayPosition(
         element: HTMLElement,
-        field: 'title' | 'year' | 'format' | 'description'
+        field: 'title' | 'year' | 'format' | 'author' | 'description'
     ): void {
         const point = this.getVisualOverlayPoint(field);
         element.style.setProperty('--overlay-x', `${point.x}%`);
@@ -582,7 +601,7 @@ export class GameCard {
         }
     }
 
-    private getVisualOverlayPoint(field: 'title' | 'year' | 'format' | 'description'): { x: number; y: number } {
+    private getVisualOverlayPoint(field: 'title' | 'year' | 'format' | 'author' | 'description'): { x: number; y: number } {
         const point = this.getOverlayPoint(field);
         if (field !== 'description' || !this.overlayTextVisibility.title) return point;
 
@@ -596,13 +615,14 @@ export class GameCard {
         _titleEl: HTMLElement | null,
         _yearEl: HTMLElement | null,
         _formatEl: HTMLElement | null,
+        _authorEl: HTMLElement | null,
         _descriptionEl: HTMLElement | null
     ): void {
         // Overlay positions are CSS-driven. Reading computed geometry for every
         // visible card caused long animation-frame handlers and forced reflow.
     }
 
-    private getOverlayPoint(field: 'title' | 'year' | 'format' | 'description'): { x: number; y: number } {
+    private getOverlayPoint(field: 'title' | 'year' | 'format' | 'author' | 'description'): { x: number; y: number } {
         const defaults = this.isAnime(this.game)
             ? DEFAULT_SETTINGS.animeOverlayTextLayout
             : DEFAULT_SETTINGS.overlayTextLayout;
@@ -621,7 +641,7 @@ export class GameCard {
     }
 
     private clampOverlayPoint(
-        field: 'title' | 'year' | 'format' | 'description',
+        field: 'title' | 'year' | 'format' | 'author' | 'description',
         x: number,
         y: number
     ): { x: number; y: number } {
@@ -815,6 +835,15 @@ export class GameCard {
             : null;
 
         return { ep: epCompact, season: seasonCompact, epHover: epFull, seasonHover: seasonFull };
+    }
+
+    private getAuthorText(item: MediaItem): string | null {
+        if (item.type === 'game') return item.developer || null;
+        if (item.type === 'anime') return item.studios?.join(', ') || null;
+        if (item.type === 'movie' || item.type === 'tv') return item.director || null;
+        if (item.type === 'book') return item.authors?.join(', ') || null;
+        if (item.type === 'manga') return item.authors?.join(', ') || null;
+        return null;
     }
 
     private isAnime(item: MediaItem): item is AnimeItem {

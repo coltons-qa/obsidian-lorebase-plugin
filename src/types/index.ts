@@ -271,6 +271,7 @@ interface OverlayTextLayout {
     title: OverlayTextOffset;
     year: OverlayTextOffset;
     format: OverlayTextOffset;
+    author: OverlayTextOffset;
     description: OverlayTextOffset;
 }
 
@@ -279,6 +280,7 @@ interface OverlayTextVisibility {
     title: boolean;
     year: boolean;
     format: boolean;
+    author: boolean;
     description: boolean;
 }
 

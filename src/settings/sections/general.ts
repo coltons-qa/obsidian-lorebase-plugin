@@ -203,6 +203,7 @@ function renderBadgesEditor(context: SettingsSectionContext, container: HTMLElem
     const previewTitle = overlay.createDiv({ cls: 'lorebase-card-title lorebase-overlay-editable is-title', text: 'LOREBASE Preview Card' });
     const previewYear = overlay.createDiv({ cls: 'lorebase-card-year lorebase-overlay-editable is-year', text: '2026' });
     const previewFormat = overlay.createDiv({ cls: 'lorebase-card-year lorebase-card-format lorebase-overlay-editable is-format', text: 'TV' });
+    const previewAuthor = overlay.createDiv({ cls: 'lorebase-card-author lorebase-overlay-editable is-author', text: 'Author Name' });
     const previewDescriptionGame = Array.from({ length: 70 }, (_, index) => {
         const line = String(index + 1).padStart(2, '0');
         return `${line}. Preview description line for layout testing.`;
@@ -805,12 +806,14 @@ function renderBadgesEditor(context: SettingsSectionContext, container: HTMLElem
         title: previewTitle,
         year: previewYear,
         format: previewFormat,
+        author: previewAuthor,
         description: previewDescription,
     };
     const overlayLabels: Record<OverlayFieldKey, string> = {
         title: t('templateFieldName'),
         year: t('year'),
         format: t('templateFieldFormat'),
+        author: t('overlayAuthor'),
         description: t('editDescription'),
     };
     let activeOverlayField: OverlayFieldKey | null = null;
@@ -842,12 +845,14 @@ function renderBadgesEditor(context: SettingsSectionContext, container: HTMLElem
             title: [5, 7, 10, 14],
             year: [5, 7, 10, 14],
             format: [26, 30, 34, 40],
+            author: [5, 7, 10, 14],
             description: [2, 7, 10, 14],
         };
         const yZones: Record<OverlayFieldKey, number[]> = {
             title: [6.5, 10, 14, 18],
             year: [15, 19, 24, 30],
             format: [15, 19, 24, 30],
+            author: [62, 68, 74, 80],
             description: [24, 32, 40, 50, 62, 74, 84],
         };
         const snapAxis = (value: number, zones: number[], threshold = 1.8): number => {
@@ -1236,6 +1241,7 @@ function renderBadgesEditor(context: SettingsSectionContext, container: HTMLElem
             layout.title = Object.assign({}, layoutDefaults.title);
             layout.year = Object.assign({}, layoutDefaults.year);
             layout.format = Object.assign({}, layoutDefaults.format);
+            layout.author = Object.assign({}, layoutDefaults.author);
             layout.description = Object.assign({}, layoutDefaults.description);
 
             const visibility = getOverlayVisibility(profile, orientation);
@@ -1243,6 +1249,7 @@ function renderBadgesEditor(context: SettingsSectionContext, container: HTMLElem
             visibility.title = visibilityDefaults.title;
             visibility.year = visibilityDefaults.year;
             visibility.format = visibilityDefaults.format;
+            visibility.author = visibilityDefaults.author;
             visibility.description = visibilityDefaults.description;
 
             setDescriptionLines(profile, normalizeDescriptionLines(getDefaultDescriptionLines(profile, orientation)), orientation);

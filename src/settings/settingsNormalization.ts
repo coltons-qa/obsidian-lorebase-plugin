@@ -185,6 +185,7 @@ export function mergeOverlayLayout(
         title: Object.assign({}, defaults.title, raw?.title ?? {}),
         year: Object.assign({}, defaults.year, raw?.year ?? {}),
         format: Object.assign({}, defaults.format, raw?.format ?? {}),
+        author: Object.assign({}, defaults.author, raw?.author ?? {}),
         description: Object.assign({}, defaults.description, raw?.description ?? {}),
     };
 }
@@ -197,6 +198,7 @@ export function mergeOverlayVisibility(
         title: typeof raw?.title === 'boolean' ? raw.title : defaults.title,
         year: typeof raw?.year === 'boolean' ? raw.year : defaults.year,
         format: typeof raw?.format === 'boolean' ? raw.format : defaults.format,
+        author: typeof raw?.author === 'boolean' ? raw.author : defaults.author,
         description: typeof raw?.description === 'boolean' ? raw.description : defaults.description,
     };
 }
