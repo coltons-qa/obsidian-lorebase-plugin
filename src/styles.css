@@ -1491,6 +1491,10 @@ body {
     .lorebase-card:hover .lorebase-card-metacritic .is-hover-only {
         display: inline;
     }
+
+    .lorebase-card:hover .lorebase-card-metacritic .is-default-only {
+        display: none;
+    }
 }
 
 .lorebase-card-progress-season.is-only {

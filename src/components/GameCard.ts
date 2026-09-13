@@ -393,12 +393,30 @@ export class GameCard {
             return;
         }
 
-        if (showSeason && progress.season) {
-            const context = badge.createSpan({ cls: 'lorebase-card-progress-season', text: progress.season });
-            context.addClass(showEpisode ? 'is-hover-only' : 'is-only');
-        }
-        if (showEpisode && progress.ep) {
-            badge.createSpan({ cls: 'lorebase-card-progress-ep', text: progress.ep });
+        const hasHoverVariants = Boolean(progress.seasonHover || progress.epHover);
+        if (hasHoverVariants) {
+            // TV: show compact by default, full on hover
+            if (showSeason && progress.season) {
+                badge.createSpan({ cls: 'lorebase-card-progress-season is-default-only', text: progress.season });
+            }
+            if (showEpisode && progress.ep) {
+                badge.createSpan({ cls: 'lorebase-card-progress-ep is-default-only', text: progress.ep });
+            }
+            if (showSeason && progress.seasonHover) {
+                badge.createSpan({ cls: 'lorebase-card-progress-season is-hover-only', text: progress.seasonHover });
+            }
+            if (showEpisode && progress.epHover) {
+                badge.createSpan({ cls: 'lorebase-card-progress-ep is-hover-only', text: progress.epHover });
+            }
+        } else {
+            // Anime / other: season hover-only, episode always
+            if (showSeason && progress.season) {
+                const context = badge.createSpan({ cls: 'lorebase-card-progress-season', text: progress.season });
+                context.addClass(showEpisode ? 'is-hover-only' : 'is-only');
+            }
+            if (showEpisode && progress.ep) {
+                badge.createSpan({ cls: 'lorebase-card-progress-ep', text: progress.ep });
+            }
         }
     }
 
@@ -672,7 +690,7 @@ export class GameCard {
         return parsed;
     }
 
-    private getAnimeProgressTexts(anime: AnimeItem): { ep: string | null; season: string | null } | null {
+    private getAnimeProgressTexts(anime: AnimeItem): { ep: string | null; season: string | null; epHover?: string | null; seasonHover?: string | null } | null {
         const activePart = anime.parts?.find((part) => part.id === anime.activePartId) ?? anime.parts?.[0] ?? null;
         const kind = activePart?.kind ?? anime.format;
         const season = Number.isFinite(activePart?.seasonNumber ?? anime.seasonCurrent)
@@ -716,7 +734,7 @@ export class GameCard {
         return { ep: epText, season: seasonText };
     }
 
-    private getProgressTexts(item: AnimeItem | TvItem | BookItem | MangaItem): { ep: string | null; season: string | null } | null {
+    private getProgressTexts(item: AnimeItem | TvItem | BookItem | MangaItem): { ep: string | null; season: string | null; epHover?: string | null; seasonHover?: string | null } | null {
         if (this.isAnime(item)) return this.getAnimeProgressTexts(item);
         if (this.isBook(item)) {
             const pageCurrent = Number.isFinite(item.pageCurrent) ? Math.trunc(item.pageCurrent as number) : null;
@@ -772,18 +790,31 @@ export class GameCard {
 
         if (season === null && seasonTotal === null && epCurrent === null && epTotal === null) return null;
 
-        let seasonText: string | null = null;
-        if (season !== null && seasonTotal !== null) {
-            seasonText = `S ${season}/${seasonTotal}`;
-        } else if (season !== null) {
-            seasonText = `S ${season}`;
+        // Compact: S 4 EP 8 (always visible)
+        let seasonCompact: string | null = null;
+        if (season !== null) {
+            seasonCompact = `S ${season}`;
         } else if (seasonTotal !== null) {
-            seasonText = `S ?/${seasonTotal}`;
+            seasonCompact = `S ?`;
         }
-        const epText = epCurrent !== null || epTotal !== null
+        const epCompact = epCurrent !== null
+            ? `EP ${epCurrent}`
+            : epTotal !== null ? `EP ?` : null;
+
+        // Full: S 4/5 EP 8/10 (hover only)
+        let seasonFull: string | null = null;
+        if (season !== null && seasonTotal !== null) {
+            seasonFull = `S ${season}/${seasonTotal}`;
+        } else if (season !== null) {
+            seasonFull = `S ${season}`;
+        } else if (seasonTotal !== null) {
+            seasonFull = `S ?/${seasonTotal}`;
+        }
+        const epFull = epCurrent !== null || epTotal !== null
             ? `EP ${epCurrent !== null ? epCurrent : '?'}/${epTotal !== null ? epTotal : '?'}`
             : null;
-        return { ep: epText, season: seasonText };
+
+        return { ep: epCompact, season: seasonCompact, epHover: epFull, seasonHover: seasonFull };
     }
 
     private isAnime(item: MediaItem): item is AnimeItem {
