@@ -47,6 +47,7 @@ export class ReadingEditModal extends Modal {
     private genres: string[];
     private tags: string[];
     private authors: string[];
+    private audiobook: boolean;
     private bookSeries: string;
     private seriesPosition: number | null;
     private illustrator: string;
@@ -116,6 +117,7 @@ export class ReadingEditModal extends Modal {
         this.genres = this.normalizeList(item.genres);
         this.tags = this.normalizeList(item.tags);
         this.authors = this.normalizeList(item.authors);
+        this.audiobook = item.type === 'book' ? (item.audiobook ?? false) : false;
         this.bookSeries = item.type === 'book' ? (item.bookSeries ?? '') : '';
         this.seriesPosition = item.type === 'book' ? (item.seriesPosition ?? null) : null;
         this.illustrator = item.type === 'book' ? (item.illustrator ?? '') : '';
@@ -237,6 +239,10 @@ export class ReadingEditModal extends Modal {
                                     <span class="lorebase-editmode-switch-label">${t('editFavorite')}</span>
                                     <button type="button" class="lorebase-editmode-switch lorebase-editmode-switch-favorite" data-toggle="favorite" aria-label="${t('editFavorite')}" aria-pressed="false"><span class="lorebase-editmode-switch-thumb"></span></button>
                                 </label>
+                                ${isBook ? `<label class="lorebase-editmode-switch-row">
+                                    <span class="lorebase-editmode-switch-label">${t('editAudiobook')}</span>
+                                    <button type="button" class="lorebase-editmode-switch" data-toggle="audiobook" aria-label="${t('editAudiobook')}" aria-pressed="false"><span class="lorebase-editmode-switch-thumb"></span></button>
+                                </label>` : ''}
                             </div>
                         </section>
                     </aside>
@@ -436,6 +442,7 @@ export class ReadingEditModal extends Modal {
             button.addEventListener('click', () => {
                 const key = button.dataset.toggle;
                 if (key === 'favorite') this.favorite = !this.favorite;
+                if (key === 'audiobook') this.audiobook = !this.audiobook;
                 this.updateQuickSettings(root);
             });
         });
@@ -444,6 +451,7 @@ export class ReadingEditModal extends Modal {
 
     private updateQuickSettings(root: HTMLElement): void {
         this.updateQuickSettingSwitch(root, 'favorite', this.favorite);
+        this.updateQuickSettingSwitch(root, 'audiobook', this.audiobook);
     }
 
     private updateQuickSettingSwitch(root: HTMLElement, key: string, value: boolean): void {
@@ -1126,6 +1134,7 @@ export class ReadingEditModal extends Modal {
 
         if (this.item.type === 'book') {
             Object.assign(updates, {
+                audiobook: this.audiobook,
                 bookSeries: this.bookSeries,
                 seriesPosition: this.seriesPosition,
                 illustrator: this.illustrator.trim(),

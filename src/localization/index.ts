@@ -177,7 +177,7 @@ export type TranslationKey =
     | 'editCharsShort' | 'editReleaseDate' | 'editPublisher' | 'editDeveloper' | 'editCreator'
     | 'templateFieldOwned' | 'templateFieldCount' | 'templateFieldRepeatable'
     | 'templateFieldMyPlatform' | 'templateFieldIllustrator'
-    | 'editRepeatGame' | 'editRepeatVideo' | 'editRepeatBook'
+    | 'editRepeatGame' | 'editRepeatVideo' | 'editRepeatBook' | 'editAudiobook'
     | 'editPlatformPlaceholder' | 'editAddPlatform' | 'editNoPlatforms'
     | 'editLocalPath' | 'editOpen' | 'editTagPlaceholder'
     | 'editStarted' | 'editFinished' | 'editToday' | 'editMyNotes'
@@ -576,6 +576,7 @@ const EN: Record<TranslationKey, string> = {
     editRepeatGame: 'Replay?',
     editRepeatVideo: 'Rewatch?',
     editRepeatBook: 'Reread?',
+    editAudiobook: 'Audiobook',
     templateFieldActors: 'Actors',
     templateFieldMovieParts: 'Movie parts',
     templateFieldTvParts: 'TV series seasons',
@@ -1258,6 +1259,7 @@ const RU: Record<TranslationKey, string> = {
     editRepeatGame: 'Переиграть?',
     editRepeatVideo: 'Пересмотреть?',
     editRepeatBook: 'Перечитать?',
+    editAudiobook: 'Аудиокнига',
     templateFieldActors: 'Актёры',
     templateFieldMovieParts: 'Части фильма',
     templateFieldTvParts: 'Сезоны сериала',
@@ -1948,6 +1950,7 @@ const UK: Record<TranslationKey, string> = {
     editRepeatGame: 'Переграти?',
     editRepeatVideo: 'Передивитися?',
     editRepeatBook: 'Перечитати?',
+    editAudiobook: 'Аудіокнига',
     templateFieldActors: 'Актори',
     templateFieldMovieParts: 'Частини фільму',
     templateFieldTvParts: 'Сезони серіалу',

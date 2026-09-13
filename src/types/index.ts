@@ -498,6 +498,8 @@ export interface BookItem extends BaseMediaItem {
     bookSeries?: string;
     /** Position/number within the series (e.g. 3 for "Prisoner of Azkaban") */
     seriesPosition?: number | null;
+    /** Whether this is an audiobook */
+    audiobook?: boolean;
     illustrator?: string;
     publisher?: string;
     releaseDate?: string | null;

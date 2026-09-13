@@ -109,6 +109,7 @@ export class ReadingService {
                     authors: this.toStringArray(readFrontmatterValue(metadata, ['author'])),
                     bookSeries: this.readText(metadata, ['series']) || '',
                     seriesPosition: parseNumber(readFrontmatterValue(metadata, ['series-position'])),
+                    audiobook: isTruthy(metadata.audiobook),
                     illustrator: this.readText(metadata, ['illustrator']) || '',
                     publisher: this.readText(metadata, ['publisher']) || '',
                     releaseDate: this.readDateText(metadata, ['released']),
@@ -282,6 +283,9 @@ export class ReadingService {
             }
             if ('seriesPosition' in updates) {
                 frontmatterUpdates['series-position'] = updates.seriesPosition ?? null;
+            }
+            if ('audiobook' in updates) {
+                frontmatterUpdates.audiobook = updates.audiobook ?? false;
             }
             if ('illustrator' in updates) {
                 frontmatterUpdates.illustrator = String(updates.illustrator ?? '').trim() || null;

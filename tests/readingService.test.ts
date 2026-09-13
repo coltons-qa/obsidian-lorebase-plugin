@@ -210,6 +210,7 @@ describe('ReadingService', () => {
             // illustrator had a reader and an editor input but no writer, so the value
             // silently vanished on save. Round-tripped here to keep that shut.
             illustrator: 'Jane Illustrator',
+            audiobook: true,
             owned: 'physical',
             count: 2,
             repeatable: true,
@@ -246,6 +247,7 @@ describe('ReadingService', () => {
             released: '2013-12-25',
         });
         expect(frontmatterByPath[bookFile.path].illustrator).toBe('Jane Illustrator');
+        expect(frontmatterByPath[bookFile.path].audiobook).toBe(true);
         expect(frontmatterByPath[bookFile.path].owned).toBe('physical');
         expect(frontmatterByPath[bookFile.path].count).toBe(2);
         expect(frontmatterByPath[bookFile.path].repeatable).toBe(true);
