@@ -130,6 +130,7 @@ export class VideoEditModal extends Modal {
         contentEl.addClass('lorebase-edit-modal', 'lorebase-modal-root');
         this.modalEl.addClass('lorebase-edit-modal-container');
         this.modalEl.addClass('lorebase-editmode-modal-shell');
+        this.modalEl.querySelector('.modal-close-button')?.remove();
         this.modalEl.addEventListener('keydown', this.onKeydown);
 
         const root = contentEl.createDiv({ cls: 'lorebase-editmode-root lorebase-editmode-video-root lorebase-modal-panel' });
