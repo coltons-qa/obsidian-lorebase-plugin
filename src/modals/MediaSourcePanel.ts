@@ -9,7 +9,8 @@ export function renderMediaSourcePanel(
     item: MediaItem,
     onRefresh?: MediaSourceAction,
     onChange?: MediaSourceAction,
-    showUrl = true
+    showUrl = true,
+    onRefreshCover?: MediaSourceAction
 ): void {
     if (!onRefresh && !onChange) return;
     const column = root.querySelector<HTMLElement>('.lorebase-editmode-column-right');
@@ -52,6 +53,9 @@ export function renderMediaSourcePanel(
                 render,
                 connected
             );
+        }
+        if (onRefreshCover) {
+            createAction(actions, 'image', t('editRefreshCover'), onRefreshCover, render, true);
         }
 
         if (urlRow) {

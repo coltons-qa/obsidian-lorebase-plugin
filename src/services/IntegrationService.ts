@@ -8,6 +8,8 @@ import { AnimeItem, CommunityRating, GameDlc, GameItem, LorebaseSettings, MediaI
 import { t } from '../localization';
 import { ChoiceModal, ExistingFileChoice, ExistingFileChoiceModal, ExistingFilePreview, MultiSelectSearchModal, SearchProviderOption } from '../modals/IntegrationModals';
 import { AnimePartsReviewModal } from '../modals/AnimePartsReviewModal';
+import { CoverPickerModal } from '../modals/CoverPickerModal';
+import { searchAppleBookCovers } from './integrations/providers/appleBooks';
 import { AddModeModal, ManualCreateModal, type ManualCreateDraft } from '../modals/ManualCreateModal';
 import { AnimeDetails, BookDetails, GameDetails, IntegrationAnimePart, IntegrationMangaPart, IntegrationVideoPart, MangaDetails, MediaEnrichmentPatch, MediaKind, MediaSourceSelection, ProviderId, SearchResult, VideoDetails } from './integrations/types';
 import { buildSimpleTemplate, ensureIntegrationSourceFrontmatter, getDefaultTemplateFields, getEffectiveSimpleTemplateFields, renderTemplate, sanitizeFileName } from './integrations/templateUtils';
@@ -493,6 +495,18 @@ export class IntegrationService {
                                 year: item.year,
                                 poster: item.image,
                             });
+                            if (itemProviderId === 'hardcover') {
+                                const appleUrl = await this.pickAppleBooksCover(
+                                    details.name,
+                                    details.authors?.[0] ?? '',
+                                    String(values.Poster || '')
+                                );
+                                if (appleUrl) {
+                                    values.Poster = appleUrl;
+                                    values.PosterHorizontal = appleUrl;
+                                    values.cm_poster = true;
+                                }
+                            }
                         } else if (kind === 'manga') {
                             if (!this.isMangaDetails(details)) {
                                 new Notice(t('noticeNoResults'));
@@ -1666,6 +1680,35 @@ export class IntegrationService {
             communityVotes: '',
             communityRatingProvider: '',
         };
+    }
+
+    /**
+     * Search Apple Books for cover images and let the user pick one.
+     * Returns the chosen high-res cover URL, or null if the user skips.
+     */
+    async pickAppleBooksCover(
+        title: string,
+        author: string,
+        hardcoverPoster: string | null
+    ): Promise<string | null> {
+        try {
+            const initialQuery = [title, author].filter(Boolean).join(' ');
+            const results = await searchAppleBookCovers(this.jsonFetcher, title, author);
+            if (!results.length && !hardcoverPoster) return null;
+            const searchFn = async (query: string) => {
+                return searchAppleBookCovers(this.jsonFetcher, query, '');
+            };
+            return await new CoverPickerModal(
+                this.app,
+                results,
+                hardcoverPoster,
+                searchFn,
+                initialQuery
+            ).openAndGetValue();
+        } catch {
+            new Notice(t('coverPickerRateLimited'));
+            return null;
+        }
     }
 
     private buildMangaValues(details: MangaDetails, source?: {

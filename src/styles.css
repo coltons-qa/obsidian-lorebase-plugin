@@ -10229,6 +10229,238 @@ a.lorebase-about-meta-value:hover {
     margin-bottom: 20px;
 }
 
+/* =========================================================================
+   Cover Picker Modal
+   ========================================================================= */
+
+.modal.lorebase-cover-picker-container {
+    width: 640px;
+    max-width: min(94vw, 640px);
+    border: 1px solid var(--background-modifier-border);
+    border-radius: 12px;
+    background: color-mix(in srgb, var(--background-primary) 88%, var(--background-secondary) 12%);
+}
+
+.modal.lorebase-cover-picker-container .modal-content {
+    padding: 18px;
+}
+
+.modal.lorebase-cover-picker-container > .modal-close-button,
+.lorebase-cover-picker-container .modal-header-button {
+    display: none !important;
+}
+
+.lorebase-cover-picker {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.lorebase-cover-picker-header {
+    padding: 0 0 12px;
+    border-bottom: 1px solid color-mix(in srgb, var(--lorebase-accent) 25%, var(--background-modifier-border));
+}
+
+.lorebase-cover-picker-title-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.lorebase-cover-picker-title-icon {
+    color: var(--lorebase-accent);
+    display: flex;
+    align-items: center;
+}
+
+.lorebase-cover-picker-title {
+    font-size: 1.15em;
+    font-weight: 600;
+    margin: 0;
+    color: var(--text-normal);
+}
+
+.lorebase-cover-picker-search {
+    display: flex;
+    gap: 6px;
+    padding: 10px 0 0;
+}
+
+.lorebase-cover-picker-search-input {
+    flex: 1;
+    font-size: 0.9em;
+    padding: 6px 10px;
+    border: 1px solid var(--background-modifier-border);
+    border-radius: 6px;
+    background: var(--background-primary);
+    color: var(--text-normal);
+}
+
+.lorebase-cover-picker-search-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 6px 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    background: var(--interactive-normal);
+    border: 1px solid var(--background-modifier-border);
+    color: var(--text-muted);
+    transition: background 0.15s ease;
+}
+
+.lorebase-cover-picker-search-btn:hover {
+    background: var(--interactive-hover);
+    color: var(--text-normal);
+}
+
+.lorebase-cover-picker-search-btn.is-loading {
+    opacity: 0.5;
+    pointer-events: none;
+}
+
+.lorebase-cover-picker-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+}
+
+.lorebase-cover-picker-card {
+    display: flex;
+    flex-direction: column;
+    border-radius: 8px;
+    overflow: hidden;
+    border: 1px solid color-mix(in srgb, var(--background-modifier-border) 82%, transparent);
+    background: color-mix(in srgb, var(--background-secondary) 86%, transparent);
+    cursor: pointer;
+    transition: transform 0.15s ease, border-color 0.15s ease, background-color 0.15s ease;
+}
+
+.lorebase-cover-picker-card:hover {
+    transform: translateY(-2px);
+    border-color: color-mix(in srgb, var(--interactive-accent) 38%, var(--background-modifier-border));
+    background: color-mix(in srgb, var(--background-secondary) 78%, var(--interactive-accent) 6%);
+}
+
+.lorebase-cover-picker-card.is-keep-current {
+    border-style: dashed;
+}
+
+.lorebase-cover-picker-image {
+    width: 100%;
+    aspect-ratio: 2 / 3;
+    background-size: cover;
+    background-position: center;
+    background-color: var(--background-primary);
+}
+
+.lorebase-cover-picker-image.is-empty {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-faint);
+    font-size: 0.85em;
+}
+
+.lorebase-cover-picker-label {
+    padding: 8px 10px 10px;
+}
+
+.lorebase-cover-picker-label-title {
+    font-size: 0.82em;
+    font-weight: 600;
+    line-height: 1.3;
+    color: var(--text-normal);
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.lorebase-cover-picker-label-subtitle {
+    font-size: 0.75em;
+    color: var(--text-muted);
+    margin-top: 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.lorebase-cover-picker-label-meta {
+    display: flex;
+    gap: 6px;
+    font-size: 0.7em;
+    color: var(--text-faint);
+    margin-top: 4px;
+}
+
+.lorebase-cover-picker-resolution {
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+.lorebase-cover-picker-resolution:not(:empty) {
+    opacity: 1;
+}
+
+.lorebase-cover-picker-empty {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 32px 16px;
+    color: var(--text-faint);
+    font-size: 0.9em;
+}
+
+.lorebase-cover-picker-more {
+    width: 100%;
+    padding: 8px;
+    border: 1px dashed var(--background-modifier-border);
+    border-radius: 6px;
+    background: transparent;
+    color: var(--text-muted);
+    cursor: pointer;
+    font-size: 0.85em;
+    transition: color 0.15s, border-color 0.15s;
+}
+
+.lorebase-cover-picker-more:hover {
+    color: var(--text-normal);
+    border-color: var(--interactive-accent);
+}
+
+.lorebase-cover-picker-footer {
+    display: flex;
+    justify-content: flex-end;
+    padding-top: 4px;
+}
+
+.lorebase-cover-picker-skip {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 6px 12px;
+    border: none;
+    border-radius: 6px;
+    background: transparent;
+    color: var(--text-muted);
+    cursor: pointer;
+    font-size: 0.85em;
+    transition: color 0.15s;
+}
+
+.lorebase-cover-picker-skip:hover {
+    color: var(--text-normal);
+}
+
+.lorebase-cover-picker-skip-icon {
+    display: flex;
+    align-items: center;
+}
+
+/* =========================================================================
+   Search / Select Modal
+   ========================================================================= */
+
 /* Integrations select modal */
 .modal.lorebase-select-modal-container {
     width: 900px;

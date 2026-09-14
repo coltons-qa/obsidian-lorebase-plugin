@@ -232,6 +232,9 @@ export type TranslationKey =
     | 'noticeCheckingNewSeasons' | 'noticeNewSeasonsFound' | 'noticeAllUpToDate' | 'noticeNewSeasonCheckFailed'
     | 'promptRateLimitTitle' | 'promptRateLimitBody'
     | 'promptFileExistsTitle' | 'promptFileExistsBody' | 'promptFileExistsUpdate' | 'promptFileExistsSeparate' | 'promptFileExistsSkip'
+    | 'coverPickerTitle' | 'coverPickerKeepCurrent' | 'coverPickerShowMore' | 'coverPickerNoResults'
+    | 'editRefreshCover' | 'coverPickerRateLimited'
+    | 'coverPickerSearchPlaceholder' | 'coverPickerSearch'
     | 'commonOk' | 'commonRetry' | 'commonCancel' | 'commonBack';
 
 // =============================================================================
@@ -915,6 +918,14 @@ const EN: Record<TranslationKey, string> = {
     promptFileExistsUpdate: 'Update',
     promptFileExistsSeparate: 'Create copy',
     promptFileExistsSkip: 'Keep current',
+    coverPickerTitle: 'Choose Cover',
+    coverPickerKeepCurrent: 'Keep Current',
+    coverPickerShowMore: 'Show More',
+    coverPickerNoResults: 'No covers found',
+    editRefreshCover: 'Refresh Cover',
+    coverPickerRateLimited: 'Too many requests, try again shortly',
+    coverPickerSearchPlaceholder: 'Edit search terms…',
+    coverPickerSearch: 'Search',
     commonOk: 'OK',
     commonRetry: 'Retry',
     commonCancel: 'Cancel',
@@ -1599,6 +1610,14 @@ const RU: Record<TranslationKey, string> = {
     promptFileExistsUpdate: 'Обновить',
     promptFileExistsSeparate: 'Создать копию',
     promptFileExistsSkip: 'Не менять',
+    coverPickerTitle: 'Выберите обложку',
+    coverPickerKeepCurrent: 'Оставить текущую',
+    coverPickerShowMore: 'Показать ещё',
+    coverPickerNoResults: 'Обложки не найдены',
+    editRefreshCover: 'Обновить обложку',
+    coverPickerRateLimited: 'Слишком много запросов, попробуйте позже',
+    coverPickerSearchPlaceholder: 'Изменить поисковый запрос…',
+    coverPickerSearch: 'Поиск',
     commonOk: 'ОК',
     commonRetry: 'Повторить',
     commonCancel: 'Отмена',
@@ -2280,6 +2299,14 @@ const UK: Record<TranslationKey, string> = {
     promptFileExistsUpdate: 'Оновити',
     promptFileExistsSeparate: 'Створити копію',
     promptFileExistsSkip: 'Не змінювати',
+    coverPickerTitle: 'Оберіть обкладинку',
+    coverPickerKeepCurrent: 'Залишити поточну',
+    coverPickerShowMore: 'Показати більше',
+    coverPickerNoResults: 'Обкладинки не знайдено',
+    editRefreshCover: 'Оновити обкладинку',
+    coverPickerRateLimited: 'Забагато запитів, спробуйте пізніше',
+    coverPickerSearchPlaceholder: 'Змінити пошуковий запит…',
+    coverPickerSearch: 'Пошук',
     commonOk: 'ОК',
     commonRetry: 'Повторити',
     commonCancel: 'Скасувати',

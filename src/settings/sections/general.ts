@@ -613,6 +613,7 @@ function renderBadgesEditor(context: SettingsSectionContext, container: HTMLElem
         title: Object.assign({}, value.title),
         year: Object.assign({}, value.year),
         format: Object.assign({}, value.format),
+        author: Object.assign({}, value.author),
         description: Object.assign({}, value.description),
     });
 
@@ -620,6 +621,7 @@ function renderBadgesEditor(context: SettingsSectionContext, container: HTMLElem
         title: value.title,
         year: value.year,
         format: value.format,
+        author: value.author,
         description: value.description,
     });
 

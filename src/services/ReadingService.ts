@@ -242,6 +242,7 @@ export class ReadingService {
         if ('owned' in updates) frontmatterUpdates.owned = updates.owned || null;
         if ('count' in updates) frontmatterUpdates.count = updates.count ?? null;
         if ('repeatable' in updates) frontmatterUpdates.repeatable = updates.repeatable ?? false;
+        if ('cm_poster' in updates) frontmatterUpdates.cm_poster = updates.cm_poster ?? null;
         if ('sourceUrl' in updates) this.updateTextField(frontmatterUpdates, frontmatter, ['url', 'source_url'], updates.sourceUrl);
         if ('started' in updates) frontmatterUpdates.started = this.normalizeDateString(String(updates.started ?? '')) || null;
         if ('finished' in updates) frontmatterUpdates.finished = this.normalizeDateString(String(updates.finished ?? '')) || null;

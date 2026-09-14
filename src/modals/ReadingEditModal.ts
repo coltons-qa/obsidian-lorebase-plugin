@@ -41,6 +41,7 @@ export class ReadingEditModal extends Modal {
     private myNotes = '';
     private notesMode: NotesMode = 'description';
     private notesExpanded = false;
+    private coverChangedByPicker = false;
     private started: string;
     private finished: string;
     private sourceUrl: string;
@@ -95,7 +96,8 @@ export class ReadingEditModal extends Modal {
         private readonly onRefreshSource?: MediaSourceAction,
         private readonly onChangeSource?: MediaSourceAction,
         private readonly onRelatedItemClick?: RelatedItemClickHandler,
-        private readonly seriesOptions: string[] = []
+        private readonly seriesOptions: string[] = [],
+        private readonly onRefreshCover?: MediaSourceAction
     ) {
         super(app);
         this.item = item;
@@ -180,7 +182,7 @@ export class ReadingEditModal extends Modal {
         if (this.item.type !== 'book' && this.onRefreshCommunityRating) {
             renderCommunityRatingPanel(root, this.item, this.onRefreshCommunityRating);
         }
-        renderMediaSourcePanel(root, this.item, this.onRefreshSource, this.onChangeSource);
+        renderMediaSourcePanel(root, this.item, this.onRefreshSource, this.onChangeSource, true, this.onRefreshCover);
         setupMobileEditor(root, () => void this.save());
     }
 
@@ -1110,6 +1112,14 @@ export class ReadingEditModal extends Modal {
         return this.save();
     }
 
+    /** Update the poster URL in-memory and refresh the preview image. */
+    updatePoster(url: string): void {
+        this.poster = url;
+        this.horizontalPoster = url;
+        this.coverChangedByPicker = true;
+        this.qs<HTMLImageElement>(this.contentEl, '[data-role="poster"]')?.setAttr('src', url || DEFAULT_COVER);
+    }
+
     private async save(): Promise<boolean> {
         if (!validateDatePickers([this.startedDatePicker, this.finishedDatePicker, this.releaseDatePicker].filter((picker): picker is HierarchicalDatePicker => Boolean(picker)))) return false;
         const updates: ReadingUpdates = {
@@ -1157,6 +1167,10 @@ export class ReadingEditModal extends Modal {
                 parts: this.parts,
                 activePartId: this.activePartId,
             } satisfies Partial<MangaItem>);
+        }
+
+        if (this.coverChangedByPicker) {
+            (updates as Record<string, unknown>).cm_poster = true;
         }
 
         await this.onSave(updates);
