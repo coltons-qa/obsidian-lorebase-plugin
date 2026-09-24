@@ -3,7 +3,7 @@
 exports[`ReadingService round trip > reads a fully populated book note 1`] = `
 {
   "audiobook": true,
-  "authors": [
+  "author": [
     "Frank Herbert",
   ],
   "chapterCurrent": 10,
@@ -106,7 +106,7 @@ exports[`ReadingService round trip > reads a manga note 1`] = `
   "artists": [
     "Kentaro Miura",
   ],
-  "authors": [
+  "author": [
     "Kentaro Miura",
   ],
   "chapterCurrent": 10,

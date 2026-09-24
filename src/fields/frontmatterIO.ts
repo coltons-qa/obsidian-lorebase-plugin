@@ -25,6 +25,14 @@ export function readText(frontmatter: Frontmatter, key: string): string | null {
     return text || null;
 }
 
+/** A list: list entries trimmed, or a text value split at commas, semicolons and newlines. */
+export function readList(frontmatter: Frontmatter, key: string): string[] {
+    const value = frontmatter[key];
+    if (Array.isArray(value)) return value.map((entry) => String(entry).trim()).filter(Boolean);
+    if (typeof value === 'string') return value.split(/[,;\n]+/).map((entry) => entry.trim()).filter(Boolean);
+    return [];
+}
+
 /** A finite number, parsing numeric strings; null otherwise. */
 export function readNumber(frontmatter: Frontmatter, key: string): number | null {
     const value = frontmatter[key];

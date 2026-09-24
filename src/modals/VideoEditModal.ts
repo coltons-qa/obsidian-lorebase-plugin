@@ -8,6 +8,7 @@ import { MediaSourceAction, renderMediaSourcePanel } from './MediaSourcePanel';
 import { setupMobileEditor } from './mobileEditor';
 import { bindSourceUrlButton } from './sourceUrlButton';
 import { extractMarkdownSection } from '../services/markdownSections';
+import { splitNameList } from '../services/media/parsers';
 import { HierarchicalDatePicker, validateDatePickers } from './HierarchicalDatePicker';
 import type { RelatedItemClickHandler } from './RelatedMediaEditor';
 import { reconcileRelatedTypes } from './RelatedMediaEditor';
@@ -106,7 +107,7 @@ export class VideoEditModal extends Modal {
 
         this.releaseDate = this.normalizeDateInput(item.releaseDate);
         this.runtime = item.runtime ?? '';
-        this.director = item.director ?? '';
+        this.director = (item.author ?? []).join(', ');
         this.actors = item.actors ?? '';
         this.seasons = item.type === 'tv' ? item.seasons : null;
         this.networks = item.type === 'tv' ? this.normalizeList(item.networks ?? []) : [];
@@ -1357,14 +1358,14 @@ export class VideoEditModal extends Modal {
         if (this.item.type === 'movie') {
             updates.releaseDate = this.releaseDate;
             updates.runtime = this.runtime;
-            updates.director = this.director;
+            updates.author = splitNameList(this.director);
             updates.actors = this.actors;
         } else {
             updates.parts = this.parts;
             updates.activePartId = activePart?.id ?? this.activePartId;
             updates.releaseDate = this.releaseDate;
             updates.runtime = this.runtime;
-            updates.director = this.director;
+            updates.author = splitNameList(this.director);
             updates.actors = this.actors;
             updates.seasons = this.parts.length || this.seasons;
             updates.networks = this.networks;

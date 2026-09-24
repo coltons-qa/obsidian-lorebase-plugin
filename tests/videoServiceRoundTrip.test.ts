@@ -92,7 +92,7 @@ const edits = {
     finished: '2025-03-21',
     releaseDate: '2025-01-17',
     runtime: '52 min',
-    director: 'Dan Erickson, Ben Stiller',
+    author: ['Dan Erickson', 'Ben Stiller'],
     actors: 'Adam Scott, Britt Lower, Zach Cherry',
     owned: 'physical',
     count: 2,

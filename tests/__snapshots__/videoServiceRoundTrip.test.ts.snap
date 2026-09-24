@@ -4,12 +4,14 @@ exports[`VideoService round trip > reads a fully populated TV note 1`] = `
 {
   "activePartId": "season-2",
   "actors": "Adam Scott, Britt Lower",
+  "author": [
+    "Dan Erickson",
+  ],
   "communityRating": 87,
   "communityRatingProvider": "TMDB",
   "communityVotes": 3100,
   "count": 1,
   "description": "Work life balance, literally.",
-  "director": "Dan Erickson",
   "displayName": "Severance",
   "episodeCurrent": 4,
   "episodeTotal": 10,
@@ -127,12 +129,14 @@ exports[`VideoService round trip > reads a fully populated movie note 1`] = `
 {
   "activePartId": null,
   "actors": "Adam Scott, Britt Lower",
+  "author": [
+    "Dan Erickson",
+  ],
   "communityRating": 87,
   "communityRatingProvider": "TMDB",
   "communityVotes": 3100,
   "count": 1,
   "description": "Work life balance, literally.",
-  "director": "Dan Erickson",
   "displayName": "Severance",
   "favorite": true,
   "filePath": "Library/Severance.md",

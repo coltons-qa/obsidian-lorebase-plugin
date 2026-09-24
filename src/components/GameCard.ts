@@ -840,12 +840,9 @@ export class GameCard {
     }
 
     private getAuthorText(item: MediaItem): string | null {
-        if (item.type === 'game') return item.developer || null;
         if (item.type === 'anime') return item.studios?.join(', ') || null;
-        if (item.type === 'movie' || item.type === 'tv') return item.director || null;
-        if (item.type === 'book') return item.authors?.join(', ') || null;
-        if (item.type === 'manga') return item.authors?.join(', ') || null;
-        return null;
+        // Every other kind keeps its developer, director, creator or author in `author`.
+        return item.author?.join(', ') || null;
     }
 
     private isAnime(item: MediaItem): item is AnimeItem {

@@ -14,7 +14,7 @@ import { extractSimpleFrontmatter } from './media/libraryViewState';
 import { getRandomItem, parseRelatedMedia, serializeRelatedMedia } from './media/parsers';
 import { collectFieldTags, collectSeriesNames, collectTags, getAllMarkdownFiles, isTruthy, mapInFrameBatches, normalizeCacheTags, readFrontmatterValue } from './media/serviceUtils';
 import { upsertMarkdownSection } from './markdownSections';
-import { keyOf, readBoundFields, writeBoundFields, writeNamedField } from '../fields/frontmatterIO';
+import { keyOf, readBoundFields, readList, writeBoundFields, writeNamedField } from '../fields/frontmatterIO';
 
 export { extractMarkdownSection, upsertMarkdownSection } from './markdownSections';
 
@@ -237,6 +237,12 @@ export class GameService {
             : null;
     }
 
+    /** A text value split at commas, or a list kept whole; de-duplicated either way. */
+    private displayList(value: unknown): string[] {
+        if (!Array.isArray(value)) return this.splitDisplayList(value === null || value === undefined ? '' : String(value));
+        return this.normalizeDisplayList(value.map((entry) => String(entry)));
+    }
+
     private listOrNull(values: string[]): string[] | null {
         return values.length > 0 ? values : null;
     }
@@ -300,7 +306,6 @@ export class GameService {
             const dateCompleted = this.readCompletionTimestamp(metadata, finished);
             const releaseDate = this.readFrontmatterText(metadata, [keyOf('games', 'released')]);
             const publisher = this.readFrontmatterText(metadata, [keyOf('games', 'publishers')]) ?? '';
-            const developer = this.readFrontmatterText(metadata, [keyOf('games', 'developers')]) ?? '';
             const title = this.readFrontmatterText(metadata, [keyOf('games', 'name')]) ?? file.basename ?? 'Unknown';
             const integrationProviderRaw = (this.readFrontmatterText(metadata, [keyOf('games', 'integrationSource', 0)]) ?? '').toLowerCase();
             const integrationProvider = integrationProviderRaw === 'rawg' || integrationProviderRaw === 'steam' || integrationProviderRaw === 'igdb'
@@ -372,7 +377,7 @@ export class GameService {
                 finished,
                 releaseDate,
                 publisher,
-                developer,
+                author: readList(metadata, keyOf('games', 'developers')),
                 tags,
                 genres,
                 platforms,
@@ -541,7 +546,7 @@ export class GameService {
         // Publishers and developers are stored as YAML lists; developers live under the
         // consolidated `author` key.
         if ('publisher' in updates) write('publishers', this.listOrNull(this.splitDisplayList(updates.publisher)));
-        if ('developer' in updates) write('developers', this.listOrNull(this.splitDisplayList(updates.developer)));
+        if ('author' in updates) write('developers', this.listOrNull(this.displayList(updates.author)));
         if ('integrationProvider' in updates) write('integrationSource', updates.integrationProvider, keyOf('games', 'integrationSource', 0));
         if ('integrationId' in updates) write('integrationSource', updates.integrationId, keyOf('games', 'integrationSource', 1));
         if ('dlc' in updates) write('dlc', this.serializeDlcList(updates.dlc));

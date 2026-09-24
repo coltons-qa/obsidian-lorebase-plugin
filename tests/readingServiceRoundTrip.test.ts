@@ -126,7 +126,7 @@ describe('ReadingService round trip', () => {
             communityVotes: 2000,
             communityRatingProvider: 'Hardcover',
             relatedMedia: [],
-            authors: ['Frank Herbert'],
+            author: ['Frank Herbert'],
             series: 'Dune',
             seriesPosition: 2,
             audiobook: false,
@@ -149,7 +149,7 @@ describe('ReadingService round trip', () => {
         await service.updateItem(item, {
             displayName: 'Berserk Deluxe',
             description: 'Guts, bigger.',
-            authors: 'Kentaro Miura, Kouji Mori',
+            author: ['Kentaro Miura', 'Kouji Mori'],
             artists: 'Kentaro Miura',
             chapterCurrent: 20,
             volumeTotal: 42,

@@ -465,7 +465,7 @@ describe('GameService', () => {
 
         expect(parsed).not.toBeNull();
         expect(parsed?.releaseDate).toBe('2009-11-17');
-        expect(parsed?.developer).toBe('Ubisoft Montreal');
+        expect(parsed?.author).toEqual(['Ubisoft Montreal']);
         expect(parsed?.publisher).toBe('Ubisoft Entertainment');
     });
 
@@ -486,7 +486,7 @@ describe('GameService', () => {
         expect(game).not.toBeNull();
 
         await service.updateGame(game!, {
-            developer: 'Ubisoft Montreal, Ubisoft',
+            author: ['Ubisoft Montreal', 'Ubisoft'],
             publisher: 'Ubisoft, Ubisoft Entertainment',
         });
 
@@ -650,7 +650,7 @@ describe('GameService', () => {
             expect(game?.displayName).toBe('Mass Effect');
             expect(game?.description).toBe('Sci-fi RPG');
             expect(game?.series).toBe('Mass Effect');
-            expect(game?.developer).toBe('BioWare');
+            expect(game?.author).toEqual(['BioWare']);
             expect(game?.publisher).toBe('EA');
             expect(game?.userRating).toBe(5);
             expect(game?.communityRating).toBe(86.2);

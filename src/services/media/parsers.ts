@@ -70,3 +70,8 @@ export function getRandomItem<T>(items: T[]): T | null {
     if (!items.length) return null;
     return items[Math.floor(Math.random() * items.length)] ?? null;
 }
+
+/** Comma-, semicolon- or newline-separated names from an editor text field, trimmed. */
+export function splitNameList(value: string): string[] {
+    return value.split(/[,;\n]+/).map((entry) => entry.trim()).filter(Boolean);
+}

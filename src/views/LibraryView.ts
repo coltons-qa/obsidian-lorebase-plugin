@@ -1206,7 +1206,7 @@ export class LibraryView extends ItemView {
                 && left.finished === right.finished
                 && left.releaseDate === right.releaseDate
                 && left.publisher === right.publisher
-                && left.developer === right.developer;
+                && this.areStringArraysEquivalent(left.author, right.author);
         }
 
         if (left.type === 'movie' && right.type === 'movie') {
@@ -1217,7 +1217,7 @@ export class LibraryView extends ItemView {
                 && left.rating === right.rating
                 && left.releaseDate === right.releaseDate
                 && left.runtime === right.runtime
-                && left.director === right.director
+                && this.areStringArraysEquivalent(left.author, right.author)
                 && left.actors === right.actors
                 && left.activePartId === right.activePartId
                 && this.areVideoPartsEquivalent(leftParts, rightParts)
@@ -1232,7 +1232,7 @@ export class LibraryView extends ItemView {
                 && left.rating === right.rating
                 && left.releaseDate === right.releaseDate
                 && left.runtime === right.runtime
-                && left.director === right.director
+                && this.areStringArraysEquivalent(left.author, right.author)
                 && left.actors === right.actors
                 && left.activePartId === right.activePartId
                 && this.areVideoPartsEquivalent(leftParts, rightParts)
@@ -1251,7 +1251,7 @@ export class LibraryView extends ItemView {
                 && left.releaseDate === right.releaseDate
                 && left.pageCurrent === right.pageCurrent
                 && left.pageTotal === right.pageTotal
-                && this.areStringArraysEquivalent(left.authors, right.authors)
+                && this.areStringArraysEquivalent(left.author, right.author)
                 && this.areRelatedMediaEquivalent(left.relatedMedia, right.relatedMedia);
         }
 
@@ -1263,7 +1263,7 @@ export class LibraryView extends ItemView {
                 && left.volumeCurrent === right.volumeCurrent
                 && left.volumeTotal === right.volumeTotal
                 && left.activePartId === right.activePartId
-                && this.areStringArraysEquivalent(left.authors, right.authors)
+                && this.areStringArraysEquivalent(left.author, right.author)
                 && this.areStringArraysEquivalent(left.artists, right.artists)
                 && this.areMangaPartsEquivalent(left.parts ?? [], right.parts ?? [])
                 && this.areRelatedMediaEquivalent(left.relatedMedia, right.relatedMedia);

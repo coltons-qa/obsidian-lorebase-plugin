@@ -335,6 +335,11 @@ interface BaseMediaItem {
     horizontalImageUrl?: string | null;
     /** Has custom poster */
     hasCustomPoster: boolean;
+    /**
+     * Who made it, stored under the note's `author` key: the developer (games), director
+     * or creator (movies, TV), author (books, manga).
+     */
+    author?: string[];
     /** Series or franchise; games and books use it ("Harry Potter", "Fallout"). */
     series?: string;
     /** Community/provider rating such as AniList, MAL, TMDB, RAWG */
@@ -376,8 +381,6 @@ export interface GameItem extends BaseMediaItem {
     releaseDate?: string | null;
     /** Publisher stored in frontmatter */
     publisher?: string;
-    /** Developer stored in frontmatter */
-    developer?: string;
     /** Tags applied to the game */
     tags: string[];
     /** Genre tags (separate field) */
@@ -457,7 +460,6 @@ export interface MovieItem extends BaseMediaItem {
     summary: string;
     releaseDate?: string | null;
     runtime?: string;
-    director?: string;
     actors?: string;
     rating?: string;
     genres: string[];
@@ -476,7 +478,6 @@ export interface TvItem extends BaseMediaItem {
     summary: string;
     releaseDate?: string | null;
     runtime?: string;
-    director?: string;
     actors?: string;
     seasons: number | null;
     episodeCurrent: number | null;
@@ -497,7 +498,6 @@ export interface BookItem extends BaseMediaItem {
     type: 'book';
     status: ReadingStatus;
     summary: string;
-    authors: string[];
     /** Position/number within the series (e.g. 3 for "Prisoner of Azkaban") */
     seriesPosition?: number | null;
     /** Whether this is an audiobook */
@@ -523,7 +523,6 @@ export interface MangaItem extends BaseMediaItem {
     type: 'manga';
     status: ReadingStatus;
     summary: string;
-    authors: string[];
     artists: string[];
     chapterCurrent: number | null;
     chapterTotal: number | null;

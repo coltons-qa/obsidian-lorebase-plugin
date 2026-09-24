@@ -108,7 +108,7 @@ export class VideoService {
                 activePartId,
                 relatedMedia: parseRelatedMedia(readFrontmatterValue(metadata, [keyOf(K, 'relatedMedia')])),
                 releaseDate: this.readDateText(metadata, [keyOf(K, 'released')]) || null,
-                director: this.readText(metadata, [keyOf(K, 'director')]) || '',
+                author: this.toStringArray(readFrontmatterValue(metadata, [keyOf(K, 'director')])),
                 actors: this.readText(metadata, [keyOf(K, 'actors')]) || '',
                 rawFields: extractSimpleFrontmatter(metadata),
             };
@@ -209,7 +209,7 @@ export class VideoService {
         if ('releaseDate' in updates) write('released', trimmedOrNull(this.normalizeDateString(String(updates.releaseDate ?? ''))));
         // Director and cast are stored as YAML lists; the director lives under the
         // consolidated `author` key.
-        if ('director' in updates) write('director', this.displayListOrNull(updates.director));
+        if ('author' in updates) write('director', this.displayListOrNull(updates.author));
         if ('actors' in updates) write('actors', this.displayListOrNull(updates.actors));
         if ('relatedMedia' in updates) write('relatedMedia', serializeRelatedMedia(updates.relatedMedia));
         if ('integrationProvider' in updates) write('integrationSource', updates.integrationProvider, keyOf(K, 'integrationSource', 0));

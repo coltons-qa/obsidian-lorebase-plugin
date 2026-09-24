@@ -52,7 +52,7 @@ describe('ReadingService', () => {
             integrationProvider: 'hardcover',
             integrationId: '123',
         });
-        expect(parsed?.authors).toEqual(['Frank Herbert']);
+        expect(parsed?.author).toEqual(['Frank Herbert']);
         expect(parsed?.tags).toContain('scifi');
         expect(parsed?.relatedMedia).toEqual([
             { type: 'manga', path: 'Manga/Dune.md', title: 'Dune Manga' },
@@ -219,13 +219,13 @@ describe('ReadingService', () => {
             chapterCurrent: 10,
             chapterTotal: 10,
             publisher: 'Tor Books, Orbit, tor books',
-            authors: ['Christie Golden', 'Blizzard Writer', 'christie golden'],
+            author: ['Christie Golden', 'Blizzard Writer', 'christie golden'],
             releaseDate: '25 Dec 2013',
         });
         await mangaService.updateItem(manga!, {
             chapterCurrent: 10,
             chapterTotal: 10,
-            authors: ['Takahiro', 'Second Author', 'takahiro'],
+            author: ['Takahiro', 'Second Author', 'takahiro'],
             artists: ['Tetsuya Tashiro', 'Second Artist', 'tetsuya tashiro'],
             relatedMedia: [
                 {
@@ -337,7 +337,7 @@ describe('ReadingService', () => {
 
             expect(book?.displayName).toBe('Dune');
             expect(book?.description).toBe('Spice and sandworms.');
-            expect(book?.type === 'book' && book.authors).toEqual(['Frank Herbert']);
+            expect(book?.type === 'book' && book.author).toEqual(['Frank Herbert']);
             expect(book?.type === 'book' && book.publisher).toBe('Chilton Books');
             expect(book?.userRating).toBe(7);
             expect(book?.communityRating).toBe(91.3);

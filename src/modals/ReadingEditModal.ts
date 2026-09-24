@@ -118,7 +118,7 @@ export class ReadingEditModal extends Modal {
         this.sourceUrl = item.sourceUrl ?? '';
         this.genres = this.normalizeList(item.genres);
         this.tags = this.normalizeList(item.tags);
-        this.authors = this.normalizeList(item.authors);
+        this.authors = this.normalizeList(item.author ?? []);
         this.audiobook = item.type === 'book' ? (item.audiobook ?? false) : false;
         this.bookSeries = item.type === 'book' ? (item.series ?? '') : '';
         this.seriesPosition = item.type === 'book' ? (item.seriesPosition ?? null) : null;
@@ -1136,7 +1136,7 @@ export class ReadingEditModal extends Modal {
             sourceUrl: this.sourceUrl,
             started: this.started || null,
             finished: this.finished || null,
-            authors: this.authors,
+            author: this.authors,
             relatedMedia: this.relatedMediaEditor.getValue(),
             myNotes: this.myNotes,
             owned: this.owned.trim() || null,

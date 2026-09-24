@@ -116,7 +116,7 @@ export class ReadingService {
                     // come from the field registry.
                     ...readBoundFields(K, metadata),
                     type: 'book',
-                    authors: this.toStringArray(readFrontmatterValue(metadata, [keyOf(K, 'authors')])),
+                    author: this.toStringArray(readFrontmatterValue(metadata, [keyOf(K, 'authors')])),
                     publisher: this.readText(metadata, [keyOf(K, 'publisher')]) || '',
                     releaseDate: this.readDateText(metadata, [keyOf(K, 'released')]),
                     pageCurrent: parseNumber(readFrontmatterValue(metadata, [keyOf(K, 'pageCurrent')])),
@@ -146,7 +146,7 @@ export class ReadingService {
             return {
                 ...base,
                 type: 'manga',
-                authors: this.toStringArray(metadata.authors ?? metadata.author),
+                author: this.toStringArray(metadata.authors ?? metadata.author),
                 artists: this.toStringArray(metadata.artists ?? metadata.artist),
                 chapterCurrent: activePart?.chapterCurrent ?? chapterCurrent,
                 chapterTotal: activePart?.chapterTotal ?? chapterTotal,
@@ -255,7 +255,7 @@ export class ReadingService {
         if ('relatedMedia' in updates) write('relatedMedia', serializeRelatedMedia(updates.relatedMedia));
 
         if (item.type === 'book') {
-            if ('authors' in updates) write('authors', this.displayListOrNull(updates.authors));
+            if ('author' in updates) write('authors', this.displayListOrNull(updates.author));
             if ('publisher' in updates) {
                 // One publisher as text, several as a list, always under `publisher`, the
                 // key the reader reads (it joins a list back with ', ').
@@ -277,12 +277,12 @@ export class ReadingService {
                 frontmatterUpdates.status = 'completed';
             }
         } else {
-            if ('authors' in updates) this.updateDisplayListField(
+            if ('author' in updates) this.updateDisplayListField(
                 frontmatterUpdates,
                 frontmatter,
                 'author',
                 'authors',
-                updates.authors
+                updates.author
             );
             if ('artists' in updates) this.updateDisplayListField(
                 frontmatterUpdates,

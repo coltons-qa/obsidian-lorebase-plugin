@@ -50,7 +50,7 @@ describe('VideoService', () => {
         expect(parsed?.horizontalImageUrl).toBe('https://cdn.example/blade-runner-wide.jpg');
         expect(parsed?.genres).toContain('sci-fi');
         expect(parsed?.tags).toContain('classic');
-        expect((parsed as MovieItem)?.director).toBe('Ridley Scott');
+        expect((parsed as MovieItem)?.author).toEqual(['Ridley Scott']);
         expect(parsed?.integrationProvider).toBe('tmdb');
         expect(parsed?.integrationId).toBe('78');
         expect(parsed?.relatedMedia).toEqual([
@@ -219,7 +219,7 @@ describe('VideoService', () => {
         expect((item as MovieItem).releaseDate).toBe('2013-12-25');
         await service.updateItem(item!, {
             releaseDate: '1 Jan 2014',
-            director: 'Lana Wachowski, Lilly Wachowski, lana wachowski',
+            author: ['Lana Wachowski', 'Lilly Wachowski', 'lana wachowski'],
             actors: 'Keanu Reeves, Carrie-Anne Moss',
         });
 
@@ -327,7 +327,7 @@ describe('VideoService', () => {
 
             expect(series?.displayName).toBe('Severance');
             expect(series?.description).toBe('Work life balance, literally.');
-            expect(series?.director).toBe('Dan Erickson');
+            expect(series?.author).toEqual(['Dan Erickson']);
             expect(series?.actors).toBe('Adam Scott, Britt Lower');
             expect(series?.userRating).toBe(6);
             expect(series?.communityRating).toBe(88.4);
@@ -375,7 +375,7 @@ describe('VideoService', () => {
 
             expect(movie?.displayName).toBe('Arrival');
             expect(movie?.description).toBe('Linguistics and time.');
-            expect(movie?.director).toBe('Denis Villeneuve');
+            expect(movie?.author).toEqual(['Denis Villeneuve']);
             expect(movie?.actors).toBe('Amy Adams, Jeremy Renner');
             expect(movie?.userRating).toBe(7);
             expect(movie?.integrationProvider).toBe('tmdb');

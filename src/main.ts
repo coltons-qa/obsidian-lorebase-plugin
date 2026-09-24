@@ -1075,7 +1075,7 @@ export default class LorebasePlugin extends Plugin {
                     if (!this.integrationService) return false;
                     const appleUrl = await this.integrationService.pickAppleBooksCover(
                         readingItem.displayName,
-                        readingItem.authors?.[0] ?? '',
+                        readingItem.author?.[0] ?? '',
                         readingItem.imageUrl || null
                     );
                     if (!appleUrl) return false;

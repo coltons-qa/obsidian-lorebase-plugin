@@ -2,13 +2,15 @@
 
 exports[`GameService round trip > reads a fully populated note 1`] = `
 {
+  "author": [
+    "Supergiant Games",
+  ],
   "communityRating": 93.4,
   "communityRatingProvider": "IGDB",
   "communityVotes": 1200,
   "count": 2,
   "dateCompleted": 1605398400000,
   "description": "Escape the underworld.",
-  "developer": "Supergiant Games",
   "displayName": "Hades",
   "dlc": [
     {

@@ -86,7 +86,7 @@ describe('GameService round trip', () => {
             releaseDate: '2025-09-25',
             started: '2025-09-26',
             finished: '2025-10-30',
-            developer: 'Supergiant Games, Supergiant',
+            author: ['Supergiant Games', 'Supergiant'],
             publisher: 'Supergiant Games, Supergiant',
             userRating: 6,
             favorite: false,

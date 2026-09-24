@@ -14,6 +14,7 @@ import { extractMarkdownSection } from '../services/GameService';
 import { normalizeObsidianTag } from '../settings/settingsNormalization';
 import { RelatedMediaEditor } from './RelatedMediaEditor';
 import type { RelatedItemClickHandler } from './RelatedMediaEditor';
+import { splitNameList } from '../services/media/parsers';
 import { HierarchicalDatePicker, validateDatePickers } from './HierarchicalDatePicker';
 
 /**
@@ -135,7 +136,7 @@ export class EditModal extends Modal {
         this.finished = this.normalizeDateInput(game.finished);
         this.releaseDate = this.normalizeDateInput(game.releaseDate);
         this.publisher = game.publisher ?? '';
-        this.developer = game.developer ?? '';
+        this.developer = (game.author ?? []).join(', ');
         this.owned = game.owned ?? '';
         this.count = game.count ?? null;
         this.repeatable = game.repeatable ?? false;
@@ -1527,7 +1528,7 @@ export class EditModal extends Modal {
             started: this.started || null,
             finished: this.finished || null,
             publisher: this.publisher.trim(),
-            developer: this.developer.trim(),
+            author: splitNameList(this.developer),
             owned: this.owned.trim() || null,
             count: this.count,
             repeatable: this.repeatable,
