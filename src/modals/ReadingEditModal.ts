@@ -10,6 +10,7 @@ import { bindSourceUrlButton } from './sourceUrlButton';
 import { extractMarkdownSection } from '../services/markdownSections';
 import { RelatedMediaEditor } from './RelatedMediaEditor';
 import type { RelatedItemClickHandler } from './RelatedMediaEditor';
+import { renderSeriesCombobox } from '../components/SeriesCombobox';
 import { HierarchicalDatePicker, validateDatePickers } from './HierarchicalDatePicker';
 import { normalizeProgress, stepProgress } from '../utils/progress';
 
@@ -511,126 +512,10 @@ export class ReadingEditModal extends Modal {
     private renderSeriesCombobox(root: HTMLElement): void {
         const host = this.qs<HTMLElement>(root, '[data-field="series"]');
         if (!host) return;
-        host.empty();
-        host.addClass('lorebase-settings-dropdown');
-
-        const input = host.createEl('input', {
-            cls: 'lorebase-editmode-input lorebase-editmode-combobox-input',
-            attr: {
-                type: 'text',
-                placeholder: t('editSeries'),
-                'aria-haspopup': 'listbox',
-                'aria-expanded': 'false',
-            },
-        });
-        input.value = this.bookSeries;
-
-        const toggle = host.createEl('button', {
-            cls: 'lorebase-editmode-combobox-toggle',
-            attr: { type: 'button', 'aria-label': t('editSeries') },
-        });
-        setIcon(toggle, 'chevron-down');
-
-        const panel = host.createDiv({
-            cls: 'lorebase-settings-dropdown-panel lorebase-editmode-combobox-panel',
-            attr: { role: 'listbox' },
-        });
-
-        const uniqueSeries = Array.from(new Set(
-            this.seriesOptions
-                .map((series) => series.trim())
-                .filter((series) => series.length > 0)
-        ));
-
-        const close = (): void => {
-            panel.removeClass('is-open');
-            toggle.removeClass('is-open');
-            input.setAttribute('aria-expanded', 'false');
-        };
-
-        const open = (): void => {
-            panel.addClass('is-open');
-            toggle.addClass('is-open');
-            input.setAttribute('aria-expanded', 'true');
-        };
-
-        const selectValue = (value: string): void => {
-            this.bookSeries = value.trim();
-            input.value = this.bookSeries;
-            close();
-        };
-
-        const renderOptions = (query = ''): void => {
-            panel.empty();
-            const values = query
-                ? uniqueSeries.filter((series) => series.toLowerCase().includes(query))
-                : uniqueSeries;
-            const clear = panel.createDiv({
-                cls: 'lorebase-settings-dropdown-option',
-                attr: {
-                    role: 'option',
-                    tabindex: '0',
-                    'aria-selected': String(this.bookSeries.length === 0),
-                },
-            });
-            clear.toggleClass('is-selected', this.bookSeries.length === 0);
-            clear.createSpan({ cls: 'lorebase-settings-dropdown-option-label', text: t('editNoSeries') });
-            if (this.bookSeries.length === 0) {
-                const check = clear.createSpan({ cls: 'lorebase-settings-dropdown-option-check' });
-                setIcon(check, 'check');
-            }
-            clear.addEventListener('click', () => selectValue(''));
-            clear.addEventListener('keydown', (event) => {
-                if (event.key !== 'Enter' && event.key !== ' ') return;
-                event.preventDefault();
-                selectValue('');
-            });
-
-            for (const value of values) {
-                const option = panel.createDiv({
-                    cls: 'lorebase-settings-dropdown-option',
-                    attr: {
-                        role: 'option',
-                        tabindex: '0',
-                        'aria-selected': String(value === this.bookSeries),
-                    },
-                });
-                option.toggleClass('is-selected', value === this.bookSeries);
-                option.createSpan({ cls: 'lorebase-settings-dropdown-option-label', text: value });
-                if (value === this.bookSeries) {
-                    const check = option.createSpan({ cls: 'lorebase-settings-dropdown-option-check' });
-                    setIcon(check, 'check');
-                }
-                option.addEventListener('click', () => selectValue(value));
-                option.addEventListener('keydown', (event) => {
-                    if (event.key !== 'Enter' && event.key !== ' ') return;
-                    event.preventDefault();
-                    selectValue(value);
-                });
-            }
-        };
-
-        input.addEventListener('input', () => {
-            this.bookSeries = input.value.trim();
-            renderOptions(this.bookSeries.toLowerCase());
-            open();
-        });
-        input.addEventListener('focus', () => {
-            renderOptions();
-            open();
-        });
-        toggle.addEventListener('click', (event) => {
-            event.preventDefault();
-            event.stopPropagation();
-            if (panel.hasClass('is-open')) {
-                close();
-            } else {
-                renderOptions();
-                open();
-            }
-        });
-        root.addEventListener('click', (event) => {
-            if (!host.contains(event.target as Node)) close();
+        renderSeriesCombobox(host, {
+            value: this.bookSeries,
+            suggestions: this.seriesOptions,
+            onChange: (value) => { this.bookSeries = value; },
         });
     }
 

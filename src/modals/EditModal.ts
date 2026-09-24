@@ -15,6 +15,7 @@ import { normalizeObsidianTag } from '../settings/settingsNormalization';
 import { RelatedMediaEditor } from './RelatedMediaEditor';
 import type { RelatedItemClickHandler } from './RelatedMediaEditor';
 import { splitNameList } from '../services/media/parsers';
+import { renderSeriesCombobox } from '../components/SeriesCombobox';
 import { HierarchicalDatePicker, validateDatePickers } from './HierarchicalDatePicker';
 
 /**
@@ -951,147 +952,11 @@ export class EditModal extends Modal {
     private renderSeriesCombobox(root: HTMLElement): void {
         const host = this.qs<HTMLElement>(root, '[data-field="series"]');
         if (!host) return;
-        host.empty();
-        host.addClass('lorebase-settings-dropdown');
-
-        const input = host.createEl('input', {
-            cls: 'lorebase-editmode-input lorebase-editmode-combobox-input',
-            attr: {
-                type: 'text',
-                placeholder: t('editSeries'),
-                'aria-haspopup': 'listbox',
-                'aria-expanded': 'false',
-            },
+        renderSeriesCombobox(host, {
+            value: this.gameSeries,
+            suggestions: this.seriesOptions,
+            onChange: (value) => { this.gameSeries = value; },
         });
-        input.value = this.gameSeries;
-
-        const toggle = host.createEl('button', {
-            cls: 'lorebase-editmode-combobox-toggle',
-            attr: { type: 'button', 'aria-label': t('editSeries') },
-        });
-        setIcon(toggle, 'chevron-down');
-
-        const panel = host.createDiv({
-            cls: 'lorebase-settings-dropdown-panel lorebase-editmode-combobox-panel',
-            attr: { role: 'listbox' },
-        });
-
-        const uniqueSeries = Array.from(new Set(
-            this.seriesOptions
-                .map((series) => series.trim())
-                .filter((series) => series.length > 0)
-        ));
-
-        const close = (): void => {
-            panel.removeClass('is-open');
-            toggle.removeClass('is-open');
-            input.setAttribute('aria-expanded', 'false');
-        };
-
-        const open = (): void => {
-            panel.addClass('is-open');
-            toggle.addClass('is-open');
-            input.setAttribute('aria-expanded', 'true');
-        };
-
-        const selectValue = (value: string): void => {
-            this.gameSeries = value.trim();
-            input.value = this.gameSeries;
-            close();
-        };
-
-        // Only filter while the user is actively typing. Opening the panel always lists
-        // everything, otherwise a field that already holds a series filters the list down
-        // to that one entry and the rest of the library looks missing.
-        const renderOptions = (query = ''): void => {
-            panel.empty();
-            const values = query
-                ? uniqueSeries.filter((series) => series.toLowerCase().includes(query))
-                : uniqueSeries;
-            const clear = panel.createDiv({
-                cls: 'lorebase-settings-dropdown-option',
-                attr: {
-                    role: 'option',
-                    tabindex: '0',
-                    'aria-selected': String(this.gameSeries.length === 0),
-                },
-            });
-            clear.toggleClass('is-selected', this.gameSeries.length === 0);
-            clear.createSpan({ cls: 'lorebase-settings-dropdown-option-label', text: t('editNoSeries') });
-            if (this.gameSeries.length === 0) {
-                const check = clear.createSpan({ cls: 'lorebase-settings-dropdown-option-check' });
-                setIcon(check, 'check');
-            }
-            clear.addEventListener('click', () => selectValue(''));
-            clear.addEventListener('keydown', (event) => {
-                if (event.key !== 'Enter' && event.key !== ' ') return;
-                event.preventDefault();
-                selectValue('');
-            });
-
-            for (const value of values) {
-                const option = panel.createDiv({
-                    cls: 'lorebase-settings-dropdown-option',
-                    attr: {
-                        role: 'option',
-                        tabindex: '0',
-                        'aria-selected': String(value === this.gameSeries),
-                    },
-                });
-                option.toggleClass('is-selected', value === this.gameSeries);
-                option.createSpan({ cls: 'lorebase-settings-dropdown-option-label', text: value });
-                if (value === this.gameSeries) {
-                    const check = option.createSpan({ cls: 'lorebase-settings-dropdown-option-check' });
-                    setIcon(check, 'check');
-                }
-                option.addEventListener('click', () => selectValue(value));
-                option.addEventListener('keydown', (event) => {
-                    if (event.key !== 'Enter' && event.key !== ' ') return;
-                    event.preventDefault();
-                    selectValue(value);
-                });
-            }
-        };
-
-        input.addEventListener('input', () => {
-            this.gameSeries = input.value.trim();
-            renderOptions(this.gameSeries.toLowerCase());
-            open();
-        });
-        input.addEventListener('focus', () => {
-            renderOptions();
-            open();
-        });
-        toggle.addEventListener('click', (event) => {
-            event.preventDefault();
-            event.stopPropagation();
-            renderOptions();
-            if (panel.hasClass('is-open')) close();
-            else open();
-        });
-
-        const onDocumentClick = (event: MouseEvent): void => {
-            const ownerDocument = host.ownerDocument;
-            if (!host.isConnected) {
-                ownerDocument.removeEventListener('click', onDocumentClick);
-                ownerDocument.removeEventListener('keydown', onKeydown);
-                return;
-            }
-            if (!host.contains(event.target as Node)) close();
-        };
-        const onKeydown = (event: KeyboardEvent): void => {
-            const ownerDocument = host.ownerDocument;
-            if (!host.isConnected) {
-                ownerDocument.removeEventListener('click', onDocumentClick);
-                ownerDocument.removeEventListener('keydown', onKeydown);
-                return;
-            }
-            if (event.key === 'Escape') close();
-        };
-
-        host.ownerDocument.addEventListener('click', onDocumentClick);
-        host.ownerDocument.addEventListener('keydown', onKeydown);
-        renderOptions();
     }
 
     private qs<T extends Element>(root: HTMLElement, selector: string): T | null {
