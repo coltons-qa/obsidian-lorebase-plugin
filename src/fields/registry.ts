@@ -33,13 +33,33 @@ export interface TemplateSpec {
     retired?: boolean;
 }
 
+/**
+ * How a simple field maps onto the parsed item. Fields with real logic (status, parts,
+ * images, dates, lists) leave this out and are read and written by their service.
+ */
+export interface ItemBinding {
+    /** Property on the parsed item. */
+    prop: string;
+    /** `text` is null when empty, `textOrEmpty` is ''. */
+    read: 'text' | 'textOrEmpty' | 'number' | 'boolean';
+    /**
+     * How an edited value is stored: as given, empty to null, empty to '', missing to
+     * false, or missing to null.
+     */
+    write: 'raw' | 'orNull' | 'orEmpty' | 'orFalse' | 'nullish';
+}
+
 export interface FieldSpec {
     /** Unique within its kind; the template field id when the field has a template. */
     name: string;
     /** YAML keys the field owns, primary first. */
     keys: string[];
-    /** Older spellings of those keys: recognised on read-back, cleared on write. */
-    legacyKeys?: string[];
+    /**
+     * Older spellings, cleared when the field is written. A list belongs to the primary
+     * key; fields owning several keys map each key to its own older spellings.
+     */
+    legacyKeys?: string[] | Record<string, string[]>;
+    item?: ItemBinding;
     /** Provider field name (as enrichment receives it) mapped to the YAML key it fills. */
     provider?: Record<string, string>;
     template?: TemplateSpec;
@@ -201,7 +221,7 @@ const integrationSourceField = (kebab: boolean): Spec => {
     return {
         name: 'integrationSource',
         keys: [provider, id],
-        legacyKeys: kebab ? ['integration_provider', 'integration_id'] : undefined,
+        legacyKeys: kebab ? { [provider]: ['integration_provider'], [id]: ['integration_id'] } : undefined,
         provider: { integration_provider: provider, integration_id: id },
         template: {
             label: 'templateFieldIntegrationSource',
@@ -218,6 +238,20 @@ const urlField = (): Spec => ({
     template: { label: 'templateFieldUrl', lines: ['url: "{{VALUE:url}}"'], defaultOn: true },
 });
 
+const bind = (field: Spec, item: ItemBinding): Spec => ({ ...field, item });
+
+const bindCommunity = (fields: Spec[]): Spec[] => fields.map((field) => bind(field, {
+    prop: field.name,
+    read: field.name === 'communityRatingProvider' ? 'text' : 'number',
+    write: 'raw',
+}));
+
+const bindManual = (fields: Spec[]): Spec[] => fields.map((field) => {
+    if (field.name === 'owned') return bind(field, { prop: 'owned', read: 'text', write: 'orNull' });
+    if (field.name === 'count') return bind(field, { prop: 'count', read: 'number', write: 'nullish' });
+    return bind(field, { prop: 'repeatable', read: 'boolean', write: 'orFalse' });
+});
+
 // ---------------------------------------------------------------------------------------
 // Per-kind registries
 // ---------------------------------------------------------------------------------------
@@ -227,18 +261,19 @@ const GAME_FIELDS: Spec[] = [
     nameField(),
     posterField(),
     posterHorizontalField('poster-b'),
-    plotField('synopsis'),
+    bind(plotField('synopsis'), { prop: 'description', read: 'textOrEmpty', write: 'raw' }),
     {
         name: 'gameSeries',
         keys: ['series'],
         legacyKeys: ['gameSeries'],
+        item: { prop: 'gameSeries', read: 'textOrEmpty', write: 'orEmpty' },
         provider: { gameSeries: 'series' },
         template: { label: 'templateFieldGameSeries', lines: ['series: "{{VALUE:gameSeries}}"'], defaultOn: true },
     },
-    quotedListField('genres', 'templateFieldGenres'),
-    quotedListField('platforms', 'templateFieldPlatforms'),
+    { ...quotedListField('genres', 'templateFieldGenres'), legacyKeys: ['genre'] },
+    { ...quotedListField('platforms', 'templateFieldPlatforms'), legacyKeys: ['platform'] },
     yearField(),
-    releasedField(true),
+    { ...releasedField(true), legacyKeys: ['releaseDate', 'release_date'] },
     {
         name: 'developers',
         keys: ['author'],
@@ -246,24 +281,25 @@ const GAME_FIELDS: Spec[] = [
         provider: { developers: 'author' },
         template: { label: 'templateFieldDevelopers', lines: ['author: "{{VALUE:developers}}"'], defaultOn: true },
     },
-    quotedListField('publishers', 'templateFieldPublishers'),
+    { ...quotedListField('publishers', 'templateFieldPublishers'), legacyKeys: ['publisher'] },
     {
         name: 'userRating',
         keys: ['user-rating'],
         legacyKeys: ['userRating'],
         template: { label: 'templateFieldUserRating', lines: ['user-rating: {{VALUE:userRating}}'], defaultOn: true },
     },
-    ...communityFields(true),
+    ...bindCommunity(communityFields(true)),
     statusField(),
-    favoriteField(),
-    ...manualFields({ ownedDefaultOn: true }),
+    bind(favoriteField(), { prop: 'favorite', read: 'boolean', write: 'raw' }),
+    ...bindManual(manualFields({ ownedDefaultOn: true })),
     {
         name: 'myPlatform',
         keys: ['my-platform'],
+        item: { prop: 'myPlatform', read: 'textOrEmpty', write: 'orNull' },
         template: { label: 'templateFieldMyPlatform', lines: [], defaultOn: false },
     },
     integrationSourceField(true),
-    urlField(),
+    bind(urlField(), { prop: 'sourceUrl', read: 'text', write: 'orNull' }),
     {
         name: 'main',
         keys: ['hltb-main'],
@@ -286,7 +322,19 @@ const GAME_FIELDS: Spec[] = [
         template: { label: 'templateFieldCompletionist', lines: ['hltb-perfectionist: {{VALUE:perfectionist}}'], defaultOn: false, hltb: true },
     },
     // No template: written by Steam Sync and enrichment only.
-    { name: 'steamAppId', keys: ['steam-app-id'], legacyKeys: ['steamAppId'], provider: { steamAppId: 'steam-app-id' } },
+    {
+        name: 'steamAppId',
+        keys: ['steam-app-id'],
+        legacyKeys: ['steamAppId'],
+        item: { prop: 'steamAppId', read: 'text', write: 'raw' },
+        provider: { steamAppId: 'steam-app-id' },
+    },
+    // No template: personal fields and structured lists the editor owns.
+    { name: 'tags', keys: ['tags'], legacyKeys: ['tag'] },
+    { name: 'started', keys: ['started'] },
+    { name: 'finished', keys: ['finished'], legacyKeys: ['dateCompleted', 'completionDate'] },
+    { name: 'dlc', keys: ['dlc'] },
+    { name: 'relatedMedia', keys: ['related-media'], legacyKeys: ['related_media'] },
 ];
 
 const ANIME_FIELDS: Spec[] = [
@@ -398,7 +446,7 @@ const tvOnlyFields = (): Spec[] => [
     {
         name: 'tvParts',
         keys: ['season-data', 'season-id-current'],
-        legacyKeys: ['series_parts', 'tv_parts', 'active_part_id'],
+        legacyKeys: { 'season-data': ['series_parts', 'tv_parts'], 'season-id-current': ['active_part_id'] },
         provider: { tv_parts: 'season-data' },
         template: {
             label: 'templateFieldTvParts',
@@ -651,4 +699,12 @@ export function getProviderAliases(kind: MediaKind): Record<string, string> {
 export function getCombinedProviderAliases(): Record<string, string> {
     const order: MediaKind[] = ['anime', 'manga', 'games', 'movies', 'tv', 'books'];
     return Object.assign({}, ...order.map((kind) => getProviderAliases(kind)));
+}
+
+/** The older spellings `key` replaced, for a field that owns it. */
+export function getLegacyKeys(field: FieldSpec, key = field.keys[0]): string[] {
+    const legacy = field.legacyKeys;
+    if (!legacy) return [];
+    if (Array.isArray(legacy)) return key === field.keys[0] ? legacy : [];
+    return legacy[key] ?? [];
 }
