@@ -7,6 +7,7 @@ import { extractSimpleFrontmatter } from './media/libraryViewState';
 import { getRandomItem, parseNumber, parseRelatedMedia, parseUserRating, parseYear, serializeRelatedMedia } from './media/parsers';
 import { collectFieldTags, collectTags, getAllMarkdownFiles, isTruthy, mapInFrameBatches, readFrontmatterValue } from './media/serviceUtils';
 import { upsertMarkdownSection } from './markdownSections';
+import { keyOf, readBoundFields, trimmedOrNull, writeBoundFields, writeNamedField } from '../fields/frontmatterIO';
 
 export type ReadingMediaType = 'book' | 'manga';
 
@@ -61,23 +62,29 @@ export class ReadingService {
             const rawType = typeof metadata.type === 'string' ? metadata.type.trim().toLowerCase() : '';
             if (rawType && rawType !== this.mediaType) return null;
 
-            const title = this.readText(metadata, ['title']) || file.basename?.trim() || 'Untitled';
-            const description = this.readText(metadata, ['synopsis']) || '';
-            const poster = this.readText(metadata, ['poster']) || null;
-            const horizontal = this.readText(metadata, ['poster-b']) || poster;
-            const verticalImageUrl = this.metadataService.getImageUrl(metadata.poster, metadata.cm_poster);
-            const horizontalImageUrl = this.metadataService.getImageUrl(readFrontmatterValue(metadata, ['poster-b']), metadata.cm_poster);
-            const status = this.getStatus(this.readText(metadata, ['status']) || '') ?? 'planned';
-            const genres = collectFieldTags(metadata, ['genres']);
+            // Books and manga share these keys: ReadingService's shared reader has always
+            // read the book (kebab-case) spellings for both. Manga-only fields below keep
+            // their own keys until manga is reconciled with its template.
+            const K = 'books';
+            const title = this.readText(metadata, [keyOf(K, 'name')]) || file.basename?.trim() || 'Untitled';
+            const description = this.readText(metadata, [keyOf(K, 'plot')]) || '';
+            const posterKey = keyOf(K, 'poster');
+            const horizontalKey = keyOf(K, 'posterHorizontal');
+            const poster = this.readText(metadata, [posterKey]) || null;
+            const horizontal = this.readText(metadata, [horizontalKey]) || poster;
+            const verticalImageUrl = this.metadataService.getImageUrl(metadata[posterKey], metadata.cm_poster);
+            const horizontalImageUrl = this.metadataService.getImageUrl(readFrontmatterValue(metadata, [horizontalKey]), metadata.cm_poster);
+            const status = this.getStatus(this.readText(metadata, [keyOf(K, 'status')]) || '') ?? 'planned';
+            const genres = collectFieldTags(metadata, [keyOf(K, 'genres')]);
             const base = {
                 filePath: file.path,
                 displayName: title,
                 nameLower: title.toLowerCase(),
-                year: parseYear(metadata.year),
+                year: parseYear(metadata[keyOf(K, 'year')]),
                 description,
                 summary: description,
-                userRating: parseUserRating(readFrontmatterValue(metadata, ['user-rating'])),
-                favorite: isTruthy(metadata.favorite),
+                userRating: parseUserRating(readFrontmatterValue(metadata, [keyOf(K, 'userRating')])),
+                favorite: isTruthy(metadata[keyOf(K, 'favorite')]),
                 poster,
                 imageUrl: verticalImageUrl || poster || DEFAULT_COVER,
                 horizontalImageUrl: horizontalImageUrl || horizontal || verticalImageUrl || poster || null,
@@ -87,40 +94,39 @@ export class ReadingService {
                 tags: collectTags(metadata, cache?.tags),
                 dateAdded: file.stat?.ctime ?? file.stat?.mtime ?? Date.now(),
                 lastModified: file.stat?.mtime ?? file.stat?.ctime ?? Date.now(),
-                sourceUrl: this.readText(metadata, ['url']) || null,
-                started: this.readDateText(metadata, ['started']),
-                finished: this.readDateText(metadata, ['finished']),
-                integrationProvider: this.normalizeProvider(this.readText(metadata, ['integration-provider'])),
-                integrationId: this.readText(metadata, ['integration-id']) || null,
-                relatedMedia: parseRelatedMedia(readFrontmatterValue(metadata, ['related-media'])),
-                communityRating: parseNumber(readFrontmatterValue(metadata, ['community-rating'])),
-                communityVotes: parseNumber(readFrontmatterValue(metadata, ['community-votes'])),
-                communityRatingProvider: this.readText(metadata, ['community-rating-provider']) || null,
-                owned: this.readText(metadata, ['owned']) || null,
-                count: parseNumber(readFrontmatterValue(metadata, ['count'])),
-                repeatable: isTruthy(metadata.repeatable),
+                sourceUrl: this.readText(metadata, [keyOf(K, 'url')]) || null,
+                started: this.readDateText(metadata, [keyOf(K, 'started')]),
+                finished: this.readDateText(metadata, [keyOf(K, 'finished')]),
+                integrationProvider: this.normalizeProvider(this.readText(metadata, [keyOf(K, 'integrationSource', 0)])),
+                integrationId: this.readText(metadata, [keyOf(K, 'integrationSource', 1)]) || null,
+                relatedMedia: parseRelatedMedia(readFrontmatterValue(metadata, [keyOf(K, 'relatedMedia')])),
+                communityRating: parseNumber(readFrontmatterValue(metadata, [keyOf(K, 'communityRating')])),
+                communityVotes: parseNumber(readFrontmatterValue(metadata, [keyOf(K, 'communityVotes')])),
+                communityRatingProvider: this.readText(metadata, [keyOf(K, 'communityRatingProvider')]) || null,
+                owned: this.readText(metadata, [keyOf(K, 'owned')]) || null,
+                count: parseNumber(readFrontmatterValue(metadata, [keyOf(K, 'count')])),
+                repeatable: isTruthy(metadata[keyOf(K, 'repeatable')]),
                 rawFields: extractSimpleFrontmatter(metadata),
             };
 
             if (this.mediaType === 'book') {
                 return {
                     ...base,
+                    // Book-only simple fields (series, position, illustrator, audiobook)
+                    // come from the field registry.
+                    ...readBoundFields(K, metadata),
                     type: 'book',
-                    authors: this.toStringArray(readFrontmatterValue(metadata, ['author'])),
-                    bookSeries: this.readText(metadata, ['series']) || '',
-                    seriesPosition: parseNumber(readFrontmatterValue(metadata, ['series-position'])),
-                    audiobook: isTruthy(metadata.audiobook),
-                    illustrator: this.readText(metadata, ['illustrator']) || '',
-                    publisher: this.readText(metadata, ['publisher']) || '',
-                    releaseDate: this.readDateText(metadata, ['released']),
-                    pageCurrent: parseNumber(readFrontmatterValue(metadata, ['page-current'])),
-                    pageTotal: parseNumber(readFrontmatterValue(metadata, ['page-total'])),
-                    chapterCurrent: parseNumber(readFrontmatterValue(metadata, ['chapter-current'])),
-                    chapterTotal: parseNumber(readFrontmatterValue(metadata, ['chapter-total'])),
+                    authors: this.toStringArray(readFrontmatterValue(metadata, [keyOf(K, 'authors')])),
+                    publisher: this.readText(metadata, [keyOf(K, 'publisher')]) || '',
+                    releaseDate: this.readDateText(metadata, [keyOf(K, 'released')]),
+                    pageCurrent: parseNumber(readFrontmatterValue(metadata, [keyOf(K, 'pageCurrent')])),
+                    pageTotal: parseNumber(readFrontmatterValue(metadata, [keyOf(K, 'pageTotal')])),
+                    chapterCurrent: parseNumber(readFrontmatterValue(metadata, [keyOf(K, 'chapterCurrent')])),
+                    chapterTotal: parseNumber(readFrontmatterValue(metadata, [keyOf(K, 'chapterTotal')])),
                     integrationProvider: base.integrationProvider === 'hardcover' || base.integrationProvider === 'googlebooks'
                         ? base.integrationProvider
                         : null,
-                };
+                } as BookItem;
             }
 
             const chapterCurrent = parseNumber(metadata.chapter_current ?? metadata.chapterCurrent);
@@ -221,109 +227,50 @@ export class ReadingService {
         const frontmatterUpdates: Record<string, unknown> = {};
 
         frontmatterUpdates.type = item.type;
-        if ('displayName' in updates) this.updateTextField(frontmatterUpdates, frontmatter, ['title', 'name'], updates.displayName);
-        if ('title' in updates) this.updateTextField(frontmatterUpdates, frontmatter, ['title', 'name'], String(updates.title ?? ''));
-        if ('year' in updates) frontmatterUpdates.year = updates.year;
-        if ('description' in updates) this.updateTextField(frontmatterUpdates, frontmatter, ['synopsis', 'plot', 'summary', 'description'], updates.description);
-        if ('summary' in updates) this.updateTextField(frontmatterUpdates, frontmatter, ['synopsis', 'plot', 'summary', 'description'], updates.summary);
-        if ('poster' in updates) this.updateTextField(frontmatterUpdates, frontmatter, ['poster', 'image'], updates.poster);
-        if ('imageUrl' in updates) this.updateTextField(frontmatterUpdates, frontmatter, ['poster', 'image'], updates.imageUrl === DEFAULT_COVER ? '' : updates.imageUrl);
-        if ('horizontalImageUrl' in updates) this.updateTextField(frontmatterUpdates, frontmatter, ['poster-b', 'poster_b', 'image_b', 'horizontal_poster'], updates.horizontalImageUrl);
-        if ('genres' in updates) this.updateListField(frontmatterUpdates, frontmatter, ['genres', 'genre'], updates.genres);
-        if ('tags' in updates) this.updateListField(frontmatterUpdates, frontmatter, ['tags', 'tag'], updates.tags, true);
-        if ('status' in updates) frontmatterUpdates.status = updates.status;
-        if ('userRating' in updates) {
-            frontmatterUpdates['user-rating'] = updates.userRating ?? null;
-            // `rating` was the old target and doubles as the provider rating elsewhere,
-            // so only clear it when this note actually carries it.
-            if (this.hasKey(frontmatter, 'rating')) frontmatterUpdates.rating = null;
-        }
-        if ('favorite' in updates) frontmatterUpdates.favorite = updates.favorite;
-        if ('owned' in updates) frontmatterUpdates.owned = updates.owned || null;
-        if ('count' in updates) frontmatterUpdates.count = updates.count ?? null;
-        if ('repeatable' in updates) frontmatterUpdates.repeatable = updates.repeatable ?? false;
+        // Shared keys are the book spellings for both kinds (see parseFromCache).
+        const K = 'books';
+        // Simple fields (description, url, favorite, owned, count, repeatable, community
+        // rating, and for books series, position, illustrator, audiobook) come from the
+        // field registry.
+        writeBoundFields(K, frontmatterUpdates, frontmatter, updates as Record<string, unknown>);
+        const write = (name: string, value: unknown, key?: string): void =>
+            writeNamedField(K, frontmatterUpdates, frontmatter, name, value, key);
+
+        if ('displayName' in updates) write('name', trimmedOrNull(updates.displayName));
+        if ('title' in updates) write('name', trimmedOrNull(String(updates.title ?? '')));
+        if ('year' in updates) write('year', updates.year);
+        if ('summary' in updates) write('plot', trimmedOrNull(updates.summary));
+        if ('poster' in updates) write('poster', trimmedOrNull(updates.poster));
+        if ('imageUrl' in updates) write('poster', trimmedOrNull(updates.imageUrl === DEFAULT_COVER ? '' : updates.imageUrl));
+        if ('horizontalImageUrl' in updates) write('posterHorizontal', trimmedOrNull(updates.horizontalImageUrl));
+        if ('genres' in updates) write('genres', this.normalizedListOrNull(updates.genres));
+        if ('tags' in updates) write('tags', this.normalizedListOrNull(updates.tags, true));
+        if ('status' in updates) write('status', updates.status);
+        if ('userRating' in updates) write('userRating', updates.userRating ?? null);
         if ('cm_poster' in updates) frontmatterUpdates.cm_poster = updates.cm_poster ?? null;
-        if ('sourceUrl' in updates) this.updateTextField(frontmatterUpdates, frontmatter, ['url', 'source_url'], updates.sourceUrl);
-        if ('started' in updates) frontmatterUpdates.started = this.normalizeDateString(String(updates.started ?? '')) || null;
-        if ('finished' in updates) frontmatterUpdates.finished = this.normalizeDateString(String(updates.finished ?? '')) || null;
-        if ('integrationProvider' in updates) {
-            frontmatterUpdates['integration-provider'] = updates.integrationProvider;
-            if (this.hasKey(frontmatter, 'integration_provider')) frontmatterUpdates.integration_provider = null;
-        }
-        if ('integrationId' in updates) {
-            frontmatterUpdates['integration-id'] = updates.integrationId;
-            if (this.hasKey(frontmatter, 'integration_id')) frontmatterUpdates.integration_id = null;
-        }
-        if ('relatedMedia' in updates) {
-            frontmatterUpdates['related-media'] = serializeRelatedMedia(updates.relatedMedia);
-            if (this.hasKey(frontmatter, 'related_media')) frontmatterUpdates.related_media = null;
-        }
-        if ('communityRating' in updates) {
-            frontmatterUpdates['community-rating'] = updates.communityRating;
-            if (this.hasKey(frontmatter, 'communityRating')) frontmatterUpdates.communityRating = null;
-        }
-        if ('communityVotes' in updates) {
-            frontmatterUpdates['community-votes'] = updates.communityVotes;
-            if (this.hasKey(frontmatter, 'communityVotes')) frontmatterUpdates.communityVotes = null;
-        }
-        if ('communityRatingProvider' in updates) {
-            frontmatterUpdates['community-rating-provider'] = updates.communityRatingProvider;
-            if (this.hasKey(frontmatter, 'communityRatingProvider')) frontmatterUpdates.communityRatingProvider = null;
-        }
+        if ('started' in updates) write('started', this.normalizeDateString(String(updates.started ?? '')) || null);
+        if ('finished' in updates) write('finished', this.normalizeDateString(String(updates.finished ?? '')) || null);
+        if ('integrationProvider' in updates) write('integrationSource', updates.integrationProvider, keyOf(K, 'integrationSource', 0));
+        if ('integrationId' in updates) write('integrationSource', updates.integrationId, keyOf(K, 'integrationSource', 1));
+        if ('relatedMedia' in updates) write('relatedMedia', serializeRelatedMedia(updates.relatedMedia));
 
         if (item.type === 'book') {
-            if ('authors' in updates) {
-                // `author` is the single canonical key now, so the singular/plural helper
-                // does not apply: given one key for both roles it writes then nulls it.
-                const authors = this.toDisplayList(updates.authors);
-                frontmatterUpdates.author = authors.length > 0 ? authors : null;
-                if (this.hasKey(frontmatter, 'authors')) frontmatterUpdates.authors = null;
+            if ('authors' in updates) write('authors', this.displayListOrNull(updates.authors));
+            if ('publisher' in updates) {
+                // One publisher as text, several as a list, always under `publisher`, the
+                // key the reader reads (it joins a list back with ', ').
+                const publishers = this.toDisplayList(updates.publisher);
+                write('publisher', publishers.length > 1 ? publishers : publishers[0] ?? null);
             }
-            if ('bookSeries' in updates) {
-                frontmatterUpdates.series = String(updates.bookSeries ?? '').trim() || null;
-            }
-            if ('seriesPosition' in updates) {
-                frontmatterUpdates['series-position'] = updates.seriesPosition ?? null;
-            }
-            if ('audiobook' in updates) {
-                frontmatterUpdates.audiobook = updates.audiobook ?? false;
-            }
-            if ('illustrator' in updates) {
-                frontmatterUpdates.illustrator = String(updates.illustrator ?? '').trim() || null;
-            }
-            if ('publisher' in updates) this.updateDisplayListField(
-                frontmatterUpdates,
-                frontmatter,
-                'publisher',
-                'publishers',
-                updates.publisher
-            );
-            if ('releaseDate' in updates) this.updateTextField(
-                frontmatterUpdates,
-                frontmatter,
-                ['released', 'release_date', 'publishedDate'],
-                this.normalizeDateString(String(updates.releaseDate ?? ''))
-            );
+            if ('releaseDate' in updates) write('released', trimmedOrNull(this.normalizeDateString(String(updates.releaseDate ?? ''))));
             const pageTotal = 'pageTotal' in updates ? this.normalizeProgressValue(updates.pageTotal) : item.pageTotal;
             const pageCurrent = 'pageCurrent' in updates ? this.normalizeProgressValue(updates.pageCurrent, pageTotal) : item.pageCurrent;
             const chapterTotal = 'chapterTotal' in updates ? this.normalizeProgressValue(updates.chapterTotal) : item.chapterTotal;
             const chapterCurrent = 'chapterCurrent' in updates ? this.normalizeProgressValue(updates.chapterCurrent, chapterTotal) : item.chapterCurrent;
-            if ('pageCurrent' in updates) {
-                frontmatterUpdates['page-current'] = pageCurrent;
-                if (this.hasKey(frontmatter, 'page_current')) frontmatterUpdates.page_current = null;
-            }
-            if ('pageTotal' in updates) {
-                frontmatterUpdates['page-total'] = pageTotal;
-                if (this.hasKey(frontmatter, 'page_total')) frontmatterUpdates.page_total = null;
-            }
-            if ('chapterCurrent' in updates) {
-                frontmatterUpdates['chapter-current'] = chapterCurrent;
-                if (this.hasKey(frontmatter, 'chapter_current')) frontmatterUpdates.chapter_current = null;
-            }
-            if ('chapterTotal' in updates) {
-                frontmatterUpdates['chapter-total'] = chapterTotal;
-                if (this.hasKey(frontmatter, 'chapter_total')) frontmatterUpdates.chapter_total = null;
-            }
+            if ('pageCurrent' in updates) write('pageCurrent', pageCurrent);
+            if ('pageTotal' in updates) write('pageTotal', pageTotal);
+            if ('chapterCurrent' in updates) write('chapterCurrent', chapterCurrent);
+            if ('chapterTotal' in updates) write('chapterTotal', chapterTotal);
             const pagesDone = (pageTotal ?? 0) > 0 && (pageCurrent ?? 0) >= (pageTotal ?? 0);
             const chaptersDone = (chapterTotal ?? 0) > 0 && (chapterCurrent ?? 0) >= (chapterTotal ?? 0);
             if (pagesDone || chaptersDone) {
@@ -539,27 +486,6 @@ export class ReadingService {
         return Boolean(frontmatter && Object.prototype.hasOwnProperty.call(frontmatter, key));
     }
 
-    private preferredKey(frontmatter: Record<string, unknown> | null | undefined, keys: string[]): string {
-        return keys.find((key) => this.hasKey(frontmatter, key)) ?? keys[0];
-    }
-
-    private updateTextField(
-        updates: Record<string, unknown>,
-        frontmatter: Record<string, unknown> | null | undefined,
-        keys: string[],
-        value: unknown
-    ): void {
-        // keys[0] is the canonical spelling. Always write it rather than preserving
-        // whichever legacy alias the note happened to have, and clear any other alias
-        // present, so saving converges a note instead of leaving two spellings.
-        const key = keys[0];
-        const normalized = value === null || value === undefined ? '' : String(value).trim();
-        updates[key] = normalized || null;
-        for (const alias of keys.slice(1)) {
-            if (this.hasKey(frontmatter, alias)) updates[alias] = null;
-        }
-    }
-
     private updateDisplayListField(
         updates: Record<string, unknown>,
         frontmatter: Record<string, unknown> | null | undefined,
@@ -586,20 +512,6 @@ export class ReadingService {
         if (this.hasKey(frontmatter, pluralKey)) updates[pluralKey] = null;
     }
 
-    private updateListField(
-        updates: Record<string, unknown>,
-        frontmatter: Record<string, unknown> | null | undefined,
-        keys: string[],
-        values: unknown,
-        removeHashPrefix = false
-    ): void {
-        const key = this.preferredKey(frontmatter, keys);
-        const normalized = this.toStringArray(values)
-            .map((value) => (removeHashPrefix ? value.replace(/^#+/, '') : value).trim().toLowerCase())
-            .filter((value, index, source) => Boolean(value) && source.indexOf(value) === index);
-        updates[key] = normalized.length ? normalized : null;
-    }
-
     getBookSeriesList(): string[] {
         if (this.cache.length === 0) return [];
         const seriesSet = new Set<string>();
@@ -615,6 +527,19 @@ export class ReadingService {
         if (Array.isArray(value)) return value.map((entry) => String(entry).trim()).filter(Boolean);
         if (typeof value === 'string') return value.split(/[,;\n]+/).map((entry) => entry.trim()).filter(Boolean);
         return [];
+    }
+
+    /** Lower-cased, de-duplicated list (genres, tags), or null when empty. */
+    private normalizedListOrNull(values: unknown, removeHashPrefix = false): string[] | null {
+        const normalized = this.toStringArray(values)
+            .map((value) => (removeHashPrefix ? value.replace(/^#+/, '') : value).trim().toLowerCase())
+            .filter((value, index, source) => Boolean(value) && source.indexOf(value) === index);
+        return normalized.length ? normalized : null;
+    }
+
+    private displayListOrNull(value: unknown): string[] | null {
+        const values = this.toDisplayList(value);
+        return values.length > 0 ? values : null;
     }
 
     private toDisplayList(value: unknown): string[] {

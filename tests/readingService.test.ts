@@ -242,7 +242,8 @@ describe('ReadingService', () => {
             'chapter-current': 10,
             'chapter-total': 10,
             status: 'completed',
-            publishers: ['Tor Books', 'Orbit'],
+            // Several publishers stay under `publisher`, the key the book reader reads.
+            publisher: ['Tor Books', 'Orbit'],
             author: ['Christie Golden', 'Blizzard Writer'],
             released: '2013-12-25',
         });
@@ -251,7 +252,7 @@ describe('ReadingService', () => {
         expect(frontmatterByPath[bookFile.path].owned).toBe('physical');
         expect(frontmatterByPath[bookFile.path].count).toBe(2);
         expect(frontmatterByPath[bookFile.path].repeatable).toBe(true);
-        expect(frontmatterByPath[bookFile.path]).not.toHaveProperty('publisher');
+        expect(frontmatterByPath[bookFile.path]).not.toHaveProperty('publishers');
         expect(frontmatterByPath[bookFile.path]).not.toHaveProperty('authors');
         expect(frontmatterByPath[mangaFile.path].status).toBe('completed');
         expect(frontmatterByPath[mangaFile.path].authors).toEqual(['Takahiro', 'Second Author']);

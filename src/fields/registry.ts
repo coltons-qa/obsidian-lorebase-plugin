@@ -486,13 +486,17 @@ const TV_EXTRA_FIELDS: Spec[] = [
 const BOOK_FIELDS: Spec[] = [
     typeField('book'),
     nameField(),
-    posterField(),
-    posterHorizontalField('poster-b'),
-    plotField('synopsis'),
+    { ...posterField(), legacyKeys: ['image'] },
+    { ...posterHorizontalField('poster-b'), legacyKeys: ['poster_b', 'image_b', 'horizontal_poster'] },
+    bind(
+        { ...plotField('synopsis'), legacyKeys: ['plot', 'summary', 'description'] },
+        { prop: 'description', read: 'textOrEmpty', write: 'trimmed' }
+    ),
     {
         name: 'bookSeries',
         keys: ['series'],
         legacyKeys: ['bookSeries'],
+        item: { prop: 'bookSeries', read: 'textOrEmpty', write: 'trimmed' },
         provider: { bookSeries: 'series' },
         template: { label: 'templateFieldBookSeries', lines: ['series: "{{VALUE:bookSeries}}"'], defaultOn: true },
     },
@@ -500,6 +504,7 @@ const BOOK_FIELDS: Spec[] = [
         name: 'seriesPosition',
         keys: ['series-position'],
         legacyKeys: ['seriesPosition'],
+        item: { prop: 'seriesPosition', read: 'number', write: 'nullish' },
         provider: { seriesPosition: 'series-position' },
         template: { label: 'templateFieldSeriesPosition', lines: ['series-position: {{VALUE:seriesPosition}}'], defaultOn: true },
     },
@@ -510,11 +515,12 @@ const BOOK_FIELDS: Spec[] = [
         provider: { authors: 'author' },
         template: { label: 'templateFieldAuthors', lines: ['author: "{{VALUE:authors}}"'], defaultOn: true },
     },
-    quotedListField('publisher', 'templateFieldPublisher'),
-    quotedListField('genres', 'templateFieldGenres'),
-    quotedListField('tags', 'templateFieldTags'),
+    // One publisher is stored as text, several as a list; the reader joins either.
+    { ...quotedListField('publisher', 'templateFieldPublisher'), legacyKeys: ['publishers'] },
+    { ...quotedListField('genres', 'templateFieldGenres'), legacyKeys: ['genre'] },
+    { ...quotedListField('tags', 'templateFieldTags'), legacyKeys: ['tag'] },
     yearField(),
-    releasedField(false),
+    { ...releasedField(false), legacyKeys: ['release_date', 'publishedDate'] },
     {
         name: 'pageCurrent',
         keys: ['page-current'],
@@ -542,17 +548,26 @@ const BOOK_FIELDS: Spec[] = [
         template: { label: 'templateFieldChapterTotal', lines: ['chapter-total: {{VALUE:chapterTotal}}'], defaultOn: true },
     },
     ratingField(),
-    ...communityFields(true),
+    ...bindCommunity(communityFields(true)),
     statusField(),
-    favoriteField(),
-    ...manualFields(),
+    bind(favoriteField(), { prop: 'favorite', read: 'boolean', write: 'raw' }),
+    ...bindManual(manualFields()),
     {
         name: 'illustrator',
         keys: ['illustrator'],
+        item: { prop: 'illustrator', read: 'textOrEmpty', write: 'trimmed' },
         template: { label: 'templateFieldIllustrator', lines: [], defaultOn: false },
     },
     integrationSourceField(true),
-    urlField(),
+    bind({ ...urlField(), legacyKeys: ['source_url'] }, { prop: 'sourceUrl', read: 'text', write: 'trimmed' }),
+    // No template: personal fields and structured lists the editor owns.
+    // `rating` is deliberately not a legacy spelling of the user rating: for books it is
+    // the provider rating the template writes, and clearing it lost that value.
+    { name: 'userRating', keys: ['user-rating'], legacyKeys: ['userRating'] },
+    { name: 'audiobook', keys: ['audiobook'], item: { prop: 'audiobook', read: 'boolean', write: 'orFalse' } },
+    { name: 'started', keys: ['started'] },
+    { name: 'finished', keys: ['finished'] },
+    { name: 'relatedMedia', keys: ['related-media'], legacyKeys: ['related_media'] },
 ];
 
 const MANGA_FIELDS: Spec[] = [
