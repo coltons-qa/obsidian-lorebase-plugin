@@ -209,6 +209,28 @@ describe('templateUtils', () => {
         expect(result).not.toContain('"old"');
     });
 
+    it('writes the kebab source keys for migrated kinds without a legacy duplicate', () => {
+        // Imports of games, movies, TV and books render `integration-provider` from the
+        // template; this used to append `integration_provider` beside it on every import.
+        const rendered = `---\ntype: "movie"\nintegration-provider: "tmdb"\nintegration-id: "438631"\n---`;
+        const result = ensureIntegrationSourceFrontmatter(rendered, 'tmdb', '438631', 'movies');
+
+        expect(result.match(/integration-provider:/g)).toHaveLength(1);
+        expect(result.match(/integration-id:/g)).toHaveLength(1);
+        expect(result).not.toContain('integration_provider');
+        expect(result).not.toContain('integration_id');
+    });
+
+    it('replaces a legacy source spelling with the kebab one for migrated kinds', () => {
+        const advanced = `---\ntype: "book"\nintegration_provider: "googlebooks"\nintegration_id: "old"\n---`;
+        const result = ensureIntegrationSourceFrontmatter(advanced, 'hardcover', '4242', 'books');
+
+        expect(result).toContain('integration-provider: "hardcover"');
+        expect(result).toContain('integration-id: "4242"');
+        expect(result).not.toContain('integration_provider');
+        expect(result).not.toContain('integration_id');
+    });
+
     it('escapes multiline MangaUpdates descriptions inside quoted yaml values', () => {
         const template = `---\nplot: "{{VALUE:Plot}}"\nauthors: "{{VALUE:authors}}"\n---`;
         const result = renderTemplate(template, {

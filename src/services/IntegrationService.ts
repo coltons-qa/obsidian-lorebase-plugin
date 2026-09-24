@@ -538,7 +538,7 @@ export class IntegrationService {
                             const fallbackTemplate = buildSimpleTemplate(kind, getDefaultTemplateFields(kind));
                             content = `${renderTemplate(fallbackTemplate, renderedValues)}\n\n${content.trim()}`;
                         }
-                        content = ensureIntegrationSourceFrontmatter(content, itemProviderId, item.id);
+                        content = ensureIntegrationSourceFrontmatter(content, itemProviderId, item.id, kind);
                         const folderPath = this.getFolderPath(settings, kind);
                         let pathChoice = this.resolveCreatePath(folderPath, title, {
                             preferYear: (selectedTitleCounts.get(this.titleKey(item.title)) ?? 0) > 1,

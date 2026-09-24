@@ -412,7 +412,7 @@ export function buildSimpleTemplate(kind: MediaKind, fields: string[]): string {
     // Games, movies, series and books were migrated to lower-kebab-case note keys.
     // Anime and manga were excluded from that migration and their services still read
     // only the legacy spellings, so they keep emitting the old keys.
-    const kebab = kind === 'games' || kind === 'movies' || kind === 'tv' || kind === 'books';
+    const kebab = usesKebabKeys(kind);
 
     if (kind === 'games') {
         if (set.has('type')) lines.push('type: "game"');
@@ -634,32 +634,54 @@ export function renderTemplate(template: string, values: Record<string, unknown>
  * field. Keep it in frontmatter even when a device still has an older custom
  * template that predates the integration source fields.
  */
+/**
+ * Games, movies, TV and books were migrated to lower-kebab-case note keys. Anime and
+ * manga were excluded from that migration and their services still read only the
+ * legacy spellings.
+ */
+export function usesKebabKeys(kind: MediaKind): boolean {
+    return kind === 'games' || kind === 'movies' || kind === 'tv' || kind === 'books';
+}
+
+/**
+ * Guarantees the provider identity is in the frontmatter, in the spelling the kind's
+ * service reads, and removes the other spelling so a note never carries both. Without a
+ * kind it keeps the legacy spelling, which is what anime and manga read.
+ */
 export function ensureIntegrationSourceFrontmatter(
     content: string,
     provider: string,
-    id: string
+    id: string,
+    kind?: MediaKind
 ): string {
     const safeProvider = escapeYaml(provider.trim());
     const safeId = escapeYaml(id.trim());
     if (!safeProvider || !safeId) return content;
 
+    const kebab = kind !== undefined && usesKebabKeys(kind);
+    const providerKey = kebab ? 'integration-provider' : 'integration_provider';
+    const idKey = kebab ? 'integration-id' : 'integration_id';
+    const otherProviderKey = kebab ? 'integration_provider' : 'integration-provider';
+    const otherIdKey = kebab ? 'integration_id' : 'integration-id';
     const sourceLines = [
-        `integration_provider: "${safeProvider}"`,
-        `integration_id: "${safeId}"`,
+        `${providerKey}: "${safeProvider}"`,
+        `${idKey}: "${safeId}"`,
     ];
     const frontmatterMatch = content.match(/^(\uFEFF?[ \t]*---[ \t]*\r?\n)([\s\S]*?)(\r?\n---[ \t]*(?:\r?\n|$))/);
     if (!frontmatterMatch) {
         return `---\n${sourceLines.join('\n')}\n---\n${content}`;
     }
 
-    const bodyLines = frontmatterMatch[2].split(/\r?\n/);
+    const keyPattern = (key: string): RegExp => new RegExp(`^\\s*${key}\\s*:`);
+    const bodyLines = frontmatterMatch[2].split(/\r?\n/)
+        .filter((line) => !keyPattern(otherProviderKey).test(line) && !keyPattern(otherIdKey).test(line));
     const replaceOrAppend = (key: string, line: string): void => {
-        const index = bodyLines.findIndex((candidate) => new RegExp(`^\\s*${key}\\s*:`).test(candidate));
+        const index = bodyLines.findIndex((candidate) => keyPattern(key).test(candidate));
         if (index >= 0) bodyLines[index] = line;
         else bodyLines.push(line);
     };
-    replaceOrAppend('integration_provider', sourceLines[0]);
-    replaceOrAppend('integration_id', sourceLines[1]);
+    replaceOrAppend(providerKey, sourceLines[0]);
+    replaceOrAppend(idKey, sourceLines[1]);
 
     return `${frontmatterMatch[1]}${bodyLines.join('\n')}${frontmatterMatch[3]}${content.slice(frontmatterMatch[0].length)}`;
 }
