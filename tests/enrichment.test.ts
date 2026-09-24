@@ -415,6 +415,35 @@ describe('media enrichment merge', () => {
             expect(added).toEqual([]);
         });
 
+        it('merges refreshed TV seasons into season-data without a tv_parts sibling or lost progress', () => {
+            // IntegrationService emits TV seasons under `tv_parts`. With no alias to
+            // `season-data`, a refresh appended a whole second season list to the note.
+            const current: Record<string, unknown> = {
+                type: 'tv',
+                title: 'Silo',
+                'season-data': [
+                    { id: 'season-87578', kind: 'season', title: 'Season 1', 'season-number': 1, 'episode-current': 10, episodes: 10, status: 'completed' },
+                    { id: 'season-153476', kind: 'season', title: 'Season 2', 'season-number': 2, 'episode-current': 4, episodes: 10, status: 'watching' },
+                ],
+            };
+
+            const result = synchronizeProviderMetadata(current, {
+                name: 'Silo',
+                tv_parts: [
+                    { id: 'season-196076', kind: 'season', title: 'Season 1', 'season-number': 1, 'episode-current': 0, episodes: 10, status: 'planned' },
+                    { id: 'season-404198', kind: 'season', title: 'Season 2', 'season-number': 2, 'episode-current': 0, episodes: 10, status: 'planned' },
+                    { id: 'season-500001', kind: 'season', title: 'Season 3', 'season-number': 3, 'episode-current': 0, episodes: 10, status: 'planned' },
+                ],
+            }, { provider: 'tmdb', id: '125988' });
+
+            expect(result.values).not.toHaveProperty('tv_parts');
+            const seasons = result.values['season-data'] as Array<Record<string, unknown>>;
+            expect(seasons).toHaveLength(3);
+            expect(seasons[0]).toMatchObject({ id: 'season-87578', 'episode-current': 10, status: 'completed' });
+            expect(seasons[1]).toMatchObject({ id: 'season-153476', 'episode-current': 4, status: 'watching' });
+            expect(seasons[2]).toMatchObject({ 'season-number': 3, episodes: 10 });
+        });
+
         it('writes no duplicate legacy properties when refreshing a migrated book', () => {
             const current: Record<string, unknown> = {
                 type: 'book',

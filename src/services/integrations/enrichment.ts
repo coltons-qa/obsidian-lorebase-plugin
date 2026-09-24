@@ -74,7 +74,7 @@ const FIELD_ALIASES: Record<string, string[]> = {
     main: ['hltb-main'],
     main_plus_sides: ['hltb-main-sides'],
     perfectionist: ['hltb-perfectionist'],
-    series_parts: ['season-data'],
+    tv_parts: ['season-data'],
     showStatus: ['show-status'],
     integration_provider: ['integration-provider'],
     integration_id: ['integration-id'],
@@ -410,14 +410,14 @@ function findStructuredIndex(existing: unknown[], candidate: Record<string, unkn
 
 function structuredNumberKey(value: Record<string, unknown>, field: string): string | null {
     const kind = String(value.kind ?? field).trim().toLowerCase();
-    const number = value.season ?? value.seasonNumber ?? value.volume ?? value.volumeNumber;
+    const number = value.season ?? value['season-number'] ?? value.seasonNumber ?? value.volume ?? value.volumeNumber;
     if (number === null || number === undefined || String(number).trim() === '') return null;
     return `${kind}:${String(number).trim()}`;
 }
 
 function structuredFallbackKey(value: Record<string, unknown>, field: string): string {
     const kind = String(value.kind ?? field).trim().toLowerCase();
-    const number = value.season ?? value.seasonNumber ?? value.volume ?? value.volumeNumber ?? '';
+    const number = value.season ?? value['season-number'] ?? value.seasonNumber ?? value.volume ?? value.volumeNumber ?? '';
     const title = String(value.title ?? value.name ?? '').trim().toLowerCase().replace(/[^\p{L}\p{N}]+/gu, '');
     return `${kind}:${String(number)}:${title}`;
 }
@@ -425,6 +425,7 @@ function structuredFallbackKey(value: Record<string, unknown>, field: string): s
 function isPersonalStructuredField(key: string): boolean {
     return key === 'status'
         || key.endsWith('_current')
+        || key.endsWith('-current')
         || key === 'episodeCurrent'
         || key === 'chapterCurrent'
         || key === 'userRating'
