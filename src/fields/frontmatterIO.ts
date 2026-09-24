@@ -97,6 +97,7 @@ export function writeBoundFields(
             case 'orEmpty': writeField(out, frontmatter, field, value || ''); break;
             case 'orFalse': writeField(out, frontmatter, field, value ?? false); break;
             case 'nullish': writeField(out, frontmatter, field, value ?? null); break;
+            case 'trimmed': writeField(out, frontmatter, field, trimmedOrNull(value)); break;
         }
     }
 }
@@ -104,4 +105,10 @@ export function writeBoundFields(
 /** The YAML key a kind stores a field under. */
 export function keyOf(kind: MediaKind, name: string, index = 0): string {
     return getField(kind, name).keys[index];
+}
+
+/** Trimmed text, or null when empty. */
+export function trimmedOrNull(value: unknown): string | null {
+    const text = value === null || value === undefined ? '' : String(value).trim();
+    return text || null;
 }

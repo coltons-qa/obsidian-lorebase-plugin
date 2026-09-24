@@ -44,9 +44,9 @@ export interface ItemBinding {
     read: 'text' | 'textOrEmpty' | 'number' | 'boolean';
     /**
      * How an edited value is stored: as given, empty to null, empty to '', missing to
-     * false, or missing to null.
+     * false, missing to null, or as trimmed text with empty to null.
      */
-    write: 'raw' | 'orNull' | 'orEmpty' | 'orFalse' | 'nullish';
+    write: 'raw' | 'orNull' | 'orEmpty' | 'orFalse' | 'nullish' | 'trimmed';
 }
 
 export interface FieldSpec {
@@ -388,15 +388,19 @@ const ANIME_FIELDS: Spec[] = [
 const videoFields = (kind: 'movies' | 'tv'): Spec[] => [
     typeField(kind === 'movies' ? 'movie' : 'tv'),
     nameField(),
-    posterField(),
-    posterHorizontalField('poster-b'),
-    plotField('synopsis'),
-    quotedListField('genres', 'templateFieldGenres'),
+    { ...posterField(), legacyKeys: ['image'] },
+    { ...posterHorizontalField('poster-b'), legacyKeys: ['poster_b', 'image_b', 'horizontal_poster'] },
+    bind(
+        { ...plotField('synopsis'), legacyKeys: ['plot', 'summary', 'description'] },
+        { prop: 'description', read: 'textOrEmpty', write: 'trimmed' }
+    ),
+    { ...quotedListField('genres', 'templateFieldGenres'), legacyKeys: ['genre'] },
     yearField(),
-    releasedField(false),
+    { ...releasedField(false), legacyKeys: ['release_date', 'releaseDate'] },
     {
         name: 'runtime',
         keys: ['runtime'],
+        item: { prop: 'runtime', read: 'textOrEmpty', write: 'trimmed' },
         template: { label: 'templateFieldRuntime', lines: ['runtime: {{VALUE:runtime}}'], defaultOn: true },
     },
     {
@@ -414,14 +418,23 @@ const videoFields = (kind: 'movies' | 'tv'): Spec[] => [
         template: { label: 'templateFieldActors', lines: ['cast: "{{VALUE:actors}}"'], defaultOn: true },
     },
     ...(kind === 'tv' ? tvOnlyFields() : []),
-    ratingField(),
-    ...communityFields(true),
+    bind(
+        { ...ratingField(), legacyKeys: ['scoreImdb', 'imdbRating'] },
+        { prop: 'rating', read: 'textOrEmpty', write: 'trimmed' }
+    ),
+    ...bindCommunity(communityFields(true)),
     statusField(),
-    favoriteField(),
-    ...manualFields(),
+    bind(favoriteField(), { prop: 'favorite', read: 'boolean', write: 'raw' }),
+    ...bindManual(manualFields()),
     ...(kind === 'movies' ? [movieParts()] : []),
     integrationSourceField(true),
-    urlField(),
+    bind({ ...urlField(), legacyKeys: ['source_url'] }, { prop: 'sourceUrl', read: 'textOrEmpty', write: 'trimmed' }),
+    // No template: personal fields and structured lists the editor owns.
+    { name: 'userRating', keys: ['user-rating'], legacyKeys: ['userRating', 'rating_user'] },
+    { name: 'tags', keys: ['tags'], legacyKeys: ['tag'] },
+    { name: 'started', keys: ['started'] },
+    { name: 'finished', keys: ['finished'] },
+    { name: 'relatedMedia', keys: ['related-media'], legacyKeys: ['related_media'] },
 ];
 
 const tvOnlyFields = (): Spec[] => [
@@ -464,9 +477,10 @@ const movieParts = (): Spec => ({
 });
 
 const TV_EXTRA_FIELDS: Spec[] = [
-    // No template: written by enrichment and the new-season check only.
-    { name: 'networks', keys: ['networks'], provider: { networks: 'networks' } },
+    // No template: written by enrichment, the editor and the new-season check.
+    { name: 'networks', keys: ['networks'], legacyKeys: ['network'], provider: { networks: 'networks' } },
     { name: 'showStatus', keys: ['show-status'], provider: { showStatus: 'show-status' } },
+    { name: 'seasonCurrent', keys: ['season-current'], legacyKeys: ['season_current'] },
 ];
 
 const BOOK_FIELDS: Spec[] = [
