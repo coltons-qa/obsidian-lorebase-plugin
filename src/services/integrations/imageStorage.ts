@@ -34,10 +34,12 @@ const IMAGE_FIELDS: Record<MediaKind, Array<{ key: ImageValueKey; label: string 
     ],
 };
 
+// Games, movies, TV and books use the migrated kebab-case key; anime and manga were left
+// out of the frontmatter migration and keep the legacy spellings.
 const FRONTMATTER_IMAGE_FIELDS: Record<MediaKind, Array<{ key: string; label: string }>> = {
     games: [
         { key: 'poster', label: 'Poster' },
-        { key: 'poster_b', label: 'Horizontal' },
+        { key: 'poster-b', label: 'Horizontal' },
     ],
     anime: [
         { key: 'image', label: 'Image' },
@@ -47,15 +49,15 @@ const FRONTMATTER_IMAGE_FIELDS: Record<MediaKind, Array<{ key: string; label: st
     ],
     movies: [
         { key: 'poster', label: 'Poster' },
-        { key: 'poster_b', label: 'Horizontal' },
+        { key: 'poster-b', label: 'Horizontal' },
     ],
     tv: [
         { key: 'poster', label: 'Poster' },
-        { key: 'poster_b', label: 'Horizontal' },
+        { key: 'poster-b', label: 'Horizontal' },
     ],
     books: [
         { key: 'poster', label: 'Poster' },
-        { key: 'poster_b', label: 'Horizontal' },
+        { key: 'poster-b', label: 'Horizontal' },
     ],
     manga: [
         { key: 'poster', label: 'Poster' },
