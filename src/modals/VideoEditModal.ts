@@ -9,6 +9,7 @@ import { setupMobileEditor } from './mobileEditor';
 import { bindSourceUrlButton } from './sourceUrlButton';
 import { extractMarkdownSection } from '../services/markdownSections';
 import { splitNameList } from '../services/media/parsers';
+import { mediaTypeLabel } from '../media/mediaTypes';
 import { HierarchicalDatePicker, validateDatePickers } from './HierarchicalDatePicker';
 import type { RelatedItemClickHandler } from './RelatedMediaEditor';
 import { reconcileRelatedTypes } from './RelatedMediaEditor';
@@ -930,7 +931,7 @@ export class VideoEditModal extends Modal {
             height: '120px',
             minHeight: '120px',
         });
-        image.createSpan({ cls: 'lorebase-editmode-related-type', text: this.getRelatedTypeLabel(item.type) });
+        image.createSpan({ cls: 'lorebase-editmode-related-type', text: mediaTypeLabel(item.type) });
         row.createSpan({ cls: 'lorebase-editmode-related-title', text: item.title || item.path });
         if (!readonly && order) {
             const orderControls = row.createDiv({ cls: 'lorebase-editmode-related-order' });
@@ -1033,15 +1034,6 @@ export class VideoEditModal extends Modal {
             });
         }
         return Array.from(unique.values());
-    }
-
-    private getRelatedTypeLabel(type: RelatedMediaLink['type']): string {
-        if (type === 'anime') return t('settingsAnime');
-        if (type === 'movie') return t('settingsMovies');
-        if (type === 'tv') return t('settingsTv');
-        if (type === 'book') return t('settingsBooks');
-        if (type === 'manga') return t('settingsManga');
-        return t('settingsGames');
     }
 
     private renderChipList(root: HTMLElement, selector: string, values: string[], onRemove: (value: string) => void, prefix = ''): void {
@@ -1479,7 +1471,7 @@ class RelatedMediaPickerModal extends Modal {
             const image = card.createDiv({ cls: 'lorebase-related-picker-card-image' });
             const imageUrl = item.imageUrl || DEFAULT_COVER;
             image.setCssStyles({ backgroundImage: `url("${imageUrl.replace(/"/g, '\\"')}")` });
-            image.createSpan({ cls: 'lorebase-related-picker-card-type', text: this.getTypeLabel(item.type) });
+            image.createSpan({ cls: 'lorebase-related-picker-card-type', text: mediaTypeLabel(item.type) });
             card.createSpan({ cls: 'lorebase-related-picker-card-check', text: '✓' });
             const body = card.createDiv({ cls: 'lorebase-related-picker-card-body' });
             body.createDiv({ cls: 'lorebase-related-picker-card-title', text: item.title });
@@ -1534,12 +1526,4 @@ class RelatedMediaPickerModal extends Modal {
         });
     }
 
-    private getTypeLabel(type: RelatedMediaLink['type']): string {
-        if (type === 'anime') return t('settingsAnime');
-        if (type === 'movie') return t('settingsMovies');
-        if (type === 'tv') return t('settingsTv');
-        if (type === 'book') return t('settingsBooks');
-        if (type === 'manga') return t('settingsManga');
-        return t('settingsGames');
-    }
 }

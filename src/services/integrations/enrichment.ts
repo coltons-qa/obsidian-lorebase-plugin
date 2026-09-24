@@ -247,15 +247,7 @@ export function sourceIdentity(source: MediaSourceSelection): Record<string, unk
     };
 }
 
-export function mediaTypeToKind(type: string): MediaKind | null {
-    if (type === 'game') return 'games';
-    if (type === 'anime') return 'anime';
-    if (type === 'movie') return 'movies';
-    if (type === 'tv') return 'tv';
-    if (type === 'book') return 'books';
-    if (type === 'manga') return 'manga';
-    return null;
-}
+export { mediaTypeToKind } from '../../media/mediaTypes';
 
 function findExistingAlias(
     current: Record<string, unknown>,

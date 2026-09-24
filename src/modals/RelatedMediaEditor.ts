@@ -2,6 +2,7 @@ import { App, Modal } from 'obsidian';
 import { DEFAULT_COVER } from '../constants';
 import { t } from '../localization';
 import type { RelatedMediaLink } from '../types';
+import { MEDIA_TYPES, mediaTypeLabel } from '../media/mediaTypes';
 
 /** Callback for clicking a related media card. Mirrors the library card click convention. */
 export type RelatedItemClickHandler = (item: RelatedMediaLink, event: MouseEvent) => void;
@@ -106,7 +107,7 @@ export class RelatedMediaEditor {
             height: '120px',
             minHeight: '120px',
         });
-        image.createSpan({ cls: 'lorebase-editmode-related-type', text: getRelatedTypeLabel(item.type) });
+        image.createSpan({ cls: 'lorebase-editmode-related-type', text: mediaTypeLabel(item.type) });
         row.createSpan({ cls: 'lorebase-editmode-related-title', text: item.title || item.path });
         if (readonly) return;
 
@@ -293,7 +294,7 @@ class RelatedMediaPickerModal extends Modal {
             image.setCssStyles({
                 backgroundImage: `url("${(item.imageUrl || DEFAULT_COVER).replace(/"/g, '\\"')}")`,
             });
-            image.createSpan({ cls: 'lorebase-related-picker-card-type', text: getRelatedTypeLabel(item.type) });
+            image.createSpan({ cls: 'lorebase-related-picker-card-type', text: mediaTypeLabel(item.type) });
             card.createSpan({ cls: 'lorebase-related-picker-card-check', text: '✓' });
             const body = card.createDiv({ cls: 'lorebase-related-picker-card-body' });
             body.createDiv({ cls: 'lorebase-related-picker-card-title', text: item.title });
@@ -365,18 +366,7 @@ function normalizeRelatedMedia(values: RelatedMediaLink[]): RelatedMediaLink[] {
 }
 
 function getRelatedTypeOptions(): Array<{ value: RelatedMediaLink['type']; label: string }> {
-    return [
-        { value: 'game', label: t('settingsGames') },
-        { value: 'anime', label: t('settingsAnime') },
-        { value: 'movie', label: t('settingsMovies') },
-        { value: 'tv', label: t('settingsTv') },
-        { value: 'book', label: t('settingsBooks') },
-        { value: 'manga', label: t('settingsManga') },
-    ];
-}
-
-function getRelatedTypeLabel(type: RelatedMediaLink['type']): string {
-    return getRelatedTypeOptions().find((option) => option.value === type)?.label ?? type;
+    return MEDIA_TYPES.map((info) => ({ value: info.type, label: mediaTypeLabel(info.type) }));
 }
 
 /**

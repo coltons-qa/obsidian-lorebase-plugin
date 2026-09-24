@@ -1,5 +1,6 @@
 import { TFile, TFolder } from 'obsidian';
 import type { MediaType } from '../../types';
+import { isMediaType } from '../../media/mediaTypes';
 import { normalizeObsidianTag } from '../../settings/settingsNormalization';
 
 export function getAllMarkdownFiles(folder: TFolder): TFile[] {
@@ -213,15 +214,7 @@ export function collectSeriesNames(items: ReadonlyArray<{ series?: string } | nu
     return Array.from(names).sort((a, b) => a.localeCompare(b));
 }
 
-/** The six Lorebase media types. Used to validate frontmatter `type` values. */
-const MEDIA_TYPES: ReadonlySet<string> = new Set([
-    'game', 'anime', 'movie', 'tv', 'book', 'manga',
-]);
-
-/** Type guard: returns true when `value` is a valid Lorebase MediaType string. */
-export function isMediaType(value: unknown): value is MediaType {
-    return typeof value === 'string' && MEDIA_TYPES.has(value);
-}
+export { isMediaType };
 
 export interface FolderTypeEntry {
     type: MediaType;

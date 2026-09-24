@@ -1,5 +1,6 @@
 import type { RelatedMediaLink, UserRating } from '../../types';
 import { MAX_USER_RATING } from '../../constants';
+import { isMediaType } from '../../media/mediaTypes';
 
 export function parseNumber(value: unknown): number | null {
     if (value === null || value === undefined || value === '') return null;
@@ -44,8 +45,9 @@ export function parseRelatedMedia(raw: unknown): RelatedMediaLink[] {
         if (!entry || typeof entry !== 'object') continue;
         const source = entry as Record<string, unknown>;
         const type = typeof source.type === 'string' ? source.type.trim().toLowerCase() : '';
-        if (type !== 'anime' && type !== 'movie' && type !== 'tv' && type !== 'series' && type !== 'book' && type !== 'manga' && type !== 'game') continue;
-        const normalizedType = type === 'series' ? 'tv' as const : type;
+        // `series` is the pre-rename spelling of `tv`, still found in older link lists.
+        const normalizedType = type === 'series' ? 'tv' : type;
+        if (!isMediaType(normalizedType)) continue;
         const path = typeof source.path === 'string' ? source.path.trim() : '';
         if (!path || seen.has(path)) continue;
         const title = typeof source.title === 'string' && source.title.trim()

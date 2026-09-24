@@ -13,6 +13,7 @@ import { CommunityRatingRefresh, renderCommunityRatingPanel } from './CommunityR
 import { MediaSourceAction, renderMediaSourcePanel } from './MediaSourcePanel';
 import { setupMobileEditor } from './mobileEditor';
 import { extractMarkdownSection } from '../services/markdownSections';
+import { mediaTypeLabel } from '../media/mediaTypes';
 import { HierarchicalDatePicker, validateDatePickers } from './HierarchicalDatePicker';
 import type { RelatedItemClickHandler } from './RelatedMediaEditor';
 import { reconcileRelatedTypes } from './RelatedMediaEditor';
@@ -945,7 +946,7 @@ export class AnimeEditModal extends Modal {
                 height: '76px',
                 minHeight: '76px',
             });
-            image.createSpan({ cls: 'lorebase-editmode-related-type', text: this.getRelatedTypeLabel(item.type) });
+            image.createSpan({ cls: 'lorebase-editmode-related-type', text: mediaTypeLabel(item.type) });
             row.createSpan({ cls: 'lorebase-editmode-related-title', text: item.title || item.path });
             const order = row.createDiv({ cls: 'lorebase-editmode-related-order' });
             const up = order.createEl('button', {
@@ -1292,15 +1293,6 @@ export class AnimeEditModal extends Modal {
         return Array.from(unique.values());
     }
 
-    private getRelatedTypeLabel(type: RelatedMediaLink['type']): string {
-        if (type === 'anime') return t('settingsAnime');
-        if (type === 'movie') return t('settingsMovies');
-        if (type === 'tv') return t('settingsTv');
-        if (type === 'book') return t('settingsBooks');
-        if (type === 'manga') return t('settingsManga');
-        return t('settingsGames');
-    }
-
     private qs<T extends Element>(root: HTMLElement, selector: string): T | null {
         return root.querySelector<T>(selector);
     }
@@ -1472,7 +1464,7 @@ class RelatedMediaPickerModal extends Modal {
             const image = row.createDiv({ cls: 'lorebase-related-picker-card-image' });
             const imageUrl = candidate.imageUrl || DEFAULT_COVER;
             image.setCssStyles({ backgroundImage: `url("${imageUrl.replace(/"/g, '\\"')}")` });
-            image.createSpan({ cls: 'lorebase-related-picker-card-type', text: this.getTypeLabel(candidate.type) });
+            image.createSpan({ cls: 'lorebase-related-picker-card-type', text: mediaTypeLabel(candidate.type) });
             row.createSpan({ cls: 'lorebase-related-picker-card-check', text: '✓' });
             const body = row.createDiv({ cls: 'lorebase-related-picker-card-body' });
             body.createSpan({ cls: 'lorebase-related-picker-card-title', text: candidate.title });
@@ -1525,15 +1517,6 @@ class RelatedMediaPickerModal extends Modal {
             this.onPick(picked);
             this.close();
         });
-    }
-
-    private getTypeLabel(type: RelatedMediaLink['type']): string {
-        if (type === 'anime') return t('settingsAnime');
-        if (type === 'movie') return t('settingsMovies');
-        if (type === 'tv') return t('settingsTv');
-        if (type === 'book') return t('settingsBooks');
-        if (type === 'manga') return t('settingsManga');
-        return t('settingsGames');
     }
 
     private createFilterButton(parent: HTMLElement, value: RelatedMediaLink['type'], label: string): void {

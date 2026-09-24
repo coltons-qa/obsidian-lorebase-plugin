@@ -45,6 +45,7 @@ import type { MediaKind, MediaSourceSelection } from './services/integrations/ty
 import { buildSimpleTemplate, getDefaultTemplateFields, getEffectiveSimpleTemplateFields } from './services/integrations/templateUtils';
 import { mediaTypeToKind, synchronizeProviderMetadata } from './services/integrations/enrichment';
 import { extractFrontmatterBlock, isFileInFolder, resolveMediaType } from './services/media/serviceUtils';
+import { getMediaTypeInfo, MEDIA_TYPES } from './media/mediaTypes';
 import type { FolderTypeEntry } from './services/media/serviceUtils';
 
 // =============================================================================
@@ -1348,14 +1349,7 @@ export default class LorebasePlugin extends Plugin {
     }
 
     private getMediaFolders(): FolderTypeEntry[] {
-        return [
-            { type: 'game', folderPath: this.settings.games.folderPath },
-            { type: 'anime', folderPath: this.settings.anime.folderPath },
-            { type: 'movie', folderPath: this.settings.movies.folderPath },
-            { type: 'tv', folderPath: this.settings.tv.folderPath },
-            { type: 'book', folderPath: this.settings.books.folderPath },
-            { type: 'manga', folderPath: this.settings.manga.folderPath },
-        ];
+        return MEDIA_TYPES.map((info) => ({ type: info.type, folderPath: this.settings[info.kind].folderPath }));
     }
 
     private collectRelatedMediaCandidates(): RelatedMediaLink[] {
@@ -1531,23 +1525,11 @@ export default class LorebasePlugin extends Plugin {
     }
 
     private getEnabledMedia(): MediaType[] {
-        const enabled: MediaType[] = [];
-        if (this.settings.enabledMedia?.games) enabled.push('game');
-        if (this.settings.enabledMedia?.anime) enabled.push('anime');
-        if (this.settings.enabledMedia?.movies) enabled.push('movie');
-        if (this.settings.enabledMedia?.tv) enabled.push('tv');
-        if (this.settings.enabledMedia?.books) enabled.push('book');
-        if (this.settings.enabledMedia?.manga) enabled.push('manga');
-        return enabled;
+        return MEDIA_TYPES.filter((info) => this.settings.enabledMedia?.[info.kind]).map((info) => info.type);
     }
 
     private isMediaTypeEnabled(mediaType: MediaType): boolean {
-        if (mediaType === 'game') return Boolean(this.settings.enabledMedia?.games);
-        if (mediaType === 'anime') return Boolean(this.settings.enabledMedia?.anime);
-        if (mediaType === 'movie') return Boolean(this.settings.enabledMedia?.movies);
-        if (mediaType === 'tv') return Boolean(this.settings.enabledMedia?.tv);
-        if (mediaType === 'book') return Boolean(this.settings.enabledMedia?.books);
-        return Boolean(this.settings.enabledMedia?.manga);
+        return Boolean(this.settings.enabledMedia?.[getMediaTypeInfo(mediaType).kind]);
     }
 
     private normalizeMediaType(): void {
