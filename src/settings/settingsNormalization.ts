@@ -97,6 +97,61 @@ export function normalizeNoteImportSettings(raw: unknown): NoteImportSettings {
  * Provider credentials/settings can be copied safely, but note ids cannot:
  * Jikan stores MAL ids while MangaUpdates uses a different id namespace.
  */
+/**
+ * Renames persisted `series` media-type settings to `tv`. Runs on the raw loaded data,
+ * before it is merged over the defaults. Returns true when anything moved, so the caller
+ * saves and the old keys do not linger in data.json.
+ *
+ * `integrations.media.series` is the user's own template settings. The first tv build
+ * left it behind and saved a default `tv` entry beside it, so when both exist the
+ * series entry wins.
+ */
+export function migrateSeriesSettingsToTv(raw: Record<string, unknown>): boolean {
+    let changed = false;
+    const moveKey = (record: Record<string, unknown> | null, oldKey: string, newKey: string, overwrite = false): void => {
+        if (!record || !(oldKey in record)) return;
+        if (record[oldKey] !== undefined && (overwrite || record[newKey] === undefined)) {
+            record[newKey] = record[oldKey];
+        }
+        delete record[oldKey];
+        changed = true;
+    };
+
+    moveKey(raw, 'series', 'tv');
+    moveKey(asMutableRecord(raw.enabledMedia), 'series', 'tv');
+    moveKey(asMutableRecord(raw.statusLabels), 'series', 'tv');
+    moveKey(asMutableRecord(raw.completionDateBadgeFormats), 'series', 'tv');
+    for (const [oldKey, newKey] of [
+        ['seriesDescriptionLines', 'tvDescriptionLines'],
+        ['seriesHorizontalDescriptionLines', 'tvHorizontalDescriptionLines'],
+        ['seriesOverlayTextLayout', 'tvOverlayTextLayout'],
+        ['seriesHorizontalOverlayTextLayout', 'tvHorizontalOverlayTextLayout'],
+        ['seriesOverlayTextVisibility', 'tvOverlayTextVisibility'],
+        ['seriesHorizontalOverlayTextVisibility', 'tvHorizontalOverlayTextVisibility'],
+        ['seriesBadges', 'tvBadges'],
+        ['seriesHorizontalBadges', 'tvHorizontalBadges'],
+    ] as const) {
+        moveKey(raw, oldKey, newKey);
+    }
+
+    const media = asMutableRecord(asMutableRecord(raw.integrations)?.media);
+    moveKey(media, 'series', 'tv', true);
+    const tvTemplate = asMutableRecord(media?.tv);
+    if (tvTemplate && Array.isArray(tvTemplate.templateFields) && tvTemplate.templateFields.includes('seriesParts')) {
+        tvTemplate.templateFields = tvTemplate.templateFields.map((field: unknown) => field === 'seriesParts' ? 'tvParts' : field);
+        changed = true;
+    }
+
+    return changed;
+}
+
+/** The object itself (not a copy, unlike `readRecord`), so a migration can edit it in place. */
+function asMutableRecord(value: unknown): Record<string, unknown> | null {
+    return typeof value === 'object' && value !== null && !Array.isArray(value)
+        ? value as Record<string, unknown>
+        : null;
+}
+
 export function migrateLegacyJikanMangaSettings(
     settings: LorebaseSettings,
     savedIntegrations: LorebaseSettings['integrations'] | undefined

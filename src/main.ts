@@ -33,6 +33,7 @@ import {
     mergeOverlayLayout,
     mergeOverlayVisibility,
     migrateLegacyJikanMangaSettings,
+    migrateSeriesSettingsToTv,
     normalizeDescriptionLines,
     normalizeLibraryViewSettings,
     normalizeNoteImportSettings,
@@ -222,42 +223,7 @@ export default class LorebasePlugin extends Plugin {
         const loaded: unknown = await this.loadData();
         const sanitized = this.isSettingsRecord(loaded) ? { ...loaded } : {};
 
-        // Migration: rename persisted 'series' media type keys to 'tv'
-        const raw = sanitized as Record<string, unknown>;
-        if (raw.series && !raw.tv) {
-            raw.tv = raw.series;
-        }
-        delete raw.series;
-        const enabledRaw = raw.enabledMedia as Record<string, unknown> | undefined;
-        if (enabledRaw?.series !== undefined && enabledRaw.tv === undefined) {
-            enabledRaw.tv = enabledRaw.series;
-        }
-        if (enabledRaw) delete enabledRaw.series;
-        const statusRaw = raw.statusLabels as Record<string, unknown> | undefined;
-        if (statusRaw?.series && !statusRaw.tv) {
-            statusRaw.tv = statusRaw.series;
-        }
-        if (statusRaw) delete statusRaw.series;
-        const cdRaw = raw.completionDateBadgeFormats as Record<string, unknown> | undefined;
-        if (cdRaw?.series && !cdRaw.tv) {
-            cdRaw.tv = cdRaw.series;
-        }
-        if (cdRaw) delete cdRaw.series;
-        for (const [oldKey, newKey] of [
-            ['seriesDescriptionLines', 'tvDescriptionLines'],
-            ['seriesHorizontalDescriptionLines', 'tvHorizontalDescriptionLines'],
-            ['seriesOverlayTextLayout', 'tvOverlayTextLayout'],
-            ['seriesHorizontalOverlayTextLayout', 'tvHorizontalOverlayTextLayout'],
-            ['seriesOverlayTextVisibility', 'tvOverlayTextVisibility'],
-            ['seriesHorizontalOverlayTextVisibility', 'tvHorizontalOverlayTextVisibility'],
-            ['seriesBadges', 'tvBadges'],
-            ['seriesHorizontalBadges', 'tvHorizontalBadges'],
-        ] as const) {
-            if (raw[oldKey] !== undefined && raw[newKey] === undefined) {
-                raw[newKey] = raw[oldKey];
-            }
-            delete raw[oldKey];
-        }
+        const seriesMigrated = migrateSeriesSettingsToTv(sanitized as Record<string, unknown>);
 
         this.settings = Object.assign({}, DEFAULT_SETTINGS, sanitized);
         const particleIntensity = Number(sanitized.particleIntensity);
@@ -629,7 +595,7 @@ export default class LorebasePlugin extends Plugin {
         const settingsMigrated = migrateLegacyJikanMangaSettings(this.settings, sanitized.integrations);
         const templatesMigrated = this.migrateIntegrationTemplates();
         const gameFiltersMigrated = this.migrateGameDefaultVisibilityFilters();
-        if (templatesMigrated || settingsMigrated || gameFiltersMigrated) {
+        if (seriesMigrated || templatesMigrated || settingsMigrated || gameFiltersMigrated) {
             await this.saveData(this.settings);
         }
     }
