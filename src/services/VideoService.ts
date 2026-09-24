@@ -212,6 +212,8 @@ export class VideoService {
         if ('director' in updates) write('director', this.displayListOrNull(updates.director));
         if ('actors' in updates) write('actors', this.displayListOrNull(updates.actors));
         if ('relatedMedia' in updates) write('relatedMedia', serializeRelatedMedia(updates.relatedMedia));
+        if ('integrationProvider' in updates) write('integrationSource', updates.integrationProvider, keyOf(K, 'integrationSource', 0));
+        if ('integrationId' in updates) write('integrationSource', updates.integrationId, keyOf(K, 'integrationSource', 1));
         if (isTv) {
             if ('seasons' in updates) write('seasons', updates.seasons);
             if ('networks' in updates) write('networks', this.normalizedListOrNull(updates.networks));

@@ -238,7 +238,6 @@ exports[`VideoService round trip > writes every editable TV field, clearing lega
   ],
   "integration-id": "95396",
   "integration-provider": "tmdb",
-  "integration_provider": "omdb",
   "networks": [
     "apple tv",
     "apple tv+",
@@ -311,7 +310,6 @@ exports[`VideoService round trip > writes every editable movie field, clearing l
   ],
   "integration-id": "95396",
   "integration-provider": "tmdb",
-  "integration_provider": "omdb",
   "owned": "physical",
   "poster": "https://cdn.example/severance.jpg",
   "poster-b": "https://cdn.example/new-wide.jpg",

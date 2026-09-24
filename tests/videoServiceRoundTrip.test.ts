@@ -138,4 +138,23 @@ describe('VideoService round trip', () => {
         });
         expect(frontmatter).toMatchSnapshot();
     });
+
+    it('writes the integration source to its kebab keys and clears the legacy ones', async () => {
+        // VideoService used to ignore integrationProvider and integrationId, unlike
+        // GameService, so a source change sent through a save was dropped.
+        const { service, file, frontmatter } = setup('movie', {
+            type: 'movie',
+            title: 'Dune',
+            integration_provider: 'omdb',
+            integration_id: 'tt0087182',
+        });
+        const item = service.parseFromCache(file) as VideoItem;
+
+        await service.updateItem(item, { integrationProvider: 'tmdb', integrationId: '438631' });
+
+        expect(frontmatter['integration-provider']).toBe('tmdb');
+        expect(frontmatter['integration-id']).toBe('438631');
+        expect(frontmatter).not.toHaveProperty('integration_provider');
+        expect(frontmatter).not.toHaveProperty('integration_id');
+    });
 });
