@@ -1,4 +1,6 @@
 import { Platform, Setting, SliderComponent, ToggleComponent, setIcon } from 'obsidian';
+import { customizationKey, type CustomizationSetting } from '../customizationKeys';
+import { getMediaTypeInfo } from '../../media/mediaTypes';
 import { CARD_SIZES, COLOR_PRESETS, DEFAULT_COVER, DEFAULT_GAME_TAG_PRESETS, DEFAULT_SETTINGS, HORIZONTAL_CARD_SIZES, PARTICLE_INTENSITY_MAX, PARTICLE_INTENSITY_MIN, MAX_USER_RATING, RATING_EMOJI, STATUS_CONFIG } from '../../constants';
 import { i18n, t } from '../../localization';
 import type { BadgePosition, CardClickAction, CardStyle, CompletionDateBadgeFormat, Language, LorebaseSettings, ParticleEffect, RatingBadgeMode, TagPreset } from '../../types';
@@ -268,208 +270,56 @@ function renderBadgesEditor(context: SettingsSectionContext, container: HTMLElem
     };
     const getActiveOverlayOrientation = (): OverlayOrientationKey => previewOrientation;
 
+    // Card customization is stored per kind and orientation; customizationKey names the
+    // setting so these accessors need no per-kind branches.
+    const readSetting = (profile: OverlayProfileKey, orientation: OverlayOrientationKey, setting: CustomizationSetting): unknown =>
+        (context.plugin.settings as unknown as Record<string, unknown>)[customizationKey(profile, orientation, setting)];
+    const readDefault = (profile: OverlayProfileKey, orientation: OverlayOrientationKey, setting: CustomizationSetting): unknown =>
+        (DEFAULT_SETTINGS as unknown as Record<string, unknown>)[customizationKey(profile, orientation, setting)];
+    const writeSetting = (profile: OverlayProfileKey, orientation: OverlayOrientationKey, setting: CustomizationSetting, value: unknown): void => {
+        (context.plugin.settings as unknown as Record<string, unknown>)[customizationKey(profile, orientation, setting)] = value;
+    };
+
     const getDefaultLayout = (
         profile: OverlayProfileKey,
         orientation: OverlayOrientationKey = getActiveOverlayOrientation()
     ): LorebaseSettings['overlayTextLayout'] => {
-        if (profile === 'anime') {
-            return orientation === 'horizontal'
-                ? DEFAULT_SETTINGS.animeHorizontalOverlayTextLayout
-                : DEFAULT_SETTINGS.animeOverlayTextLayout;
-        }
-        if (profile === 'movies') {
-            return orientation === 'horizontal'
-                ? DEFAULT_SETTINGS.movieHorizontalOverlayTextLayout
-                : DEFAULT_SETTINGS.movieOverlayTextLayout;
-        }
-        if (profile === 'tv') {
-            return orientation === 'horizontal'
-                ? DEFAULT_SETTINGS.tvHorizontalOverlayTextLayout
-                : DEFAULT_SETTINGS.tvOverlayTextLayout;
-        }
-        if (profile === 'books') {
-            return orientation === 'horizontal'
-                ? DEFAULT_SETTINGS.bookHorizontalOverlayTextLayout
-                : DEFAULT_SETTINGS.bookOverlayTextLayout;
-        }
-        if (profile === 'manga') {
-            return orientation === 'horizontal'
-                ? DEFAULT_SETTINGS.mangaHorizontalOverlayTextLayout
-                : DEFAULT_SETTINGS.mangaOverlayTextLayout;
-        }
-        return orientation === 'horizontal'
-            ? DEFAULT_SETTINGS.horizontalOverlayTextLayout
-            : DEFAULT_SETTINGS.overlayTextLayout;
+        return readDefault(profile, orientation, 'overlayTextLayout') as LorebaseSettings['overlayTextLayout'];
     };
 
     const getDefaultVisibility = (
         profile: OverlayProfileKey,
         orientation: OverlayOrientationKey = getActiveOverlayOrientation()
     ): LorebaseSettings['overlayTextVisibility'] => {
-        if (profile === 'anime') {
-            return orientation === 'horizontal'
-                ? DEFAULT_SETTINGS.animeHorizontalOverlayTextVisibility
-                : DEFAULT_SETTINGS.animeOverlayTextVisibility;
-        }
-        if (profile === 'movies') {
-            return orientation === 'horizontal'
-                ? DEFAULT_SETTINGS.movieHorizontalOverlayTextVisibility
-                : DEFAULT_SETTINGS.movieOverlayTextVisibility;
-        }
-        if (profile === 'tv') {
-            return orientation === 'horizontal'
-                ? DEFAULT_SETTINGS.tvHorizontalOverlayTextVisibility
-                : DEFAULT_SETTINGS.tvOverlayTextVisibility;
-        }
-        if (profile === 'books') {
-            return orientation === 'horizontal'
-                ? DEFAULT_SETTINGS.bookHorizontalOverlayTextVisibility
-                : DEFAULT_SETTINGS.bookOverlayTextVisibility;
-        }
-        if (profile === 'manga') {
-            return orientation === 'horizontal'
-                ? DEFAULT_SETTINGS.mangaHorizontalOverlayTextVisibility
-                : DEFAULT_SETTINGS.mangaOverlayTextVisibility;
-        }
-        return orientation === 'horizontal'
-            ? DEFAULT_SETTINGS.horizontalOverlayTextVisibility
-            : DEFAULT_SETTINGS.overlayTextVisibility;
+        return readDefault(profile, orientation, 'overlayTextVisibility') as LorebaseSettings['overlayTextVisibility'];
     };
 
     const getOverlayLayout = (
         profile: OverlayProfileKey,
         orientation: OverlayOrientationKey = getActiveOverlayOrientation()
     ): LorebaseSettings['overlayTextLayout'] => {
-        if (profile === 'anime') {
-            return orientation === 'horizontal'
-                ? context.plugin.settings.animeHorizontalOverlayTextLayout
-                : context.plugin.settings.animeOverlayTextLayout;
-        }
-        if (profile === 'movies') {
-            return orientation === 'horizontal'
-                ? context.plugin.settings.movieHorizontalOverlayTextLayout
-                : context.plugin.settings.movieOverlayTextLayout;
-        }
-        if (profile === 'tv') {
-            return orientation === 'horizontal'
-                ? context.plugin.settings.tvHorizontalOverlayTextLayout
-                : context.plugin.settings.tvOverlayTextLayout;
-        }
-        if (profile === 'books') {
-            return orientation === 'horizontal'
-                ? context.plugin.settings.bookHorizontalOverlayTextLayout
-                : context.plugin.settings.bookOverlayTextLayout;
-        }
-        if (profile === 'manga') {
-            return orientation === 'horizontal'
-                ? context.plugin.settings.mangaHorizontalOverlayTextLayout
-                : context.plugin.settings.mangaOverlayTextLayout;
-        }
-        return orientation === 'horizontal'
-            ? context.plugin.settings.horizontalOverlayTextLayout
-            : context.plugin.settings.overlayTextLayout;
+        return readSetting(profile, orientation, 'overlayTextLayout') as LorebaseSettings['overlayTextLayout'];
     };
 
     const getOverlayVisibility = (
         profile: OverlayProfileKey,
         orientation: OverlayOrientationKey = getActiveOverlayOrientation()
     ): LorebaseSettings['overlayTextVisibility'] => {
-        if (profile === 'anime') {
-            return orientation === 'horizontal'
-                ? context.plugin.settings.animeHorizontalOverlayTextVisibility
-                : context.plugin.settings.animeOverlayTextVisibility;
-        }
-        if (profile === 'movies') {
-            return orientation === 'horizontal'
-                ? context.plugin.settings.movieHorizontalOverlayTextVisibility
-                : context.plugin.settings.movieOverlayTextVisibility;
-        }
-        if (profile === 'tv') {
-            return orientation === 'horizontal'
-                ? context.plugin.settings.tvHorizontalOverlayTextVisibility
-                : context.plugin.settings.tvOverlayTextVisibility;
-        }
-        if (profile === 'books') {
-            return orientation === 'horizontal'
-                ? context.plugin.settings.bookHorizontalOverlayTextVisibility
-                : context.plugin.settings.bookOverlayTextVisibility;
-        }
-        if (profile === 'manga') {
-            return orientation === 'horizontal'
-                ? context.plugin.settings.mangaHorizontalOverlayTextVisibility
-                : context.plugin.settings.mangaOverlayTextVisibility;
-        }
-        return orientation === 'horizontal'
-            ? context.plugin.settings.horizontalOverlayTextVisibility
-            : context.plugin.settings.overlayTextVisibility;
+        return readSetting(profile, orientation, 'overlayTextVisibility') as LorebaseSettings['overlayTextVisibility'];
     };
 
     const getDescriptionLines = (
         profile: OverlayProfileKey,
         orientation: OverlayOrientationKey = getActiveOverlayOrientation()
     ): number => {
-        if (profile === 'anime') {
-            return orientation === 'horizontal'
-                ? context.plugin.settings.animeHorizontalDescriptionLines
-                : context.plugin.settings.animeDescriptionLines;
-        }
-        if (profile === 'movies') {
-            return orientation === 'horizontal'
-                ? context.plugin.settings.movieHorizontalDescriptionLines
-                : context.plugin.settings.movieDescriptionLines;
-        }
-        if (profile === 'tv') {
-            return orientation === 'horizontal'
-                ? context.plugin.settings.tvHorizontalDescriptionLines
-                : context.plugin.settings.tvDescriptionLines;
-        }
-        if (profile === 'books') {
-            return orientation === 'horizontal'
-                ? context.plugin.settings.bookHorizontalDescriptionLines
-                : context.plugin.settings.bookDescriptionLines;
-        }
-        if (profile === 'manga') {
-            return orientation === 'horizontal'
-                ? context.plugin.settings.mangaHorizontalDescriptionLines
-                : context.plugin.settings.mangaDescriptionLines;
-        }
-        return orientation === 'horizontal'
-            ? context.plugin.settings.horizontalDescriptionLines
-            : context.plugin.settings.descriptionLines;
+        return readSetting(profile, orientation, 'descriptionLines') as number;
     };
 
     const getBadges = (
         profile: OverlayProfileKey,
         orientation: OverlayOrientationKey = getActiveOverlayOrientation()
     ): LorebaseSettings['badges'] => {
-        if (profile === 'anime') {
-            return orientation === 'horizontal'
-                ? context.plugin.settings.animeHorizontalBadges
-                : context.plugin.settings.animeBadges;
-        }
-        if (profile === 'movies') {
-            return orientation === 'horizontal'
-                ? context.plugin.settings.movieHorizontalBadges
-                : context.plugin.settings.movieBadges;
-        }
-        if (profile === 'tv') {
-            return orientation === 'horizontal'
-                ? context.plugin.settings.tvHorizontalBadges
-                : context.plugin.settings.tvBadges;
-        }
-        if (profile === 'books') {
-            return orientation === 'horizontal'
-                ? context.plugin.settings.bookHorizontalBadges
-                : context.plugin.settings.bookBadges;
-        }
-        if (profile === 'manga') {
-            return orientation === 'horizontal'
-                ? context.plugin.settings.mangaHorizontalBadges
-                : context.plugin.settings.mangaBadges;
-        }
-        return orientation === 'horizontal'
-            ? context.plugin.settings.horizontalBadges
-            : context.plugin.settings.badges;
+        return readSetting(profile, orientation, 'badges') as LorebaseSettings['badges'];
     };
 
     const setDescriptionLines = (
@@ -477,119 +327,21 @@ function renderBadgesEditor(context: SettingsSectionContext, container: HTMLElem
         value: number,
         orientation: OverlayOrientationKey = getActiveOverlayOrientation()
     ): void => {
-        if (profile === 'anime') {
-            if (orientation === 'horizontal') {
-                context.plugin.settings.animeHorizontalDescriptionLines = value;
-                return;
-            }
-            context.plugin.settings.animeDescriptionLines = value;
-            return;
-        }
-        if (profile === 'movies') {
-            if (orientation === 'horizontal') {
-                context.plugin.settings.movieHorizontalDescriptionLines = value;
-                return;
-            }
-            context.plugin.settings.movieDescriptionLines = value;
-            return;
-        }
-        if (profile === 'tv') {
-            if (orientation === 'horizontal') {
-                context.plugin.settings.tvHorizontalDescriptionLines = value;
-                return;
-            }
-            context.plugin.settings.tvDescriptionLines = value;
-            return;
-        }
-        if (profile === 'books') {
-            if (orientation === 'horizontal') {
-                context.plugin.settings.bookHorizontalDescriptionLines = value;
-                return;
-            }
-            context.plugin.settings.bookDescriptionLines = value;
-            return;
-        }
-        if (profile === 'manga') {
-            if (orientation === 'horizontal') {
-                context.plugin.settings.mangaHorizontalDescriptionLines = value;
-                return;
-            }
-            context.plugin.settings.mangaDescriptionLines = value;
-            return;
-        }
-        if (orientation === 'horizontal') {
-            context.plugin.settings.horizontalDescriptionLines = value;
-            return;
-        }
-        context.plugin.settings.descriptionLines = value;
+        writeSetting(profile, orientation, 'descriptionLines', value);
     };
 
     const getDefaultDescriptionLines = (
         profile: OverlayProfileKey,
         orientation: OverlayOrientationKey
     ): number => {
-        if (profile === 'anime') {
-            return orientation === 'horizontal'
-                ? DEFAULT_SETTINGS.animeHorizontalDescriptionLines
-                : DEFAULT_SETTINGS.animeDescriptionLines;
-        }
-        if (profile === 'movies') {
-            return orientation === 'horizontal'
-                ? DEFAULT_SETTINGS.movieHorizontalDescriptionLines
-                : DEFAULT_SETTINGS.movieDescriptionLines;
-        }
-        if (profile === 'tv') {
-            return orientation === 'horizontal'
-                ? DEFAULT_SETTINGS.tvHorizontalDescriptionLines
-                : DEFAULT_SETTINGS.tvDescriptionLines;
-        }
-        if (profile === 'books') {
-            return orientation === 'horizontal'
-                ? DEFAULT_SETTINGS.bookHorizontalDescriptionLines
-                : DEFAULT_SETTINGS.bookDescriptionLines;
-        }
-        if (profile === 'manga') {
-            return orientation === 'horizontal'
-                ? DEFAULT_SETTINGS.mangaHorizontalDescriptionLines
-                : DEFAULT_SETTINGS.mangaDescriptionLines;
-        }
-        return orientation === 'horizontal'
-            ? DEFAULT_SETTINGS.horizontalDescriptionLines
-            : DEFAULT_SETTINGS.descriptionLines;
+        return readDefault(profile, orientation, 'descriptionLines') as number;
     };
 
     const getDefaultBadges = (
         profile: OverlayProfileKey,
         orientation: OverlayOrientationKey
     ): LorebaseSettings['badges'] => {
-        if (profile === 'anime') {
-            return orientation === 'horizontal'
-                ? DEFAULT_SETTINGS.animeHorizontalBadges
-                : DEFAULT_SETTINGS.animeBadges;
-        }
-        if (profile === 'movies') {
-            return orientation === 'horizontal'
-                ? DEFAULT_SETTINGS.movieHorizontalBadges
-                : DEFAULT_SETTINGS.movieBadges;
-        }
-        if (profile === 'tv') {
-            return orientation === 'horizontal'
-                ? DEFAULT_SETTINGS.tvHorizontalBadges
-                : DEFAULT_SETTINGS.tvBadges;
-        }
-        if (profile === 'books') {
-            return orientation === 'horizontal'
-                ? DEFAULT_SETTINGS.bookHorizontalBadges
-                : DEFAULT_SETTINGS.bookBadges;
-        }
-        if (profile === 'manga') {
-            return orientation === 'horizontal'
-                ? DEFAULT_SETTINGS.mangaHorizontalBadges
-                : DEFAULT_SETTINGS.mangaBadges;
-        }
-        return orientation === 'horizontal'
-            ? DEFAULT_SETTINGS.horizontalBadges
-            : DEFAULT_SETTINGS.badges;
+        return readDefault(profile, orientation, 'badges') as LorebaseSettings['badges'];
     };
 
     const overlayProfiles: OverlayProfileKey[] = ['games', 'anime', 'movies', 'tv', 'books', 'manga'];
@@ -636,33 +388,7 @@ function renderBadgesEditor(context: SettingsSectionContext, container: HTMLElem
         orientation: OverlayOrientationKey,
         layout: LorebaseSettings['overlayTextLayout']
     ): void => {
-        if (profile === 'anime') {
-            if (orientation === 'horizontal') context.plugin.settings.animeHorizontalOverlayTextLayout = layout;
-            else context.plugin.settings.animeOverlayTextLayout = layout;
-            return;
-        }
-        if (profile === 'movies') {
-            if (orientation === 'horizontal') context.plugin.settings.movieHorizontalOverlayTextLayout = layout;
-            else context.plugin.settings.movieOverlayTextLayout = layout;
-            return;
-        }
-        if (profile === 'tv') {
-            if (orientation === 'horizontal') context.plugin.settings.tvHorizontalOverlayTextLayout = layout;
-            else context.plugin.settings.tvOverlayTextLayout = layout;
-            return;
-        }
-        if (profile === 'books') {
-            if (orientation === 'horizontal') context.plugin.settings.bookHorizontalOverlayTextLayout = layout;
-            else context.plugin.settings.bookOverlayTextLayout = layout;
-            return;
-        }
-        if (profile === 'manga') {
-            if (orientation === 'horizontal') context.plugin.settings.mangaHorizontalOverlayTextLayout = layout;
-            else context.plugin.settings.mangaOverlayTextLayout = layout;
-            return;
-        }
-        if (orientation === 'horizontal') context.plugin.settings.horizontalOverlayTextLayout = layout;
-        else context.plugin.settings.overlayTextLayout = layout;
+        writeSetting(profile, orientation, 'overlayTextLayout', layout);
     };
 
     const setOverlayVisibility = (
@@ -670,33 +396,7 @@ function renderBadgesEditor(context: SettingsSectionContext, container: HTMLElem
         orientation: OverlayOrientationKey,
         visibility: LorebaseSettings['overlayTextVisibility']
     ): void => {
-        if (profile === 'anime') {
-            if (orientation === 'horizontal') context.plugin.settings.animeHorizontalOverlayTextVisibility = visibility;
-            else context.plugin.settings.animeOverlayTextVisibility = visibility;
-            return;
-        }
-        if (profile === 'movies') {
-            if (orientation === 'horizontal') context.plugin.settings.movieHorizontalOverlayTextVisibility = visibility;
-            else context.plugin.settings.movieOverlayTextVisibility = visibility;
-            return;
-        }
-        if (profile === 'tv') {
-            if (orientation === 'horizontal') context.plugin.settings.tvHorizontalOverlayTextVisibility = visibility;
-            else context.plugin.settings.tvOverlayTextVisibility = visibility;
-            return;
-        }
-        if (profile === 'books') {
-            if (orientation === 'horizontal') context.plugin.settings.bookHorizontalOverlayTextVisibility = visibility;
-            else context.plugin.settings.bookOverlayTextVisibility = visibility;
-            return;
-        }
-        if (profile === 'manga') {
-            if (orientation === 'horizontal') context.plugin.settings.mangaHorizontalOverlayTextVisibility = visibility;
-            else context.plugin.settings.mangaOverlayTextVisibility = visibility;
-            return;
-        }
-        if (orientation === 'horizontal') context.plugin.settings.horizontalOverlayTextVisibility = visibility;
-        else context.plugin.settings.overlayTextVisibility = visibility;
+        writeSetting(profile, orientation, 'overlayTextVisibility', visibility);
     };
 
     const setBadges = (
@@ -704,33 +404,7 @@ function renderBadgesEditor(context: SettingsSectionContext, container: HTMLElem
         orientation: OverlayOrientationKey,
         badges: LorebaseSettings['badges']
     ): void => {
-        if (profile === 'anime') {
-            if (orientation === 'horizontal') context.plugin.settings.animeHorizontalBadges = badges;
-            else context.plugin.settings.animeBadges = badges;
-            return;
-        }
-        if (profile === 'movies') {
-            if (orientation === 'horizontal') context.plugin.settings.movieHorizontalBadges = badges;
-            else context.plugin.settings.movieBadges = badges;
-            return;
-        }
-        if (profile === 'tv') {
-            if (orientation === 'horizontal') context.plugin.settings.tvHorizontalBadges = badges;
-            else context.plugin.settings.tvBadges = badges;
-            return;
-        }
-        if (profile === 'books') {
-            if (orientation === 'horizontal') context.plugin.settings.bookHorizontalBadges = badges;
-            else context.plugin.settings.bookBadges = badges;
-            return;
-        }
-        if (profile === 'manga') {
-            if (orientation === 'horizontal') context.plugin.settings.mangaHorizontalBadges = badges;
-            else context.plugin.settings.mangaBadges = badges;
-            return;
-        }
-        if (orientation === 'horizontal') context.plugin.settings.horizontalBadges = badges;
-        else context.plugin.settings.badges = badges;
+        writeSetting(profile, orientation, 'badges', badges);
     };
 
     const copyTargetState = (
@@ -1831,13 +1505,7 @@ function renderBadgeOptions(
     };
 
     const getActiveProfile = (): BadgeProfileKey => {
-        const mode = getPreviewMode();
-        if (mode === 'anime') return 'anime';
-        if (mode === 'movie') return 'movies';
-        if (mode === 'tv') return 'tv';
-        if (mode === 'book') return 'books';
-        if (mode === 'manga') return 'manga';
-        return 'games';
+        return getMediaTypeInfo(getPreviewMode()).kind;
     };
 
     const getActiveProgressSettings = (): LorebaseSettings['games'] | null => {
@@ -1880,34 +1548,7 @@ function renderBadgeOptions(
         profile: BadgeProfileKey,
         orientation: BadgeOrientationKey = getActiveOrientation()
     ): LorebaseSettings['badges'] => {
-        if (profile === 'anime') {
-            return orientation === 'horizontal'
-                ? context.plugin.settings.animeHorizontalBadges
-                : context.plugin.settings.animeBadges;
-        }
-        if (profile === 'movies') {
-            return orientation === 'horizontal'
-                ? context.plugin.settings.movieHorizontalBadges
-                : context.plugin.settings.movieBadges;
-        }
-        if (profile === 'tv') {
-            return orientation === 'horizontal'
-                ? context.plugin.settings.tvHorizontalBadges
-                : context.plugin.settings.tvBadges;
-        }
-        if (profile === 'books') {
-            return orientation === 'horizontal'
-                ? context.plugin.settings.bookHorizontalBadges
-                : context.plugin.settings.bookBadges;
-        }
-        if (profile === 'manga') {
-            return orientation === 'horizontal'
-                ? context.plugin.settings.mangaHorizontalBadges
-                : context.plugin.settings.mangaBadges;
-        }
-        return orientation === 'horizontal'
-            ? context.plugin.settings.horizontalBadges
-            : context.plugin.settings.badges;
+        return (context.plugin.settings as unknown as Record<string, unknown>)[customizationKey(profile, orientation, 'badges')] as LorebaseSettings['badges'];
     };
 
     const badgeProfiles: BadgeProfileKey[] = ['games', 'anime', 'movies', 'tv', 'books', 'manga'];

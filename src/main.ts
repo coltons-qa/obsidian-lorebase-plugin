@@ -46,6 +46,7 @@ import { buildSimpleTemplate, getDefaultTemplateFields, getEffectiveSimpleTempla
 import { mediaTypeToKind, synchronizeProviderMetadata } from './services/integrations/enrichment';
 import { extractFrontmatterBlock, isFileInFolder, resolveMediaType } from './services/media/serviceUtils';
 import { getMediaTypeInfo, MEDIA_TYPES } from './media/mediaTypes';
+import { customizationFallbackKey, customizationKey } from './settings/customizationKeys';
 import type { FolderTypeEntry } from './services/media/serviceUtils';
 
 // =============================================================================
@@ -355,142 +356,23 @@ export default class LorebasePlugin extends Plugin {
         const settingsRecord = this.settings as unknown as Record<string, unknown>;
         const sanitizedRecord = sanitized as Record<string, unknown>;
         const defaultsRecord = DEFAULT_SETTINGS as unknown as Record<string, unknown>;
-        const mediaCustomization: Record<'game' | 'anime' | 'movie' | 'tv' | 'book' | 'manga', Record<'vertical' | 'horizontal', CustomizationProfile>> = {
-            game: {
-                vertical: {
-                    descriptionKey: 'descriptionLines',
-                    layoutKey: 'overlayTextLayout',
-                    visibilityKey: 'overlayTextVisibility',
-                    badgesKey: 'badges',
-                },
-                horizontal: {
-                    descriptionKey: 'horizontalDescriptionLines',
-                    descriptionFallbackKey: 'descriptionLines',
-                    layoutKey: 'horizontalOverlayTextLayout',
-                    visibilityKey: 'horizontalOverlayTextVisibility',
-                    visibilityFallbackKey: 'overlayTextVisibility',
-                    badgesKey: 'horizontalBadges',
-                    badgesFallbackKey: 'badges',
-                },
-            },
-            anime: {
-                vertical: {
-                    descriptionKey: 'animeDescriptionLines',
-                    descriptionFallbackKey: 'descriptionLines',
-                    layoutKey: 'animeOverlayTextLayout',
-                    layoutFallbackKey: 'overlayTextLayout',
-                    visibilityKey: 'animeOverlayTextVisibility',
-                    visibilityFallbackKey: 'overlayTextVisibility',
-                    badgesKey: 'animeBadges',
-                    badgesFallbackKey: 'badges',
-                },
-                horizontal: {
-                    descriptionKey: 'animeHorizontalDescriptionLines',
-                    descriptionFallbackKey: 'horizontalDescriptionLines',
-                    layoutKey: 'animeHorizontalOverlayTextLayout',
-                    layoutFallbackKey: 'horizontalOverlayTextLayout',
-                    visibilityKey: 'animeHorizontalOverlayTextVisibility',
-                    visibilityFallbackKey: 'animeOverlayTextVisibility',
-                    badgesKey: 'animeHorizontalBadges',
-                    badgesFallbackKey: 'animeBadges',
-                },
-            },
-            movie: {
-                vertical: {
-                    descriptionKey: 'movieDescriptionLines',
-                    descriptionFallbackKey: 'descriptionLines',
-                    layoutKey: 'movieOverlayTextLayout',
-                    layoutFallbackKey: 'overlayTextLayout',
-                    visibilityKey: 'movieOverlayTextVisibility',
-                    visibilityFallbackKey: 'overlayTextVisibility',
-                    badgesKey: 'movieBadges',
-                    badgesFallbackKey: 'badges',
-                },
-                horizontal: {
-                    descriptionKey: 'movieHorizontalDescriptionLines',
-                    descriptionFallbackKey: 'horizontalDescriptionLines',
-                    layoutKey: 'movieHorizontalOverlayTextLayout',
-                    layoutFallbackKey: 'horizontalOverlayTextLayout',
-                    visibilityKey: 'movieHorizontalOverlayTextVisibility',
-                    visibilityFallbackKey: 'horizontalOverlayTextVisibility',
-                    badgesKey: 'movieHorizontalBadges',
-                    badgesFallbackKey: 'horizontalBadges',
-                },
-            },
-            tv: {
-                vertical: {
-                    descriptionKey: 'tvDescriptionLines',
-                    descriptionFallbackKey: 'descriptionLines',
-                    layoutKey: 'tvOverlayTextLayout',
-                    layoutFallbackKey: 'overlayTextLayout',
-                    visibilityKey: 'tvOverlayTextVisibility',
-                    visibilityFallbackKey: 'overlayTextVisibility',
-                    badgesKey: 'tvBadges',
-                    badgesFallbackKey: 'badges',
-                },
-                horizontal: {
-                    descriptionKey: 'tvHorizontalDescriptionLines',
-                    descriptionFallbackKey: 'horizontalDescriptionLines',
-                    layoutKey: 'tvHorizontalOverlayTextLayout',
-                    layoutFallbackKey: 'horizontalOverlayTextLayout',
-                    visibilityKey: 'tvHorizontalOverlayTextVisibility',
-                    visibilityFallbackKey: 'horizontalOverlayTextVisibility',
-                    badgesKey: 'tvHorizontalBadges',
-                    badgesFallbackKey: 'horizontalBadges',
-                },
-            },
-            book: {
-                vertical: {
-                    descriptionKey: 'bookDescriptionLines',
-                    descriptionFallbackKey: 'descriptionLines',
-                    layoutKey: 'bookOverlayTextLayout',
-                    layoutFallbackKey: 'overlayTextLayout',
-                    visibilityKey: 'bookOverlayTextVisibility',
-                    visibilityFallbackKey: 'overlayTextVisibility',
-                    badgesKey: 'bookBadges',
-                    badgesFallbackKey: 'badges',
-                },
-                horizontal: {
-                    descriptionKey: 'bookHorizontalDescriptionLines',
-                    descriptionFallbackKey: 'horizontalDescriptionLines',
-                    layoutKey: 'bookHorizontalOverlayTextLayout',
-                    layoutFallbackKey: 'horizontalOverlayTextLayout',
-                    visibilityKey: 'bookHorizontalOverlayTextVisibility',
-                    visibilityFallbackKey: 'horizontalOverlayTextVisibility',
-                    badgesKey: 'bookHorizontalBadges',
-                    badgesFallbackKey: 'horizontalBadges',
-                },
-            },
-            manga: {
-                vertical: {
-                    descriptionKey: 'mangaDescriptionLines',
-                    descriptionFallbackKey: 'descriptionLines',
-                    layoutKey: 'mangaOverlayTextLayout',
-                    layoutFallbackKey: 'overlayTextLayout',
-                    visibilityKey: 'mangaOverlayTextVisibility',
-                    visibilityFallbackKey: 'overlayTextVisibility',
-                    badgesKey: 'mangaBadges',
-                    badgesFallbackKey: 'badges',
-                },
-                horizontal: {
-                    descriptionKey: 'mangaHorizontalDescriptionLines',
-                    descriptionFallbackKey: 'horizontalDescriptionLines',
-                    layoutKey: 'mangaHorizontalOverlayTextLayout',
-                    layoutFallbackKey: 'horizontalOverlayTextLayout',
-                    visibilityKey: 'mangaHorizontalOverlayTextVisibility',
-                    visibilityFallbackKey: 'horizontalOverlayTextVisibility',
-                    badgesKey: 'mangaHorizontalBadges',
-                    badgesFallbackKey: 'horizontalBadges',
-                },
-            },
-        };
+        const customizationProfile = (kind: MediaKind, orientation: 'vertical' | 'horizontal'): CustomizationProfile => ({
+            descriptionKey: customizationKey(kind, orientation, 'descriptionLines'),
+            descriptionFallbackKey: customizationFallbackKey(kind, orientation, 'descriptionLines'),
+            layoutKey: customizationKey(kind, orientation, 'overlayTextLayout'),
+            layoutFallbackKey: customizationFallbackKey(kind, orientation, 'overlayTextLayout'),
+            visibilityKey: customizationKey(kind, orientation, 'overlayTextVisibility'),
+            visibilityFallbackKey: customizationFallbackKey(kind, orientation, 'overlayTextVisibility'),
+            badgesKey: customizationKey(kind, orientation, 'badges'),
+            badgesFallbackKey: customizationFallbackKey(kind, orientation, 'badges'),
+        });
         const readSetting = <T>(key: keyof LorebaseSettings): T => settingsRecord[key as string] as T;
         const readDefault = <T>(key: keyof LorebaseSettings): T => defaultsRecord[key as string] as T;
         const readSanitized = <T>(key: keyof LorebaseSettings): T | undefined => sanitizedRecord[key as string] as T | undefined;
 
-        for (const media of ['game', 'anime', 'movie', 'tv', 'book', 'manga'] as const) {
+        for (const { kind } of MEDIA_TYPES) {
             for (const orientation of ['vertical', 'horizontal'] as const) {
-                const profile = mediaCustomization[media][orientation];
+                const profile = customizationProfile(kind, orientation);
                 settingsRecord[profile.descriptionKey as string] = normalizeDescriptionLines(
                     readSanitized(profile.descriptionKey),
                     profile.descriptionFallbackKey

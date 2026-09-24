@@ -6,6 +6,7 @@
 import { App, Notice, TFile } from 'obsidian';
 import { AnimeItem, CommunityRating, GameDlc, GameItem, LorebaseSettings, MediaItem } from '../types';
 import { t } from '../localization';
+import { getMediaTypeInfo, kindToMediaType } from '../media/mediaTypes';
 import { ChoiceModal, ExistingFileChoice, ExistingFileChoiceModal, ExistingFilePreview, MultiSelectSearchModal, SearchProviderOption } from '../modals/IntegrationModals';
 import { AnimePartsReviewModal } from '../modals/AnimePartsReviewModal';
 import { CoverPickerModal, coverSearchErrorKey } from '../modals/CoverPickerModal';
@@ -738,12 +739,7 @@ export class IntegrationService {
     }
 
     private getKindIcon(kind: MediaKind): string {
-        if (kind === 'games') return 'gamepad-2';
-        if (kind === 'anime') return 'clapperboard';
-        if (kind === 'movies') return 'film';
-        if (kind === 'tv') return 'tv';
-        if (kind === 'books') return 'book-open';
-        return 'book-open-text';
+        return getMediaTypeInfo(kindToMediaType(kind)).icon;
     }
 
     private async fetchDlcForSource(source: MediaSourceSelection): Promise<GameDlc[] | null> {
@@ -965,17 +961,7 @@ export class IntegrationService {
                 cancelText: t('commonCancel'),
                 providerOptions,
                 initialProviderId,
-                titleIcon: kind === 'games'
-                    ? 'gamepad-2'
-                    : kind === 'anime'
-                        ? 'clapperboard'
-                        : kind === 'movies'
-                            ? 'film'
-                            : kind === 'tv'
-                                ? 'tv'
-                                : kind === 'books'
-                                    ? 'book-open'
-                                    : 'book-open-text',
+                titleIcon: this.getKindIcon(kind),
                 syncActionText: kind === 'games' ? 'Steam Sync' : undefined,
                 onSyncAction: kind === 'games' ? this.runSteamSync : undefined,
                 manualActionText: allowManualFallback ? t('promptAddModeManual') : undefined,
