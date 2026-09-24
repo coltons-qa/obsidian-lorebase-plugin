@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { buildSimpleTemplate, ensureIntegrationSourceFrontmatter, getEffectiveSimpleTemplateFields, renderTemplate, sanitizeFileName, setFrontmatterField } from '../src/services/integrations/templateUtils';
+import { DEFAULT_SETTINGS } from '../src/constants';
+import type { MediaKind } from '../src/services/integrations/types';
 import { renderMangaPartsYaml } from '../src/services/integrations/shared';
 
 describe('templateUtils', () => {
@@ -294,5 +296,22 @@ describe('templateUtils', () => {
     it('sanitizes file names', () => {
         const result = sanitizeFileName('Bad:*Name?/Game\\Title');
         expect(result).toBe('BadNameGameTitle');
+    });
+});
+
+describe('default integration templates', () => {
+    // These were hand-written strings that kept the pre-migration keys after the
+    // generator moved on; a reset or fresh install brought the legacy keys back.
+    const media = DEFAULT_SETTINGS.integrations!.media;
+
+    it.each(Object.keys(media) as MediaKind[])('%s default template is the generator output for its default fields', (kind) => {
+        expect(media[kind].template).toBe(buildSimpleTemplate(kind, media[kind].templateFields));
+    });
+
+    it('uses the migrated keys for TV', () => {
+        expect(media.tv.template).toContain('season-data:');
+        expect(media.tv.template).not.toContain('tv_parts');
+        expect(media.tv.template).not.toContain('episode_current');
+        expect(media.tv.template).not.toContain('poster_b');
     });
 });

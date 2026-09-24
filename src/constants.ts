@@ -5,6 +5,7 @@
 
 import { LorebaseSettings, MediaStatus, CardSize, CardOrientation, CardStyle, NoteImportFieldMapping, UserRatingValue } from './types';
 import type { TranslationKey } from './localization';
+import { buildSimpleTemplate } from './services/integrations/templateUtils';
 
 // =============================================================================
 // DEFAULT SETTINGS
@@ -55,172 +56,6 @@ export const DEFAULT_NOTE_IMPORT_FIELD_MAPPINGS: NoteImportFieldMapping[] = [
     { key: 'url', aliases: ['url', 'source', 'link'] },
 ];
 
-const DEFAULT_ANIME_TEMPLATE = `---
-type: "anime"
-title: "{{VALUE:name}}"
-image: "{{VALUE:image}}"
-image_b: "{{VALUE:ImageHorizontal}}"
-plot: "{{VALUE:Plot}}"
-tags: "{{VALUE:tags}}"
-year: {{VALUE:Year}}
-studios: "{{VALUE:studios}}"
-format: "{{VALUE:format}}"
-season_current: {{VALUE:seasonCurrent}}
-episode_current: {{VALUE:episodeCurrent}}
-episode_total: {{VALUE:episodeTotal}}
-active_part_id: "{{VALUE:activePartId}}"
-anime_parts:
-{{VALUE:animePartsYaml}}
-rating: {{VALUE:rating}}
-communityRating: {{VALUE:communityRating}}
-communityVotes: {{VALUE:communityVotes}}
-communityRatingProvider: "{{VALUE:communityRatingProvider}}"
-status: "{{VALUE:status}}"
-favorite: false
-integration_provider: "{{VALUE:integrationProvider}}"
-integration_id: "{{VALUE:integrationId}}"
-url: "{{VALUE:url}}"
----`;
-
-const DEFAULT_MOVIE_TEMPLATE = `---
-type: "movie"
-title: "{{VALUE:name}}"
-poster: "{{VALUE:Poster}}"
-poster_b: "{{VALUE:PosterHorizontal}}"
-plot: "{{VALUE:Plot}}"
-genres: "{{VALUE:genres}}"
-year: {{VALUE:Year}}
-released: {{VALUE:released}}
-runtime: {{VALUE:runtime}}
-directors: "{{VALUE:directors}}"
-actors: "{{VALUE:actors}}"
-rating: {{VALUE:rating}}
-communityRating: {{VALUE:communityRating}}
-communityVotes: {{VALUE:communityVotes}}
-communityRatingProvider: "{{VALUE:communityRatingProvider}}"
-status: "{{VALUE:status}}"
-favorite: false
-active_part_id: "{{VALUE:activePartId}}"
-movie_parts:
-{{VALUE:videoPartsYaml}}
-integration_provider: "{{VALUE:integrationProvider}}"
-integration_id: "{{VALUE:integrationId}}"
-url: "{{VALUE:url}}"
----`;
-
-const DEFAULT_TV_TEMPLATE = `---
-type: "tv"
-title: "{{VALUE:name}}"
-poster: "{{VALUE:Poster}}"
-poster_b: "{{VALUE:PosterHorizontal}}"
-plot: "{{VALUE:Plot}}"
-genres: "{{VALUE:genres}}"
-year: {{VALUE:Year}}
-released: {{VALUE:released}}
-runtime: {{VALUE:runtime}}
-directors: "{{VALUE:directors}}"
-actors: "{{VALUE:actors}}"
-seasons: {{VALUE:seasons}}
-episode_current: {{VALUE:episodeCurrent}}
-episode_total: {{VALUE:episodeTotal}}
-active_part_id: "{{VALUE:activePartId}}"
-tv_parts:
-{{VALUE:videoPartsYaml}}
-rating: {{VALUE:rating}}
-communityRating: {{VALUE:communityRating}}
-communityVotes: {{VALUE:communityVotes}}
-communityRatingProvider: "{{VALUE:communityRatingProvider}}"
-status: "{{VALUE:status}}"
-favorite: false
-integration_provider: "{{VALUE:integrationProvider}}"
-integration_id: "{{VALUE:integrationId}}"
-url: "{{VALUE:url}}"
----`;
-
-const DEFAULT_BOOK_TEMPLATE = `---
-type: "book"
-title: "{{VALUE:name}}"
-poster: "{{VALUE:Poster}}"
-poster_b: "{{VALUE:PosterHorizontal}}"
-plot: "{{VALUE:Plot}}"
-authors: "{{VALUE:authors}}"
-publisher: "{{VALUE:publisher}}"
-genres: "{{VALUE:genres}}"
-tags: "{{VALUE:tags}}"
-year: {{VALUE:Year}}
-released: {{VALUE:released}}
-page_current: {{VALUE:pageCurrent}}
-page_total: {{VALUE:pageTotal}}
-chapter_current: {{VALUE:chapterCurrent}}
-chapter_total: {{VALUE:chapterTotal}}
-rating: {{VALUE:rating}}
-communityRating: {{VALUE:communityRating}}
-communityVotes: {{VALUE:communityVotes}}
-communityRatingProvider: "{{VALUE:communityRatingProvider}}"
-status: "{{VALUE:status}}"
-favorite: false
-integration_provider: "{{VALUE:integrationProvider}}"
-integration_id: "{{VALUE:integrationId}}"
-url: "{{VALUE:url}}"
----`;
-
-const DEFAULT_MANGA_TEMPLATE = `---
-type: "manga"
-title: "{{VALUE:name}}"
-poster: "{{VALUE:Poster}}"
-poster_b: "{{VALUE:PosterHorizontal}}"
-plot: "{{VALUE:Plot}}"
-authors: "{{VALUE:authors}}"
-artists: "{{VALUE:artists}}"
-genres: "{{VALUE:genres}}"
-tags: "{{VALUE:tags}}"
-year: {{VALUE:Year}}
-chapter_current: {{VALUE:chapterCurrent}}
-chapter_total: {{VALUE:chapterTotal}}
-volume_current: {{VALUE:volumeCurrent}}
-volume_total: {{VALUE:volumeTotal}}
-active_part_id: "{{VALUE:activePartId}}"
-manga_parts:
-{{VALUE:mangaPartsYaml}}
-rating: {{VALUE:rating}}
-communityRating: {{VALUE:communityRating}}
-communityVotes: {{VALUE:communityVotes}}
-communityRatingProvider: "{{VALUE:communityRatingProvider}}"
-status: "{{VALUE:status}}"
-favorite: false
-integration_provider: "{{VALUE:integrationProvider}}"
-integration_id: "{{VALUE:integrationId}}"
-url: "{{VALUE:url}}"
----`;
-
-const DEFAULT_GAME_TEMPLATE = `---
-type: "game"
-name: "{{VALUE:name}}"
-poster: "{{VALUE:Poster}}"
-poster_b: "{{VALUE:PosterHorizontal}}"
-gameSeries: "{{VALUE:gameSeries}}"
-genres:
-  - "{{VALUE:genres}}"
-plot: "{{VALUE:Plot}}"
-platforms: "{{VALUE:platforms}}"
-year: {{VALUE:Year}}
-released: "{{VALUE:released}}"
-developers: "{{VALUE:developers}}"
-publishers: "{{VALUE:publishers}}"
-userRating: {{VALUE:userRating}}
-communityRating: {{VALUE:communityRating}}
-communityVotes: {{VALUE:communityVotes}}
-communityRatingProvider: "{{VALUE:communityRatingProvider}}"
-status: "{{VALUE:status}}"
-owned: "{{VALUE:owned}}"
-favorite: false
-integration_provider: "{{VALUE:integrationProvider}}"
-integration_id: "{{VALUE:integrationId}}"
-url: "{{VALUE:url}}"
-main: {{VALUE:main}}
-main_plus_sides: {{VALUE:main_plus_sides}}
-perfectionist: {{VALUE:perfectionist}}
----`;
 const DEFAULT_GAME_TEMPLATE_FIELDS = [
     'type',
     'name',
@@ -724,42 +559,42 @@ export const DEFAULT_SETTINGS: LorebaseSettings = {
                 templateMode: 'simple',
                 templateFields: [...DEFAULT_GAME_TEMPLATE_FIELDS],
                 howLongToBeatEnabled: false,
-                template: DEFAULT_GAME_TEMPLATE,
+                template: buildSimpleTemplate('games', DEFAULT_GAME_TEMPLATE_FIELDS),
             },
             anime: {
                 provider: 'anilist',
                 templateEnabled: true,
                 templateMode: 'simple',
                 templateFields: [...DEFAULT_ANIME_TEMPLATE_FIELDS],
-                template: DEFAULT_ANIME_TEMPLATE,
+                template: buildSimpleTemplate('anime', DEFAULT_ANIME_TEMPLATE_FIELDS),
             },
             movies: {
                 provider: 'tmdb',
                 templateEnabled: true,
                 templateMode: 'simple',
                 templateFields: [...DEFAULT_MOVIE_TEMPLATE_FIELDS],
-                template: DEFAULT_MOVIE_TEMPLATE,
+                template: buildSimpleTemplate('movies', DEFAULT_MOVIE_TEMPLATE_FIELDS),
             },
             tv: {
                 provider: 'tmdb',
                 templateEnabled: true,
                 templateMode: 'simple',
                 templateFields: [...DEFAULT_TV_TEMPLATE_FIELDS],
-                template: DEFAULT_TV_TEMPLATE,
+                template: buildSimpleTemplate('tv', DEFAULT_TV_TEMPLATE_FIELDS),
             },
             books: {
                 provider: 'hardcover',
                 templateEnabled: true,
                 templateMode: 'simple',
                 templateFields: [...DEFAULT_BOOK_TEMPLATE_FIELDS],
-                template: DEFAULT_BOOK_TEMPLATE,
+                template: buildSimpleTemplate('books', DEFAULT_BOOK_TEMPLATE_FIELDS),
             },
             manga: {
                 provider: 'anilist',
                 templateEnabled: true,
                 templateMode: 'simple',
                 templateFields: [...DEFAULT_MANGA_TEMPLATE_FIELDS],
-                template: DEFAULT_MANGA_TEMPLATE,
+                template: buildSimpleTemplate('manga', DEFAULT_MANGA_TEMPLATE_FIELDS),
             },
         },
     },
