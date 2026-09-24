@@ -546,13 +546,39 @@ const MANGA_FIELDS: Spec[] = [
     urlField(),
 ];
 
+/**
+ * Manga's template still writes several legacy keys, but ReadingService's shared reader
+ * reads the kebab spellings of them for books and manga alike. A refresh must write what
+ * the reader reads, so these provider aliases follow the reader rather than the template.
+ * Reconciling manga's template with its reader removes this.
+ */
+const MANGA_REFRESH_KEYS: Record<string, string> = {
+    poster_b: 'poster-b',
+    plot: 'synopsis',
+    communityRating: 'community-rating',
+    communityVotes: 'community-votes',
+    communityRatingProvider: 'community-rating-provider',
+    integration_provider: 'integration-provider',
+    integration_id: 'integration-id',
+};
+
+function withReaderProviderKeys(fields: Spec[], overrides: Record<string, string>): Spec[] {
+    return fields.map((field) => {
+        if (!field.provider) return field;
+        const provider = Object.fromEntries(
+            Object.entries(field.provider).map(([providerField, key]) => [providerField, overrides[providerField] ?? key])
+        );
+        return { ...field, provider };
+    });
+}
+
 export const FIELD_REGISTRY: Record<MediaKind, readonly FieldSpec[]> = {
     games: GAME_FIELDS,
     anime: ANIME_FIELDS,
     movies: videoFields('movies'),
     tv: [...videoFields('tv'), ...TV_EXTRA_FIELDS],
     books: BOOK_FIELDS,
-    manga: MANGA_FIELDS,
+    manga: withReaderProviderKeys(MANGA_FIELDS, MANGA_REFRESH_KEYS),
 };
 
 /** Looks up one field of a kind by name; throws on a typo so a bad name fails loudly. */
@@ -615,4 +641,14 @@ export function getProviderAliases(kind: MediaKind): Record<string, string> {
     const aliases: Record<string, string> = {};
     for (const field of FIELD_REGISTRY[kind]) Object.assign(aliases, field.provider ?? {});
     return aliases;
+}
+
+/**
+ * Every kind's provider aliases in one map, for callers that merge before the media kind
+ * is known (note import). Where kinds disagree the migrated kinds win, since anime and
+ * manga are the ones still on legacy keys.
+ */
+export function getCombinedProviderAliases(): Record<string, string> {
+    const order: MediaKind[] = ['anime', 'manga', 'games', 'movies', 'tv', 'books'];
+    return Object.assign({}, ...order.map((kind) => getProviderAliases(kind)));
 }

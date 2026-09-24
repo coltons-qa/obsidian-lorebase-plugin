@@ -850,7 +850,7 @@ export class SteamSyncService {
         const series = this.seriesByAppId.get(game.appId);
         if (series) {
             const current = this.app.metadataCache.getFileCache(file)?.frontmatter ?? {};
-            Object.assign(updates, mergeProviderMetadata(current, { gameSeries: series }).patch);
+            Object.assign(updates, mergeProviderMetadata(current, { gameSeries: series }, [], { kind: 'games' }).patch);
         }
 
         if (settings.fields.playtime) {

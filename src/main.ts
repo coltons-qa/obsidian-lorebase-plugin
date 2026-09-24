@@ -1184,7 +1184,7 @@ export default class LorebasePlugin extends Plugin {
                 delete incoming.poster;
                 delete incoming.poster_b;
             }
-            const merged = synchronizeProviderMetadata(current, incoming, source);
+            const merged = synchronizeProviderMetadata(current, incoming, source, { kind });
             this.repairGeneratedSteamPoster(current, incoming, source, merged);
             await this.metadataService.updateMetadata(file, merged.patch);
 

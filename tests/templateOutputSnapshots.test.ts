@@ -2,11 +2,12 @@ import { describe, expect, it } from 'vitest';
 import { buildSimpleTemplate, getDefaultTemplateFields } from '../src/services/integrations/templateUtils';
 import { DEFAULT_SETTINGS } from '../src/constants';
 import * as SettingsFields from '../src/settings/sections/constants';
+import { FIELD_ALIASES } from '../src/services/integrations/enrichment';
 import type { MediaKind } from '../src/services/integrations/types';
 
 /**
- * Golden outputs recorded before the template builder, field lists and settings
- * checkboxes moved onto the field registry. A diff here means note output changed.
+ * Golden outputs recorded before the template builder, field lists, settings
+ * checkboxes and enrichment aliases moved onto the field registry. A diff here means note output changed.
  */
 const KINDS: MediaKind[] = ['games', 'anime', 'movies', 'tv', 'books', 'manga'];
 
@@ -37,5 +38,9 @@ describe('template output snapshots', () => {
             books: SettingsFields.BOOK_TEMPLATE_FIELDS,
             manga: SettingsFields.MANGA_TEMPLATE_FIELDS,
         }).toMatchSnapshot();
+    });
+
+    it('combined enrichment alias map', () => {
+        expect(FIELD_ALIASES).toMatchSnapshot();
     });
 });

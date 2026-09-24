@@ -7,6 +7,7 @@ import type {
     ProviderId,
 } from './types';
 import type { GameDlc } from '../../types';
+import { getCombinedProviderAliases, getProviderAliases } from '../../fields/registry';
 
 export interface EnrichmentMergeResult {
     values: Record<string, unknown>;
@@ -20,6 +21,11 @@ export interface EnrichmentMergeOptions {
     overwriteProviderFields?: boolean;
     previousSourceSnapshot?: ProviderSourceSnapshot | null;
     forceProviderFields?: boolean;
+    /**
+     * The note's media kind, which selects that kind's key spellings. Without it the
+     * combined map applies, which suits only the migrated kinds.
+     */
+    kind?: MediaKind;
 }
 
 export interface ProviderSourceSnapshot {
@@ -36,50 +42,14 @@ function readSnapshotField(current: Record<string, unknown>): unknown {
     return current[SOURCE_SNAPSHOT_FIELD];
 }
 
-// Maps provider field names (the shape IntegrationService emits) to the canonical
-// note YAML key. Each list is a single entry after the Stage 5 legacy cleanup.
-export const FIELD_ALIASES: Record<string, string[]> = {
-    name: ['title'],
-    poster: ['poster'],
-    poster_b: ['poster-b'],
-    plot: ['synopsis'],
-    genres: ['genres'],
-    tags: ['tags'],
-    platforms: ['platforms'],
-    studios: ['studios'],
-    networks: ['networks'],
-    year: ['year'],
-    released: ['released'],
-    url: ['url'],
-    developers: ['author'],
-    publishers: ['publishers'],
-    publisher: ['publisher'],
-    authors: ['author'],
-    artists: ['artists'],
-    director: ['author'],
-    actors: ['cast'],
-    episode_total: ['episodes'],
-    season_total: ['season_total'],
-    page_total: ['page-total'],
-    chapter_total: ['chapter-total'],
-    volume_total: ['volume_total'],
-    communityRating: ['community-rating'],
-    communityVotes: ['community-votes'],
-    communityRatingProvider: ['community-rating-provider'],
-    gameSeries: ['series'],
-    // bookSeries also maps to 'series'. Safe: enrichment operates per-note,
-    // and a book note never receives gameSeries values (or vice-versa).
-    bookSeries: ['series'],
-    seriesPosition: ['series-position'],
-    steamAppId: ['steam-app-id'],
-    main: ['hltb-main'],
-    main_plus_sides: ['hltb-main-sides'],
-    perfectionist: ['hltb-perfectionist'],
-    tv_parts: ['season-data'],
-    showStatus: ['show-status'],
-    integration_provider: ['integration-provider'],
-    integration_id: ['integration-id'],
-};
+/**
+ * Provider field name (the shape IntegrationService emits) to the note YAML key, across
+ * every kind. Derived from the field registry; a merge that knows its kind uses that
+ * kind's aliases instead.
+ */
+export const FIELD_ALIASES: Record<string, string[]> = Object.fromEntries(
+    Object.entries(getCombinedProviderAliases()).map(([providerField, key]) => [providerField, [key]])
+);
 
 const ZERO_IS_EMPTY = new Set([
     'season_total',
@@ -112,6 +82,7 @@ export function mergeProviderMetadata(
     options: EnrichmentMergeOptions = {}
 ): EnrichmentMergeResult {
     const denied = new Set(Array.from(blacklist, (value) => value.trim()).filter(Boolean));
+    const aliases = options.kind ? getProviderAliases(options.kind) : undefined;
     const values = { ...current };
     const patch: Record<string, unknown> = {};
     const filledFields: string[] = [];
@@ -125,14 +96,14 @@ export function mergeProviderMetadata(
         if (isEmptyIncoming(value)) continue;
 
         if (IDENTITY_FIELDS.has(key)) {
-            const identityKey = findExistingAlias(current, key);
+            const identityKey = findExistingAlias(current, key, aliases);
             values[identityKey] = value;
             patch[identityKey] = value;
             filledFields.push(identityKey);
             continue;
         }
 
-        const noteKey = findExistingAlias(current, key);
+        const noteKey = findExistingAlias(current, key, aliases);
         const existing = current[noteKey];
         if (isPartField(key) && Array.isArray(value)) {
             const merged = mergeStructuredList(
@@ -201,13 +172,14 @@ export function synchronizeProviderMetadata(
     current: Record<string, unknown>,
     incoming: Record<string, unknown>,
     source: Pick<MediaSourceSelection, 'provider' | 'id'>,
-    options: { forceProviderFields?: boolean } = {}
+    options: { forceProviderFields?: boolean; kind?: MediaKind } = {}
 ): EnrichmentMergeResult {
     const previousSourceSnapshot = readSourceSnapshot(readSnapshotField(current));
     const result = mergeProviderMetadata(current, incoming, [], {
         overwriteProviderFields: true,
         previousSourceSnapshot,
         forceProviderFields: options.forceProviderFields === true,
+        kind: options.kind,
     });
     const nextSnapshot = createSourceSnapshot(incoming, source);
     result.values[SOURCE_SNAPSHOT_FIELD] = nextSnapshot;
@@ -285,8 +257,15 @@ export function mediaTypeToKind(type: string): MediaKind | null {
     return null;
 }
 
-function findExistingAlias(current: Record<string, unknown>, key: string): string {
-    const aliases = FIELD_ALIASES[key] ?? [key];
+function findExistingAlias(
+    current: Record<string, unknown>,
+    key: string,
+    kindAliases?: Record<string, string>
+): string {
+    // A kind's own spelling when it declares the field; otherwise the combined map, so a
+    // field the registry does not list for this kind behaves as it did before.
+    const kindKey = kindAliases?.[key];
+    const aliases = kindKey ? [kindKey] : FIELD_ALIASES[key] ?? [key];
     const entries = Object.keys(current);
     for (const alias of aliases) {
         const exact = entries.find((candidate) => candidate === alias);

@@ -475,6 +475,55 @@ describe('media enrichment merge', () => {
 
     });
 
+    describe('per-kind aliases', () => {
+        // One alias map used to serve every kind, so refreshing an anime or manga note,
+        // whose services were left out of the kebab-case migration, wrote kebab keys
+        // those services cannot read.
+        it('writes anime fields under the keys AnimeService reads', () => {
+            const result = synchronizeProviderMetadata(
+                { type: 'anime', title: 'Frieren', plot: 'Old description.' },
+                { name: 'Frieren', plot: 'New description.', poster_b: 'https://cdn.example/wide.jpg' },
+                { provider: 'anilist', id: '154587' },
+                { kind: 'anime' }
+            );
+            expect(result.values.plot).toBe('New description.');
+            expect(result.values).not.toHaveProperty('synopsis');
+        });
+
+        it('writes manga totals under the legacy keys ReadingService reads for manga', () => {
+            const result = synchronizeProviderMetadata(
+                { type: 'manga', title: 'Berserk' },
+                { name: 'Berserk', chapter_total: 374 },
+                { provider: 'mangaupdates', id: '1' },
+                { kind: 'manga' }
+            );
+            expect(result.values.chapter_total).toBe(374);
+            expect(result.values).not.toHaveProperty('chapter-total');
+        });
+
+        it('writes a manga description where the shared reading reader looks, not the template key', () => {
+            const result = synchronizeProviderMetadata(
+                { type: 'manga', title: 'Berserk' },
+                { name: 'Berserk', plot: 'Guts.' },
+                { provider: 'mangaupdates', id: '1' },
+                { kind: 'manga' }
+            );
+            expect(result.values.synopsis).toBe('Guts.');
+            expect(result.values).not.toHaveProperty('plot');
+        });
+
+        it('keeps the migrated kinds on their kebab keys', () => {
+            const result = synchronizeProviderMetadata(
+                { type: 'book', title: 'Dune' },
+                { name: 'Dune', plot: 'Spice.', page_total: 412 },
+                { provider: 'hardcover', id: '1' },
+                { kind: 'books' }
+            );
+            expect(result.values.synopsis).toBe('Spice.');
+            expect(result.values['page-total']).toBe(412);
+        });
+    });
+
     describe('book series alias', () => {
         it('maps bookSeries to the series frontmatter key', () => {
             const current: Record<string, unknown> = {

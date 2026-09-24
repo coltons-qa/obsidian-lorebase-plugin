@@ -178,6 +178,125 @@ url: "{{VALUE:url}}"
 ---"
 `;
 
+exports[`template output snapshots > combined enrichment alias map 1`] = `
+{
+  "actors": [
+    "cast",
+  ],
+  "artists": [
+    "artists",
+  ],
+  "authors": [
+    "author",
+  ],
+  "bookSeries": [
+    "series",
+  ],
+  "chapter_total": [
+    "chapter-total",
+  ],
+  "communityRating": [
+    "community-rating",
+  ],
+  "communityRatingProvider": [
+    "community-rating-provider",
+  ],
+  "communityVotes": [
+    "community-votes",
+  ],
+  "developers": [
+    "author",
+  ],
+  "director": [
+    "author",
+  ],
+  "episode_total": [
+    "episodes",
+  ],
+  "gameSeries": [
+    "series",
+  ],
+  "genres": [
+    "genres",
+  ],
+  "integration_id": [
+    "integration-id",
+  ],
+  "integration_provider": [
+    "integration-provider",
+  ],
+  "main": [
+    "hltb-main",
+  ],
+  "main_plus_sides": [
+    "hltb-main-sides",
+  ],
+  "name": [
+    "title",
+  ],
+  "networks": [
+    "networks",
+  ],
+  "page_total": [
+    "page-total",
+  ],
+  "perfectionist": [
+    "hltb-perfectionist",
+  ],
+  "platforms": [
+    "platforms",
+  ],
+  "plot": [
+    "synopsis",
+  ],
+  "poster": [
+    "poster",
+  ],
+  "poster_b": [
+    "poster-b",
+  ],
+  "publisher": [
+    "publisher",
+  ],
+  "publishers": [
+    "publishers",
+  ],
+  "released": [
+    "released",
+  ],
+  "season_total": [
+    "season_total",
+  ],
+  "seriesPosition": [
+    "series-position",
+  ],
+  "showStatus": [
+    "show-status",
+  ],
+  "steamAppId": [
+    "steam-app-id",
+  ],
+  "studios": [
+    "studios",
+  ],
+  "tags": [
+    "tags",
+  ],
+  "tv_parts": [
+    "season-data",
+  ],
+  "url": [
+    "url",
+  ],
+  "volume_total": [
+    "volume_total",
+  ],
+  "year": [
+    "year",
+  ],
+}
+`;
+
 exports[`template output snapshots > games: allowed field list 1`] = `
 [
   "type",
