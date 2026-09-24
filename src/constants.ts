@@ -6,6 +6,7 @@
 import { LorebaseSettings, MediaStatus, CardSize, CardOrientation, CardStyle, NoteImportFieldMapping, UserRatingValue } from './types';
 import type { TranslationKey } from './localization';
 import { buildSimpleTemplate } from './services/integrations/templateUtils';
+import { getDefaultOnTemplateFields } from './fields/registry';
 
 // =============================================================================
 // DEFAULT SETTINGS
@@ -56,153 +57,17 @@ export const DEFAULT_NOTE_IMPORT_FIELD_MAPPINGS: NoteImportFieldMapping[] = [
     { key: 'url', aliases: ['url', 'source', 'link'] },
 ];
 
-const DEFAULT_GAME_TEMPLATE_FIELDS = [
-    'type',
-    'name',
-    'poster',
-    'posterHorizontal',
-    'plot',
-    'gameSeries',
-    'genres',
-    'platforms',
-    'year',
-    'released',
-    'developers',
-    'publishers',
-    'userRating',
-    'communityRating',
-    'communityVotes',
-    'communityRatingProvider',
-    'status',
-    'owned',
-    'favorite',
-    'integrationSource',
-    'url',
-];
+const DEFAULT_GAME_TEMPLATE_FIELDS = getDefaultOnTemplateFields('games');
 
-const DEFAULT_ANIME_TEMPLATE_FIELDS = [
-    'type',
-    'name',
-    'image',
-    'imageHorizontal',
-    'plot',
-    'tags',
-    'year',
-    'studios',
-    'format',
-    'animeParts',
-    'rating',
-    'communityRating',
-    'communityVotes',
-    'communityRatingProvider',
-    'status',
-    'favorite',
-    'integrationSource',
-    'url',
-];
+const DEFAULT_ANIME_TEMPLATE_FIELDS = getDefaultOnTemplateFields('anime');
 
-const DEFAULT_MOVIE_TEMPLATE_FIELDS = [
-    'type',
-    'name',
-    'poster',
-    'posterHorizontal',
-    'plot',
-    'genres',
-    'year',
-    'released',
-    'runtime',
-    'director',
-    'actors',
-    'rating',
-    'communityRating',
-    'communityVotes',
-    'communityRatingProvider',
-    'status',
-    'favorite',
-    'movieParts',
-    'integrationSource',
-    'url',
-];
+const DEFAULT_MOVIE_TEMPLATE_FIELDS = getDefaultOnTemplateFields('movies');
 
-const DEFAULT_TV_TEMPLATE_FIELDS = [
-    'type',
-    'name',
-    'poster',
-    'posterHorizontal',
-    'plot',
-    'genres',
-    'year',
-    'released',
-    'runtime',
-    'director',
-    'actors',
-    'seasons',
-    'episodeCurrent',
-    'episodeTotal',
-    'tvParts',
-    'rating',
-    'communityRating',
-    'communityVotes',
-    'communityRatingProvider',
-    'status',
-    'favorite',
-    'integrationSource',
-    'url',
-];
+const DEFAULT_TV_TEMPLATE_FIELDS = getDefaultOnTemplateFields('tv');
 
-const DEFAULT_BOOK_TEMPLATE_FIELDS = [
-    'type',
-    'name',
-    'poster',
-    'posterHorizontal',
-    'plot',
-    'bookSeries',
-    'seriesPosition',
-    'authors',
-    'publisher',
-    'genres',
-    'tags',
-    'year',
-    'released',
-    'pageCurrent',
-    'pageTotal',
-    'chapterCurrent',
-    'chapterTotal',
-    'rating',
-    'communityRating',
-    'communityVotes',
-    'communityRatingProvider',
-    'status',
-    'favorite',
-    'integrationSource',
-    'url',
-];
+const DEFAULT_BOOK_TEMPLATE_FIELDS = getDefaultOnTemplateFields('books');
 
-const DEFAULT_MANGA_TEMPLATE_FIELDS = [
-    'type',
-    'name',
-    'poster',
-    'posterHorizontal',
-    'plot',
-    'authors',
-    'artists',
-    'genres',
-    'tags',
-    'year',
-    'chapterCurrent',
-    'chapterTotal',
-    'volumeCurrent',
-    'volumeTotal',
-    'mangaParts',
-    'rating',
-    'communityRating',
-    'communityVotes',
-    'communityRatingProvider',
-    'status',
-    'favorite',
-    'integrationSource',
-    'url',
-];
+const DEFAULT_MANGA_TEMPLATE_FIELDS = getDefaultOnTemplateFields('manga');
 
 export const DEFAULT_GAME_TAG_PRESETS = [
     { id: 'check-later', label: 'Check later', tag: 'check-later', icon: 'clock' },
@@ -236,7 +101,6 @@ function createDefaultBadges(): LorebaseSettings['badges'] {
         },
     };
 }
-
 
 /** Default plugin settings */
 export const DEFAULT_SETTINGS: LorebaseSettings = {

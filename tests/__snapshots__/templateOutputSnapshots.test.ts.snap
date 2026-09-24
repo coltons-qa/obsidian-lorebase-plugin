@@ -1,0 +1,1156 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`template output snapshots > anime: allowed field list 1`] = `
+[
+  "type",
+  "name",
+  "image",
+  "imageHorizontal",
+  "plot",
+  "tags",
+  "year",
+  "studios",
+  "format",
+  "animeParts",
+  "rating",
+  "communityRating",
+  "communityVotes",
+  "communityRatingProvider",
+  "status",
+  "favorite",
+  "integrationSource",
+  "url",
+]
+`;
+
+exports[`template output snapshots > anime: template for every allowed field 1`] = `
+"---
+type: "anime"
+title: "{{VALUE:name}}"
+image: "{{VALUE:image}}"
+image_b: "{{VALUE:ImageHorizontal}}"
+plot: "{{VALUE:Plot}}"
+tags: "{{VALUE:tags}}"
+year: {{VALUE:Year}}
+studios: "{{VALUE:studios}}"
+format: "{{VALUE:format}}"
+season_current: {{VALUE:seasonCurrent}}
+episode_current: {{VALUE:episodeCurrent}}
+episode_total: {{VALUE:episodeTotal}}
+active_part_id: "{{VALUE:activePartId}}"
+anime_parts:
+{{VALUE:animePartsYaml}}
+rating: {{VALUE:rating}}
+communityRating: {{VALUE:communityRating}}
+communityVotes: {{VALUE:communityVotes}}
+communityRatingProvider: "{{VALUE:communityRatingProvider}}"
+status: "{{VALUE:status}}"
+favorite: false
+integration_provider: "{{VALUE:integrationProvider}}"
+integration_id: "{{VALUE:integrationId}}"
+url: "{{VALUE:url}}"
+---"
+`;
+
+exports[`template output snapshots > anime: template for the default selection 1`] = `
+"---
+type: "anime"
+title: "{{VALUE:name}}"
+image: "{{VALUE:image}}"
+image_b: "{{VALUE:ImageHorizontal}}"
+plot: "{{VALUE:Plot}}"
+tags: "{{VALUE:tags}}"
+year: {{VALUE:Year}}
+studios: "{{VALUE:studios}}"
+format: "{{VALUE:format}}"
+season_current: {{VALUE:seasonCurrent}}
+episode_current: {{VALUE:episodeCurrent}}
+episode_total: {{VALUE:episodeTotal}}
+active_part_id: "{{VALUE:activePartId}}"
+anime_parts:
+{{VALUE:animePartsYaml}}
+rating: {{VALUE:rating}}
+communityRating: {{VALUE:communityRating}}
+communityVotes: {{VALUE:communityVotes}}
+communityRatingProvider: "{{VALUE:communityRatingProvider}}"
+status: "{{VALUE:status}}"
+favorite: false
+integration_provider: "{{VALUE:integrationProvider}}"
+integration_id: "{{VALUE:integrationId}}"
+url: "{{VALUE:url}}"
+---"
+`;
+
+exports[`template output snapshots > books: allowed field list 1`] = `
+[
+  "type",
+  "name",
+  "poster",
+  "posterHorizontal",
+  "plot",
+  "bookSeries",
+  "seriesPosition",
+  "authors",
+  "publisher",
+  "genres",
+  "tags",
+  "year",
+  "released",
+  "pageCurrent",
+  "pageTotal",
+  "chapterCurrent",
+  "chapterTotal",
+  "rating",
+  "communityRating",
+  "communityVotes",
+  "communityRatingProvider",
+  "status",
+  "favorite",
+  "owned",
+  "count",
+  "repeatable",
+  "illustrator",
+  "integrationSource",
+  "url",
+]
+`;
+
+exports[`template output snapshots > books: template for every allowed field 1`] = `
+"---
+type: "book"
+title: "{{VALUE:name}}"
+poster: "{{VALUE:Poster}}"
+poster-b: "{{VALUE:PosterHorizontal}}"
+synopsis: "{{VALUE:Plot}}"
+series: "{{VALUE:bookSeries}}"
+series-position: {{VALUE:seriesPosition}}
+author: "{{VALUE:authors}}"
+publisher: "{{VALUE:publisher}}"
+genres: "{{VALUE:genres}}"
+tags: "{{VALUE:tags}}"
+year: {{VALUE:Year}}
+released: {{VALUE:released}}
+page-current: {{VALUE:pageCurrent}}
+page-total: {{VALUE:pageTotal}}
+chapter-current: {{VALUE:chapterCurrent}}
+chapter-total: {{VALUE:chapterTotal}}
+rating: {{VALUE:rating}}
+community-rating: {{VALUE:communityRating}}
+community-votes: {{VALUE:communityVotes}}
+community-rating-provider: "{{VALUE:communityRatingProvider}}"
+status: "{{VALUE:status}}"
+favorite: false
+repeatable: false
+integration-provider: "{{VALUE:integrationProvider}}"
+integration-id: "{{VALUE:integrationId}}"
+url: "{{VALUE:url}}"
+---"
+`;
+
+exports[`template output snapshots > books: template for the default selection 1`] = `
+"---
+type: "book"
+title: "{{VALUE:name}}"
+poster: "{{VALUE:Poster}}"
+poster-b: "{{VALUE:PosterHorizontal}}"
+synopsis: "{{VALUE:Plot}}"
+series: "{{VALUE:bookSeries}}"
+series-position: {{VALUE:seriesPosition}}
+author: "{{VALUE:authors}}"
+publisher: "{{VALUE:publisher}}"
+genres: "{{VALUE:genres}}"
+tags: "{{VALUE:tags}}"
+year: {{VALUE:Year}}
+released: {{VALUE:released}}
+page-current: {{VALUE:pageCurrent}}
+page-total: {{VALUE:pageTotal}}
+chapter-current: {{VALUE:chapterCurrent}}
+chapter-total: {{VALUE:chapterTotal}}
+rating: {{VALUE:rating}}
+community-rating: {{VALUE:communityRating}}
+community-votes: {{VALUE:communityVotes}}
+community-rating-provider: "{{VALUE:communityRatingProvider}}"
+status: "{{VALUE:status}}"
+favorite: false
+integration-provider: "{{VALUE:integrationProvider}}"
+integration-id: "{{VALUE:integrationId}}"
+url: "{{VALUE:url}}"
+---"
+`;
+
+exports[`template output snapshots > games: allowed field list 1`] = `
+[
+  "type",
+  "name",
+  "poster",
+  "posterHorizontal",
+  "plot",
+  "gameSeries",
+  "genres",
+  "platforms",
+  "year",
+  "released",
+  "developers",
+  "publishers",
+  "userRating",
+  "communityRating",
+  "communityVotes",
+  "communityRatingProvider",
+  "status",
+  "favorite",
+  "owned",
+  "count",
+  "repeatable",
+  "myPlatform",
+  "integrationSource",
+  "url",
+]
+`;
+
+exports[`template output snapshots > games: template for every allowed field 1`] = `
+"---
+type: "game"
+title: "{{VALUE:name}}"
+poster: "{{VALUE:Poster}}"
+poster-b: "{{VALUE:PosterHorizontal}}"
+synopsis: "{{VALUE:Plot}}"
+series: "{{VALUE:gameSeries}}"
+genres: "{{VALUE:genres}}"
+platforms: "{{VALUE:platforms}}"
+year: {{VALUE:Year}}
+released: "{{VALUE:released}}"
+author: "{{VALUE:developers}}"
+publishers: "{{VALUE:publishers}}"
+user-rating: {{VALUE:userRating}}
+community-rating: {{VALUE:communityRating}}
+community-votes: {{VALUE:communityVotes}}
+community-rating-provider: "{{VALUE:communityRatingProvider}}"
+status: "{{VALUE:status}}"
+favorite: false
+repeatable: false
+integration-provider: "{{VALUE:integrationProvider}}"
+integration-id: "{{VALUE:integrationId}}"
+url: "{{VALUE:url}}"
+---"
+`;
+
+exports[`template output snapshots > games: template for the default selection 1`] = `
+"---
+type: "game"
+title: "{{VALUE:name}}"
+poster: "{{VALUE:Poster}}"
+poster-b: "{{VALUE:PosterHorizontal}}"
+synopsis: "{{VALUE:Plot}}"
+series: "{{VALUE:gameSeries}}"
+genres: "{{VALUE:genres}}"
+platforms: "{{VALUE:platforms}}"
+year: {{VALUE:Year}}
+released: "{{VALUE:released}}"
+author: "{{VALUE:developers}}"
+publishers: "{{VALUE:publishers}}"
+user-rating: {{VALUE:userRating}}
+community-rating: {{VALUE:communityRating}}
+community-votes: {{VALUE:communityVotes}}
+community-rating-provider: "{{VALUE:communityRatingProvider}}"
+status: "{{VALUE:status}}"
+favorite: false
+integration-provider: "{{VALUE:integrationProvider}}"
+integration-id: "{{VALUE:integrationId}}"
+url: "{{VALUE:url}}"
+---"
+`;
+
+exports[`template output snapshots > games: template with HowLongToBeat fields 1`] = `
+"---
+type: "game"
+title: "{{VALUE:name}}"
+poster: "{{VALUE:Poster}}"
+poster-b: "{{VALUE:PosterHorizontal}}"
+synopsis: "{{VALUE:Plot}}"
+series: "{{VALUE:gameSeries}}"
+genres: "{{VALUE:genres}}"
+platforms: "{{VALUE:platforms}}"
+year: {{VALUE:Year}}
+released: "{{VALUE:released}}"
+author: "{{VALUE:developers}}"
+publishers: "{{VALUE:publishers}}"
+user-rating: {{VALUE:userRating}}
+community-rating: {{VALUE:communityRating}}
+community-votes: {{VALUE:communityVotes}}
+community-rating-provider: "{{VALUE:communityRatingProvider}}"
+status: "{{VALUE:status}}"
+favorite: false
+repeatable: false
+integration-provider: "{{VALUE:integrationProvider}}"
+integration-id: "{{VALUE:integrationId}}"
+url: "{{VALUE:url}}"
+hltb-main: {{VALUE:main}}
+hltb-main-sides: {{VALUE:main_plus_sides}}
+hltb-perfectionist: {{VALUE:perfectionist}}
+---"
+`;
+
+exports[`template output snapshots > manga: allowed field list 1`] = `
+[
+  "type",
+  "name",
+  "poster",
+  "posterHorizontal",
+  "plot",
+  "authors",
+  "artists",
+  "genres",
+  "tags",
+  "year",
+  "chapterCurrent",
+  "chapterTotal",
+  "volumeCurrent",
+  "volumeTotal",
+  "mangaParts",
+  "rating",
+  "communityRating",
+  "communityVotes",
+  "communityRatingProvider",
+  "status",
+  "favorite",
+  "integrationSource",
+  "url",
+]
+`;
+
+exports[`template output snapshots > manga: template for every allowed field 1`] = `
+"---
+type: "manga"
+title: "{{VALUE:name}}"
+poster: "{{VALUE:Poster}}"
+poster_b: "{{VALUE:PosterHorizontal}}"
+plot: "{{VALUE:Plot}}"
+authors: "{{VALUE:authors}}"
+artists: "{{VALUE:artists}}"
+genres: "{{VALUE:genres}}"
+tags: "{{VALUE:tags}}"
+year: {{VALUE:Year}}
+chapter_current: {{VALUE:chapterCurrent}}
+chapter_total: {{VALUE:chapterTotal}}
+volume_current: {{VALUE:volumeCurrent}}
+volume_total: {{VALUE:volumeTotal}}
+active_part_id: "{{VALUE:activePartId}}"
+manga_parts:
+{{VALUE:mangaPartsYaml}}
+rating: {{VALUE:rating}}
+communityRating: {{VALUE:communityRating}}
+communityVotes: {{VALUE:communityVotes}}
+communityRatingProvider: "{{VALUE:communityRatingProvider}}"
+status: "{{VALUE:status}}"
+favorite: false
+integration_provider: "{{VALUE:integrationProvider}}"
+integration_id: "{{VALUE:integrationId}}"
+url: "{{VALUE:url}}"
+---"
+`;
+
+exports[`template output snapshots > manga: template for the default selection 1`] = `
+"---
+type: "manga"
+title: "{{VALUE:name}}"
+poster: "{{VALUE:Poster}}"
+poster_b: "{{VALUE:PosterHorizontal}}"
+plot: "{{VALUE:Plot}}"
+authors: "{{VALUE:authors}}"
+artists: "{{VALUE:artists}}"
+genres: "{{VALUE:genres}}"
+tags: "{{VALUE:tags}}"
+year: {{VALUE:Year}}
+chapter_current: {{VALUE:chapterCurrent}}
+chapter_total: {{VALUE:chapterTotal}}
+volume_current: {{VALUE:volumeCurrent}}
+volume_total: {{VALUE:volumeTotal}}
+active_part_id: "{{VALUE:activePartId}}"
+manga_parts:
+{{VALUE:mangaPartsYaml}}
+rating: {{VALUE:rating}}
+communityRating: {{VALUE:communityRating}}
+communityVotes: {{VALUE:communityVotes}}
+communityRatingProvider: "{{VALUE:communityRatingProvider}}"
+status: "{{VALUE:status}}"
+favorite: false
+integration_provider: "{{VALUE:integrationProvider}}"
+integration_id: "{{VALUE:integrationId}}"
+url: "{{VALUE:url}}"
+---"
+`;
+
+exports[`template output snapshots > movies: allowed field list 1`] = `
+[
+  "type",
+  "name",
+  "poster",
+  "posterHorizontal",
+  "plot",
+  "genres",
+  "year",
+  "released",
+  "runtime",
+  "director",
+  "actors",
+  "rating",
+  "communityRating",
+  "communityVotes",
+  "communityRatingProvider",
+  "status",
+  "favorite",
+  "owned",
+  "count",
+  "repeatable",
+  "integrationSource",
+  "url",
+]
+`;
+
+exports[`template output snapshots > movies: template for every allowed field 1`] = `
+"---
+type: "movie"
+title: "{{VALUE:name}}"
+poster: "{{VALUE:Poster}}"
+poster-b: "{{VALUE:PosterHorizontal}}"
+synopsis: "{{VALUE:Plot}}"
+genres: "{{VALUE:genres}}"
+year: {{VALUE:Year}}
+released: {{VALUE:released}}
+runtime: {{VALUE:runtime}}
+author: "{{VALUE:directors}}"
+cast: "{{VALUE:actors}}"
+rating: {{VALUE:rating}}
+community-rating: {{VALUE:communityRating}}
+community-votes: {{VALUE:communityVotes}}
+community-rating-provider: "{{VALUE:communityRatingProvider}}"
+status: "{{VALUE:status}}"
+favorite: false
+repeatable: false
+integration-provider: "{{VALUE:integrationProvider}}"
+integration-id: "{{VALUE:integrationId}}"
+url: "{{VALUE:url}}"
+---"
+`;
+
+exports[`template output snapshots > movies: template for the default selection 1`] = `
+"---
+type: "movie"
+title: "{{VALUE:name}}"
+poster: "{{VALUE:Poster}}"
+poster-b: "{{VALUE:PosterHorizontal}}"
+synopsis: "{{VALUE:Plot}}"
+genres: "{{VALUE:genres}}"
+year: {{VALUE:Year}}
+released: {{VALUE:released}}
+runtime: {{VALUE:runtime}}
+author: "{{VALUE:directors}}"
+cast: "{{VALUE:actors}}"
+rating: {{VALUE:rating}}
+community-rating: {{VALUE:communityRating}}
+community-votes: {{VALUE:communityVotes}}
+community-rating-provider: "{{VALUE:communityRatingProvider}}"
+status: "{{VALUE:status}}"
+favorite: false
+integration-provider: "{{VALUE:integrationProvider}}"
+integration-id: "{{VALUE:integrationId}}"
+url: "{{VALUE:url}}"
+---"
+`;
+
+exports[`template output snapshots > settings checkbox lists 1`] = `
+{
+  "anime": [
+    {
+      "key": "type",
+      "label": "templateFieldType",
+    },
+    {
+      "key": "name",
+      "label": "templateFieldName",
+    },
+    {
+      "key": "image",
+      "label": "templateFieldImage",
+    },
+    {
+      "key": "imageHorizontal",
+      "label": "templateFieldImageHorizontal",
+    },
+    {
+      "key": "plot",
+      "label": "templateFieldPlot",
+    },
+    {
+      "key": "tags",
+      "label": "templateFieldTags",
+    },
+    {
+      "key": "year",
+      "label": "templateFieldYear",
+    },
+    {
+      "key": "studios",
+      "label": "templateFieldStudios",
+    },
+    {
+      "key": "format",
+      "label": "templateFieldFormat",
+    },
+    {
+      "key": "animeParts",
+      "label": "templateFieldAnimeParts",
+    },
+    {
+      "key": "rating",
+      "label": "templateFieldRating",
+    },
+    {
+      "key": "communityRating",
+      "label": "templateFieldCommunityRating",
+    },
+    {
+      "key": "communityVotes",
+      "label": "templateFieldCommunityVotes",
+    },
+    {
+      "key": "communityRatingProvider",
+      "label": "templateFieldCommunityRatingProvider",
+    },
+    {
+      "key": "status",
+      "label": "templateFieldStatus",
+    },
+    {
+      "key": "favorite",
+      "label": "templateFieldFavorite",
+    },
+    {
+      "key": "integrationSource",
+      "label": "templateFieldIntegrationSource",
+    },
+    {
+      "key": "url",
+      "label": "templateFieldUrl",
+    },
+  ],
+  "books": [
+    {
+      "key": "type",
+      "label": "templateFieldType",
+    },
+    {
+      "key": "name",
+      "label": "templateFieldName",
+    },
+    {
+      "key": "poster",
+      "label": "templateFieldPoster",
+    },
+    {
+      "key": "posterHorizontal",
+      "label": "templateFieldPosterHorizontal",
+    },
+    {
+      "key": "plot",
+      "label": "templateFieldPlot",
+    },
+    {
+      "key": "bookSeries",
+      "label": "templateFieldBookSeries",
+    },
+    {
+      "key": "seriesPosition",
+      "label": "templateFieldSeriesPosition",
+    },
+    {
+      "key": "authors",
+      "label": "templateFieldAuthors",
+    },
+    {
+      "key": "publisher",
+      "label": "templateFieldPublisher",
+    },
+    {
+      "key": "genres",
+      "label": "templateFieldGenres",
+    },
+    {
+      "key": "tags",
+      "label": "templateFieldTags",
+    },
+    {
+      "key": "year",
+      "label": "templateFieldYear",
+    },
+    {
+      "key": "released",
+      "label": "templateFieldReleased",
+    },
+    {
+      "key": "pageCurrent",
+      "label": "templateFieldPageCurrent",
+    },
+    {
+      "key": "pageTotal",
+      "label": "templateFieldPageTotal",
+    },
+    {
+      "key": "chapterCurrent",
+      "label": "templateFieldChapterCurrent",
+    },
+    {
+      "key": "chapterTotal",
+      "label": "templateFieldChapterTotal",
+    },
+    {
+      "key": "rating",
+      "label": "templateFieldRating",
+    },
+    {
+      "key": "communityRating",
+      "label": "templateFieldCommunityRating",
+    },
+    {
+      "key": "communityVotes",
+      "label": "templateFieldCommunityVotes",
+    },
+    {
+      "key": "communityRatingProvider",
+      "label": "templateFieldCommunityRatingProvider",
+    },
+    {
+      "key": "status",
+      "label": "templateFieldStatus",
+    },
+    {
+      "key": "favorite",
+      "label": "templateFieldFavorite",
+    },
+    {
+      "key": "owned",
+      "label": "templateFieldOwned",
+    },
+    {
+      "key": "count",
+      "label": "templateFieldCount",
+    },
+    {
+      "key": "repeatable",
+      "label": "templateFieldRepeatable",
+    },
+    {
+      "key": "illustrator",
+      "label": "templateFieldIllustrator",
+    },
+    {
+      "key": "integrationSource",
+      "label": "templateFieldIntegrationSource",
+    },
+    {
+      "key": "url",
+      "label": "templateFieldUrl",
+    },
+  ],
+  "games": [
+    {
+      "key": "type",
+      "label": "templateFieldType",
+    },
+    {
+      "key": "name",
+      "label": "templateFieldName",
+    },
+    {
+      "key": "poster",
+      "label": "templateFieldPoster",
+    },
+    {
+      "key": "posterHorizontal",
+      "label": "templateFieldPosterHorizontal",
+    },
+    {
+      "key": "plot",
+      "label": "templateFieldPlot",
+    },
+    {
+      "key": "gameSeries",
+      "label": "templateFieldGameSeries",
+    },
+    {
+      "key": "genres",
+      "label": "templateFieldGenres",
+    },
+    {
+      "key": "platforms",
+      "label": "templateFieldPlatforms",
+    },
+    {
+      "key": "year",
+      "label": "templateFieldYear",
+    },
+    {
+      "key": "released",
+      "label": "templateFieldReleased",
+    },
+    {
+      "key": "developers",
+      "label": "templateFieldDevelopers",
+    },
+    {
+      "key": "publishers",
+      "label": "templateFieldPublishers",
+    },
+    {
+      "key": "userRating",
+      "label": "templateFieldUserRating",
+    },
+    {
+      "key": "communityRating",
+      "label": "templateFieldCommunityRating",
+    },
+    {
+      "key": "communityVotes",
+      "label": "templateFieldCommunityVotes",
+    },
+    {
+      "key": "communityRatingProvider",
+      "label": "templateFieldCommunityRatingProvider",
+    },
+    {
+      "key": "status",
+      "label": "templateFieldStatus",
+    },
+    {
+      "key": "favorite",
+      "label": "templateFieldFavorite",
+    },
+    {
+      "key": "owned",
+      "label": "templateFieldOwned",
+    },
+    {
+      "key": "count",
+      "label": "templateFieldCount",
+    },
+    {
+      "key": "repeatable",
+      "label": "templateFieldRepeatable",
+    },
+    {
+      "key": "myPlatform",
+      "label": "templateFieldMyPlatform",
+    },
+    {
+      "key": "integrationSource",
+      "label": "templateFieldIntegrationSource",
+    },
+    {
+      "key": "url",
+      "label": "templateFieldUrl",
+    },
+  ],
+  "gamesHltb": [
+    {
+      "key": "main",
+      "label": "templateFieldMain",
+    },
+    {
+      "key": "main_plus_sides",
+      "label": "templateFieldMainPlusSides",
+    },
+    {
+      "key": "perfectionist",
+      "label": "templateFieldCompletionist",
+    },
+  ],
+  "manga": [
+    {
+      "key": "type",
+      "label": "templateFieldType",
+    },
+    {
+      "key": "name",
+      "label": "templateFieldName",
+    },
+    {
+      "key": "poster",
+      "label": "templateFieldPoster",
+    },
+    {
+      "key": "posterHorizontal",
+      "label": "templateFieldPosterHorizontal",
+    },
+    {
+      "key": "plot",
+      "label": "templateFieldPlot",
+    },
+    {
+      "key": "authors",
+      "label": "templateFieldAuthors",
+    },
+    {
+      "key": "artists",
+      "label": "templateFieldArtists",
+    },
+    {
+      "key": "genres",
+      "label": "templateFieldGenres",
+    },
+    {
+      "key": "tags",
+      "label": "templateFieldTags",
+    },
+    {
+      "key": "year",
+      "label": "templateFieldYear",
+    },
+    {
+      "key": "chapterCurrent",
+      "label": "templateFieldChapterCurrent",
+    },
+    {
+      "key": "chapterTotal",
+      "label": "templateFieldChapterTotal",
+    },
+    {
+      "key": "volumeCurrent",
+      "label": "templateFieldVolumeCurrent",
+    },
+    {
+      "key": "volumeTotal",
+      "label": "templateFieldVolumeTotal",
+    },
+    {
+      "key": "mangaParts",
+      "label": "templateFieldMangaParts",
+    },
+    {
+      "key": "rating",
+      "label": "templateFieldRating",
+    },
+    {
+      "key": "communityRating",
+      "label": "templateFieldCommunityRating",
+    },
+    {
+      "key": "communityVotes",
+      "label": "templateFieldCommunityVotes",
+    },
+    {
+      "key": "communityRatingProvider",
+      "label": "templateFieldCommunityRatingProvider",
+    },
+    {
+      "key": "status",
+      "label": "templateFieldStatus",
+    },
+    {
+      "key": "favorite",
+      "label": "templateFieldFavorite",
+    },
+    {
+      "key": "integrationSource",
+      "label": "templateFieldIntegrationSource",
+    },
+    {
+      "key": "url",
+      "label": "templateFieldUrl",
+    },
+  ],
+  "movies": [
+    {
+      "key": "type",
+      "label": "templateFieldType",
+    },
+    {
+      "key": "name",
+      "label": "templateFieldName",
+    },
+    {
+      "key": "poster",
+      "label": "templateFieldPoster",
+    },
+    {
+      "key": "posterHorizontal",
+      "label": "templateFieldPosterHorizontal",
+    },
+    {
+      "key": "plot",
+      "label": "templateFieldPlot",
+    },
+    {
+      "key": "genres",
+      "label": "templateFieldGenres",
+    },
+    {
+      "key": "year",
+      "label": "templateFieldYear",
+    },
+    {
+      "key": "released",
+      "label": "templateFieldReleased",
+    },
+    {
+      "key": "runtime",
+      "label": "templateFieldRuntime",
+    },
+    {
+      "key": "director",
+      "label": "templateFieldDirector",
+    },
+    {
+      "key": "actors",
+      "label": "templateFieldActors",
+    },
+    {
+      "key": "rating",
+      "label": "templateFieldRating",
+    },
+    {
+      "key": "communityRating",
+      "label": "templateFieldCommunityRating",
+    },
+    {
+      "key": "communityVotes",
+      "label": "templateFieldCommunityVotes",
+    },
+    {
+      "key": "communityRatingProvider",
+      "label": "templateFieldCommunityRatingProvider",
+    },
+    {
+      "key": "status",
+      "label": "templateFieldStatus",
+    },
+    {
+      "key": "favorite",
+      "label": "templateFieldFavorite",
+    },
+    {
+      "key": "owned",
+      "label": "templateFieldOwned",
+    },
+    {
+      "key": "count",
+      "label": "templateFieldCount",
+    },
+    {
+      "key": "repeatable",
+      "label": "templateFieldRepeatable",
+    },
+    {
+      "key": "movieParts",
+      "label": "templateFieldMovieParts",
+    },
+    {
+      "key": "integrationSource",
+      "label": "templateFieldIntegrationSource",
+    },
+    {
+      "key": "url",
+      "label": "templateFieldUrl",
+    },
+  ],
+  "tv": [
+    {
+      "key": "type",
+      "label": "templateFieldType",
+    },
+    {
+      "key": "name",
+      "label": "templateFieldName",
+    },
+    {
+      "key": "poster",
+      "label": "templateFieldPoster",
+    },
+    {
+      "key": "posterHorizontal",
+      "label": "templateFieldPosterHorizontal",
+    },
+    {
+      "key": "plot",
+      "label": "templateFieldPlot",
+    },
+    {
+      "key": "genres",
+      "label": "templateFieldGenres",
+    },
+    {
+      "key": "year",
+      "label": "templateFieldYear",
+    },
+    {
+      "key": "released",
+      "label": "templateFieldReleased",
+    },
+    {
+      "key": "runtime",
+      "label": "templateFieldRuntime",
+    },
+    {
+      "key": "director",
+      "label": "templateFieldDirector",
+    },
+    {
+      "key": "actors",
+      "label": "templateFieldActors",
+    },
+    {
+      "key": "seasons",
+      "label": "templateFieldSeasons",
+    },
+    {
+      "key": "episodeCurrent",
+      "label": "templateFieldEpisodeCurrent",
+    },
+    {
+      "key": "episodeTotal",
+      "label": "templateFieldEpisodeTotal",
+    },
+    {
+      "key": "tvParts",
+      "label": "templateFieldTvParts",
+    },
+    {
+      "key": "rating",
+      "label": "templateFieldRating",
+    },
+    {
+      "key": "communityRating",
+      "label": "templateFieldCommunityRating",
+    },
+    {
+      "key": "communityVotes",
+      "label": "templateFieldCommunityVotes",
+    },
+    {
+      "key": "communityRatingProvider",
+      "label": "templateFieldCommunityRatingProvider",
+    },
+    {
+      "key": "status",
+      "label": "templateFieldStatus",
+    },
+    {
+      "key": "favorite",
+      "label": "templateFieldFavorite",
+    },
+    {
+      "key": "owned",
+      "label": "templateFieldOwned",
+    },
+    {
+      "key": "count",
+      "label": "templateFieldCount",
+    },
+    {
+      "key": "repeatable",
+      "label": "templateFieldRepeatable",
+    },
+    {
+      "key": "integrationSource",
+      "label": "templateFieldIntegrationSource",
+    },
+    {
+      "key": "url",
+      "label": "templateFieldUrl",
+    },
+  ],
+}
+`;
+
+exports[`template output snapshots > tv: allowed field list 1`] = `
+[
+  "type",
+  "name",
+  "poster",
+  "posterHorizontal",
+  "plot",
+  "genres",
+  "year",
+  "released",
+  "runtime",
+  "director",
+  "actors",
+  "seasons",
+  "episodeCurrent",
+  "episodeTotal",
+  "tvParts",
+  "rating",
+  "communityRating",
+  "communityVotes",
+  "communityRatingProvider",
+  "status",
+  "favorite",
+  "owned",
+  "count",
+  "repeatable",
+  "integrationSource",
+  "url",
+]
+`;
+
+exports[`template output snapshots > tv: template for every allowed field 1`] = `
+"---
+type: "tv"
+title: "{{VALUE:name}}"
+poster: "{{VALUE:Poster}}"
+poster-b: "{{VALUE:PosterHorizontal}}"
+synopsis: "{{VALUE:Plot}}"
+genres: "{{VALUE:genres}}"
+year: {{VALUE:Year}}
+released: {{VALUE:released}}
+runtime: {{VALUE:runtime}}
+author: "{{VALUE:directors}}"
+cast: "{{VALUE:actors}}"
+seasons: {{VALUE:seasons}}
+episode-current: {{VALUE:episodeCurrent}}
+episodes: {{VALUE:episodeTotal}}
+season-id-current: "{{VALUE:activePartId}}"
+season-data:
+{{VALUE:videoPartsYaml}}
+rating: {{VALUE:rating}}
+community-rating: {{VALUE:communityRating}}
+community-votes: {{VALUE:communityVotes}}
+community-rating-provider: "{{VALUE:communityRatingProvider}}"
+status: "{{VALUE:status}}"
+favorite: false
+repeatable: false
+integration-provider: "{{VALUE:integrationProvider}}"
+integration-id: "{{VALUE:integrationId}}"
+url: "{{VALUE:url}}"
+---"
+`;
+
+exports[`template output snapshots > tv: template for the default selection 1`] = `
+"---
+type: "tv"
+title: "{{VALUE:name}}"
+poster: "{{VALUE:Poster}}"
+poster-b: "{{VALUE:PosterHorizontal}}"
+synopsis: "{{VALUE:Plot}}"
+genres: "{{VALUE:genres}}"
+year: {{VALUE:Year}}
+released: {{VALUE:released}}
+runtime: {{VALUE:runtime}}
+author: "{{VALUE:directors}}"
+cast: "{{VALUE:actors}}"
+seasons: {{VALUE:seasons}}
+episode-current: {{VALUE:episodeCurrent}}
+episodes: {{VALUE:episodeTotal}}
+season-id-current: "{{VALUE:activePartId}}"
+season-data:
+{{VALUE:videoPartsYaml}}
+rating: {{VALUE:rating}}
+community-rating: {{VALUE:communityRating}}
+community-votes: {{VALUE:communityVotes}}
+community-rating-provider: "{{VALUE:communityRatingProvider}}"
+status: "{{VALUE:status}}"
+favorite: false
+integration-provider: "{{VALUE:integrationProvider}}"
+integration-id: "{{VALUE:integrationId}}"
+url: "{{VALUE:url}}"
+---"
+`;
