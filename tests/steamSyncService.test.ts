@@ -513,6 +513,53 @@ describe('SteamSyncService', () => {
         expect(content).not.toContain('playtime:');
     });
 
+    it('records ownership and platform on new notes by Steam source', async () => {
+        // Owned games are digital copies on Steam. Wishlist games are not owned yet, and
+        // the platform you will play them on is not decided, so they get no my-platform.
+        const app = createMockApp();
+        const settings = cloneSettings();
+        const service = createSteamSyncService(app);
+        const names: Record<number, string> = { 10: 'Portal', 20: 'Hades', 30: 'Celeste' };
+        service.enrichGame = async (appId: number) => ({
+            kind: 'game',
+            name: names[appId],
+            description: '',
+            poster: '',
+            genres: [],
+            platforms: [],
+            developers: [],
+            publishers: [],
+            rating: '',
+            released: '',
+            year: '',
+            url: '',
+        });
+
+        await service.sync(settings, {
+            candidates: [
+                { appId: 10, name: 'Portal', playtimeForever: 5, source: 'owned' },
+                { appId: 20, name: 'Hades', playtimeForever: 0, source: 'wishlist' },
+                { appId: 30, name: 'Celeste', playtimeForever: 0, source: 'owned_wishlist' },
+            ],
+        });
+
+        const portal = app.vault.created['Games/Portal.md'];
+        expect(portal).toContain('owned: "digital"');
+        expect(portal).toContain('my-platform: "steam"');
+
+        const hades = app.vault.created['Games/Hades.md'];
+        expect(hades).toContain('owned: "wishlist"');
+        expect(hades).not.toContain('my-platform:');
+
+        const celeste = app.vault.created['Games/Celeste.md'];
+        expect(celeste).toContain('owned: "digital"');
+        expect(celeste).toContain('my-platform: "steam"');
+
+        for (const content of [portal, hades, celeste]) {
+            expect(content.match(/^owned:/gm)).toHaveLength(1);
+        }
+    });
+
     it('fills HowLongToBeat fields during Steam import when enabled', async () => {
         __setRequestUrlMock((options) => {
             const url = typeof options === 'string' ? options : options.url;

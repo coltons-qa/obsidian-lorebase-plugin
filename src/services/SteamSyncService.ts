@@ -5,7 +5,7 @@ import { ChoiceModal } from '../modals/IntegrationModals';
 import type { GameDetails } from './integrations/types';
 import { getSteamDetails } from './integrations/providers/steam';
 import { getIgdbSeriesBySteamAppIds } from './integrations/providers/igdb';
-import { buildSimpleTemplate, getDefaultTemplateFields, getEffectiveSimpleTemplateFields, renderTemplate, sanitizeFileName } from './integrations/templateUtils';
+import { buildSimpleTemplate, getDefaultTemplateFields, getEffectiveSimpleTemplateFields, renderTemplate, sanitizeFileName, setFrontmatterField } from './integrations/templateUtils';
 import { extractYear } from './integrations/providers/common';
 import type { JsonFetcher } from './integrations/providers/common';
 import { localizeTemplateImages } from './integrations/imageStorage';
@@ -143,6 +143,17 @@ export interface SteamImportCandidate {
     source: 'owned' | 'wishlist' | 'owned_wishlist';
     poster?: string;
     posterHorizontal?: string;
+}
+
+/**
+ * Ownership fields for a note Steam Sync creates. A game in the Steam library is a
+ * digital copy played on Steam; a wishlist-only game is not owned yet, and where it
+ * will be played is still open, so it gets no platform.
+ */
+export function steamOwnershipFields(source: SteamImportCandidate['source']): Record<string, string> {
+    return source === 'wishlist'
+        ? { owned: 'wishlist' }
+        : { owned: 'digital', 'my-platform': 'steam' };
 }
 
 export class SteamSyncService {
@@ -776,7 +787,15 @@ export class SteamSyncService {
         const rawValues = await this.buildTemplateValues(game, settings, allSettings);
         const title = this.toString(rawValues.name) || game.details.name || game.name || 'Untitled';
         const values = await localizeTemplateImages(this.app, 'games', title, rawValues, allSettings.integrations?.imageStorage, template);
-        return renderTemplate(template, values);
+        let content = renderTemplate(template, values);
+        // Written after rendering because the simple template leaves manual fields out
+        // until they have a value; setFrontmatterField also replaces an advanced
+        // template's own `owned` line rather than duplicating it.
+        const ownership = steamOwnershipFields(game.source);
+        for (const [key, value] of Object.entries(ownership)) {
+            content = setFrontmatterField(content, key, value);
+        }
+        return content;
     }
 
     private async buildTemplateValues(
@@ -807,7 +826,7 @@ export class SteamSyncService {
             Year: this.toNumber(settings.fields.releaseDate ? details.year : extractYear(details.released)),
             url: details.url || `https://store.steampowered.com/app/${game.appId}/`,
             status: game.status,
-            owned: game.source === 'wishlist' ? 'wishlist' : '',
+            owned: steamOwnershipFields(game.source).owned,
             playtime: settings.fields.playtime ? game.playtimeForever : '',
             steamAppId: game.appId,
             main: hltb?.main ?? '',
