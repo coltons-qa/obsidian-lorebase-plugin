@@ -5,7 +5,7 @@ import { MetadataService } from './MetadataService';
 import { filterAndSortMedia } from './media/filtering';
 import { extractSimpleFrontmatter } from './media/libraryViewState';
 import { getRandomItem, parseNumber, parseRelatedMedia, parseUserRating, parseYear, serializeRelatedMedia } from './media/parsers';
-import { collectFieldTags, collectTags, getAllMarkdownFiles, isTruthy, mapInFrameBatches, readFrontmatterValue } from './media/serviceUtils';
+import { collectFieldTags, collectSeriesNames, collectTags, getAllMarkdownFiles, isTruthy, mapInFrameBatches, readFrontmatterValue } from './media/serviceUtils';
 import { upsertMarkdownSection } from './markdownSections';
 import { keyOf, readBoundFields, trimmedOrNull, writeBoundFields, writeNamedField } from '../fields/frontmatterIO';
 
@@ -512,15 +512,9 @@ export class ReadingService {
         if (this.hasKey(frontmatter, pluralKey)) updates[pluralKey] = null;
     }
 
-    getBookSeriesList(): string[] {
-        if (this.cache.length === 0) return [];
-        const seriesSet = new Set<string>();
-        for (const item of this.cache) {
-            if (item.type !== 'book') continue;
-            const series = (item as BookItem).bookSeries?.trim();
-            if (series) seriesSet.add(series);
-        }
-        return Array.from(seriesSet.values()).sort((a, b) => a.localeCompare(b));
+    /** Series names across loaded books, for the editor's series suggestions. */
+    getSeriesList(): string[] {
+        return collectSeriesNames(this.cache.filter((item) => item.type === 'book'));
     }
 
     private toStringArray(value: unknown): string[] {

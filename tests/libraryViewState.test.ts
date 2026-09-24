@@ -16,7 +16,7 @@ function item(overrides: Record<string, unknown> = {}) {
         filePath: String(overrides.filePath ?? 'Books/Item.md'),
         displayName: String(overrides.displayName ?? 'Item'),
         nameLower: String(overrides.displayName ?? 'Item').toLowerCase(),
-        gameSeries: '',
+        series: '',
         year: 2024,
         userRating: 4,
         favorite: false,

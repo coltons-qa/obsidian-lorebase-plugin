@@ -130,7 +130,7 @@ export class EditModal extends Modal {
         this.year = game.year;
         this.description = game.description;
         this.myNotes = game.myNotes ?? '';
-        this.gameSeries = game.gameSeries;
+        this.gameSeries = game.series;
         this.started = this.normalizeDateInput(game.started);
         this.finished = this.normalizeDateInput(game.finished);
         this.releaseDate = this.normalizeDateInput(game.releaseDate);
@@ -1519,7 +1519,7 @@ export class EditModal extends Modal {
             displayName: this.title || this.game.displayName,
             year: this.year,
             description: this.description,
-            gameSeries: this.gameSeries,
+            series: this.gameSeries,
             tags: this.tags,
             genres: this.genres,
             platforms: this.platforms,

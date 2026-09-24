@@ -6,7 +6,6 @@ exports[`ReadingService round trip > reads a fully populated book note 1`] = `
   "authors": [
     "Frank Herbert",
   ],
-  "bookSeries": "Dune",
   "chapterCurrent": 10,
   "chapterTotal": 48,
   "communityRating": 91.3,
@@ -86,6 +85,7 @@ exports[`ReadingService round trip > reads a fully populated book note 1`] = `
   ],
   "releaseDate": "1965-08-01",
   "repeatable": true,
+  "series": "Dune",
   "seriesPosition": 1,
   "sourceUrl": "https://hardcover.app/books/dune",
   "started": "2024-01-02",

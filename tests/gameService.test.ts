@@ -179,7 +179,7 @@ describe('GameService', () => {
                 horizontalImageUrl: null,
                 hasCustomPoster: false,
                 status: 'completed',
-                gameSeries: '',
+                series: '',
                 dateCompleted: null,
                 tags: [],
                 genres: [],
@@ -198,7 +198,7 @@ describe('GameService', () => {
                 horizontalImageUrl: null,
                 hasCustomPoster: true,
                 status: 'playing',
-                gameSeries: '',
+                series: '',
                 dateCompleted: null,
                 tags: [],
                 genres: [],
@@ -217,7 +217,7 @@ describe('GameService', () => {
                 horizontalImageUrl: null,
                 hasCustomPoster: false,
                 status: 'dropped',
-                gameSeries: '',
+                series: '',
                 dateCompleted: null,
                 tags: [],
                 genres: [],
@@ -261,7 +261,7 @@ describe('GameService', () => {
             horizontalImageUrl: null,
             hasCustomPoster: false,
             status: 'planned',
-            gameSeries: 'Same series',
+            series: 'Same series',
             dateCompleted: null,
             tags: [],
             genres: [],
@@ -344,7 +344,7 @@ describe('GameService', () => {
             horizontalImageUrl: null,
             hasCustomPoster: false,
             status: 'planned',
-            gameSeries: '',
+            series: '',
             dateCompleted: null,
             tags: [],
             genres: [],
@@ -377,7 +377,7 @@ describe('GameService', () => {
                 horizontalImageUrl: null,
                 hasCustomPoster: false,
                 status: 'planned',
-                gameSeries: '',
+                series: '',
                 dateCompleted: null,
                 tags: ['next-in-queue'],
                 genres: [],
@@ -396,7 +396,7 @@ describe('GameService', () => {
                 horizontalImageUrl: null,
                 hasCustomPoster: false,
                 status: 'planned',
-                gameSeries: '',
+                series: '',
                 dateCompleted: null,
                 tags: [],
                 genres: [],
@@ -649,7 +649,7 @@ describe('GameService', () => {
 
             expect(game?.displayName).toBe('Mass Effect');
             expect(game?.description).toBe('Sci-fi RPG');
-            expect(game?.gameSeries).toBe('Mass Effect');
+            expect(game?.series).toBe('Mass Effect');
             expect(game?.developer).toBe('BioWare');
             expect(game?.publisher).toBe('EA');
             expect(game?.userRating).toBe(5);

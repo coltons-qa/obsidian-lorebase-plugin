@@ -120,7 +120,7 @@ export class ReadingEditModal extends Modal {
         this.tags = this.normalizeList(item.tags);
         this.authors = this.normalizeList(item.authors);
         this.audiobook = item.type === 'book' ? (item.audiobook ?? false) : false;
-        this.bookSeries = item.type === 'book' ? (item.bookSeries ?? '') : '';
+        this.bookSeries = item.type === 'book' ? (item.series ?? '') : '';
         this.seriesPosition = item.type === 'book' ? (item.seriesPosition ?? null) : null;
         this.illustrator = item.type === 'book' ? (item.illustrator ?? '') : '';
         this.owned = item.owned ?? '';
@@ -1147,7 +1147,7 @@ export class ReadingEditModal extends Modal {
         if (this.item.type === 'book') {
             Object.assign(updates, {
                 audiobook: this.audiobook,
-                bookSeries: this.bookSeries,
+                series: this.bookSeries,
                 seriesPosition: this.seriesPosition,
                 illustrator: this.illustrator.trim(),
                 publisher: this.publisher,

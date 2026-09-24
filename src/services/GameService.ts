@@ -12,7 +12,7 @@ import { t } from '../localization';
 import { filterAndSortMedia } from './media/filtering';
 import { extractSimpleFrontmatter } from './media/libraryViewState';
 import { getRandomItem, parseRelatedMedia, serializeRelatedMedia } from './media/parsers';
-import { collectFieldTags, collectTags, getAllMarkdownFiles, isTruthy, mapInFrameBatches, normalizeCacheTags, readFrontmatterValue } from './media/serviceUtils';
+import { collectFieldTags, collectSeriesNames, collectTags, getAllMarkdownFiles, isTruthy, mapInFrameBatches, normalizeCacheTags, readFrontmatterValue } from './media/serviceUtils';
 import { upsertMarkdownSection } from './markdownSections';
 import { keyOf, readBoundFields, writeBoundFields, writeNamedField } from '../fields/frontmatterIO';
 
@@ -73,15 +73,7 @@ export class GameService {
         // Deliberately ignores cacheValid. Any metadata change in the vault invalidates
         // the cache without clearing it, so gating on the flag made this return nothing
         // for the rest of the session. Slightly stale names are fine for a suggestion list.
-        if (this.cache.length === 0) return [];
-
-        const seriesSet = new Set<string>();
-        for (const game of this.cache) {
-            const series = game?.gameSeries?.trim();
-            if (series) seriesSet.add(series);
-        }
-
-        return Array.from(seriesSet.values()).sort((a, b) => a.localeCompare(b));
+        return collectSeriesNames(this.cache);
     }
 
     private parseCompletionDate(value: unknown): number | null {
@@ -426,7 +418,7 @@ export class GameService {
 
         for (const game of games) {
             if (!game) continue;
-            const series = game.gameSeries || noSeriesKey;
+            const series = game.series || noSeriesKey;
             if (!grouped.has(series)) {
                 grouped.set(series, []);
             }
@@ -491,8 +483,8 @@ export class GameService {
                 stats.ratingDistribution[game.userRating] = (stats.ratingDistribution[game.userRating] || 0) + 1;
             }
 
-            if (game.gameSeries && game.gameSeries !== t('noSeries')) {
-                seriesSet.add(game.gameSeries);
+            if (game.series && game.series !== t('noSeries')) {
+                seriesSet.add(game.series);
             }
         }
 

@@ -16,7 +16,7 @@ describe('rating distribution covers the whole scale', () => {
     const makeGame = (rating: UserRatingValue): GameItem => ({
         userRating: rating,
         status: 'completed',
-        gameSeries: '',
+        series: '',
     } as GameItem);
 
     const makeAnime = (rating: UserRatingValue): AnimeItem => ({

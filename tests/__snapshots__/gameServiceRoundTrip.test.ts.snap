@@ -24,7 +24,6 @@ exports[`GameService round trip > reads a fully populated note 1`] = `
   "favorite": true,
   "filePath": "Library/Hades.md",
   "finished": "2020-11-15",
-  "gameSeries": "Hades",
   "genres": [
     "roguelike",
     "action",
@@ -95,6 +94,7 @@ exports[`GameService round trip > reads a fully populated note 1`] = `
   ],
   "releaseDate": "2020-09-17",
   "repeatable": true,
+  "series": "Hades",
   "sourceUrl": "https://www.igdb.com/games/hades",
   "started": "2020-10-01",
   "status": "completed",

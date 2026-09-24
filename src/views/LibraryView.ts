@@ -1200,7 +1200,7 @@ export class LibraryView extends ItemView {
         }
 
         if (left.type === 'game' && right.type === 'game') {
-            return left.gameSeries === right.gameSeries
+            return left.series === right.series
                 && left.dateCompleted === right.dateCompleted
                 && left.started === right.started
                 && left.finished === right.finished
@@ -1246,7 +1246,7 @@ export class LibraryView extends ItemView {
         if (left.type === 'book' && right.type === 'book') {
             return left.summary === right.summary
                 && left.sourceUrl === right.sourceUrl
-                && left.bookSeries === right.bookSeries
+                && left.series === right.series
                 && left.publisher === right.publisher
                 && left.releaseDate === right.releaseDate
                 && left.pageCurrent === right.pageCurrent

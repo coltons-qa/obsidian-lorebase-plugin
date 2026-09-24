@@ -78,7 +78,7 @@ describe('GameService round trip', () => {
         await service.updateGame(game, {
             displayName: 'Hades II',
             description: 'Beyond the underworld.',
-            gameSeries: 'Hades',
+            series: 'Hades',
             genres: ['Roguelike', 'Action', 'Mythology'],
             platforms: ['PC', 'Switch', 'PS5'],
             tags: ['#Replay'],

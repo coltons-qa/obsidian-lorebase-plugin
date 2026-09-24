@@ -1070,7 +1070,7 @@ export default class LorebasePlugin extends Plugin {
                     () => modal.saveBeforeSourceRefresh()
                 ),
                 this.makeRelatedItemClickHandler(modalRef, onSave),
-                item.type === 'book' ? this.bookService?.getBookSeriesList() ?? [] : [],
+                item.type === 'book' ? this.bookService?.getSeriesList() ?? [] : [],
                 item.type === 'book' ? async (): Promise<boolean> => {
                     if (!this.integrationService) return false;
                     const appleUrl = await this.integrationService.pickAppleBooksCover(

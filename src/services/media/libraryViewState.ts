@@ -18,8 +18,8 @@ export interface FilterableMediaItem {
     displayName: string;
     nameLower: string;
     filePath?: string;
-    gameSeries?: string;
-    bookSeries?: string;
+    /** Series or franchise (games and books). */
+    series?: string;
     year: number | null;
     userRating: number | null;
     favorite: boolean;
@@ -157,7 +157,7 @@ export function getViewFieldValue(item: FilterableMediaItem, field: string): unk
     }
     switch (field) {
         case 'name': return item.displayName;
-        case 'series': return item.bookSeries || item.gameSeries || null;
+        case 'series': return item.series || null;
         case 'year': return item.year;
         case 'rating': return item.userRating;
         case 'status': return item.status;
@@ -255,9 +255,7 @@ export function groupMediaItems(
         let timestamp = 0;
         let missing = false;
         if (mode === 'series') {
-            const series = item.type === 'game' ? item.gameSeries.trim()
-                : item.type === 'book' ? (item.bookSeries ?? '').trim()
-                : '';
+            const series = (item.series ?? '').trim();
             key = series || '__missing__';
             label = series || (locale.startsWith('ru') ? 'Без серии' : locale.startsWith('uk') ? 'Без серії' : 'No series');
             missing = !series;

@@ -203,6 +203,16 @@ export function hasAllValues(values: string[] | undefined, required: readonly st
     return true;
 }
 
+/** Distinct, sorted series names across items, for the editor's series suggestions. */
+export function collectSeriesNames(items: ReadonlyArray<{ series?: string } | null | undefined>): string[] {
+    const names = new Set<string>();
+    for (const item of items) {
+        const series = item?.series?.trim();
+        if (series) names.add(series);
+    }
+    return Array.from(names).sort((a, b) => a.localeCompare(b));
+}
+
 /** The six Lorebase media types. Used to validate frontmatter `type` values. */
 const MEDIA_TYPES: ReadonlySet<string> = new Set([
     'game', 'anime', 'movie', 'tv', 'book', 'manga',

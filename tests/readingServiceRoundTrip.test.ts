@@ -127,7 +127,7 @@ describe('ReadingService round trip', () => {
             communityRatingProvider: 'Hardcover',
             relatedMedia: [],
             authors: ['Frank Herbert'],
-            bookSeries: 'Dune',
+            series: 'Dune',
             seriesPosition: 2,
             audiobook: false,
             illustrator: 'Bruce Pennington',

@@ -335,6 +335,8 @@ interface BaseMediaItem {
     horizontalImageUrl?: string | null;
     /** Has custom poster */
     hasCustomPoster: boolean;
+    /** Series or franchise; games and books use it ("Harry Potter", "Fallout"). */
+    series?: string;
     /** Community/provider rating such as AniList, MAL, TMDB, RAWG */
     communityRating?: number | null;
     /** Number of votes behind the community/provider rating */
@@ -362,8 +364,8 @@ export interface GameItem extends BaseMediaItem {
     type: 'game';
     /** Game status */
     status: GameStatus;
-    /** Game series name */
-    gameSeries: string;
+    /** Game series or franchise */
+    series: string;
     /** Date completed (from frontmatter, if available) */
     dateCompleted: number | null;
     /** Date started in YYYY-MM-DD form */
@@ -496,8 +498,6 @@ export interface BookItem extends BaseMediaItem {
     status: ReadingStatus;
     summary: string;
     authors: string[];
-    /** Book series name (e.g. "Harry Potter") */
-    bookSeries?: string;
     /** Position/number within the series (e.g. 3 for "Prisoner of Azkaban") */
     seriesPosition?: number | null;
     /** Whether this is an audiobook */
