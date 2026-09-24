@@ -308,6 +308,16 @@ describe('default integration templates', () => {
         expect(media[kind].template).toBe(buildSimpleTemplate(kind, media[kind].templateFields));
     });
 
+    it('includes the TV provider fields a movie default already has', () => {
+        // Inherited from upstream: the TV defaults left out released, runtime,
+        // director and actors, so a fresh install's TV imports had no creator, cast
+        // or release date until the first refresh from source.
+        expect(media.tv.templateFields).toEqual(expect.arrayContaining(['released', 'runtime', 'director', 'actors']));
+        expect(media.tv.template).toContain('author: "{{VALUE:directors}}"');
+        expect(media.tv.template).toContain('cast: "{{VALUE:actors}}"');
+        expect(media.tv.template).toContain('released: {{VALUE:released}}');
+    });
+
     it('uses the migrated keys for TV', () => {
         expect(media.tv.template).toContain('season-data:');
         expect(media.tv.template).not.toContain('tv_parts');
