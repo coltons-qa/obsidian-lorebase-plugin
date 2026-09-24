@@ -26,6 +26,15 @@ export function parseUserRating(value: unknown): UserRating {
     return rating >= 1 && rating <= MAX_USER_RATING ? rating as UserRating : null;
 }
 
+/**
+ * Related-media links from a note's frontmatter. Games, movies, TV and books write the
+ * kebab-case key; anime was left out of the frontmatter migration and still writes
+ * `related_media`, so both are read.
+ */
+export function readRelatedMediaLinks(frontmatter: Record<string, unknown>): RelatedMediaLink[] {
+    return parseRelatedMedia(frontmatter['related-media'] ?? frontmatter.related_media);
+}
+
 export function parseRelatedMedia(raw: unknown): RelatedMediaLink[] {
     if (!Array.isArray(raw)) return [];
 

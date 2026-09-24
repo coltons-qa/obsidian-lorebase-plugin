@@ -39,7 +39,7 @@ import {
     normalizeTagPresets,
     parseBadges,
 } from './settings/settingsNormalization';
-import { parseRelatedMedia } from './services/media/parsers';
+import { readRelatedMediaLinks } from './services/media/parsers';
 import type { MediaKind, MediaSourceSelection } from './services/integrations/types';
 import { buildSimpleTemplate, getDefaultTemplateFields, getEffectiveSimpleTemplateFields } from './services/integrations/templateUtils';
 import { mediaTypeToKind, synchronizeProviderMetadata } from './services/integrations/enrichment';
@@ -1417,7 +1417,8 @@ export default class LorebasePlugin extends Plugin {
         for (const file of this.app.vault.getMarkdownFiles()) {
             const mediaType = resolveMediaType(file.path, this.getFrontmatterValue(file, 'type'), folders);
             if (!mediaType) continue;
-            const related = parseRelatedMedia(this.getFrontmatterValue(file, 'related_media'));
+            const frontmatter = this.app.metadataCache.getFileCache(file)?.frontmatter ?? {};
+            const related = readRelatedMediaLinks(frontmatter);
             if (!related.some((entry) => entry.path === targetPath)) continue;
             if (seen.has(file.path)) continue;
             incoming.push({
