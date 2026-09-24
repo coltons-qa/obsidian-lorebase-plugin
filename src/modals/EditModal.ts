@@ -16,6 +16,29 @@ import { RelatedMediaEditor } from './RelatedMediaEditor';
 import type { RelatedItemClickHandler } from './RelatedMediaEditor';
 import { HierarchicalDatePicker, validateDatePickers } from './HierarchicalDatePicker';
 
+/**
+ * HowLongToBeat times as the editor shows them. Steam Sync and imports write the
+ * migrated `hltb-*` keys; the editor used to read the pre-migration names and showed
+ * nothing for every game.
+ */
+export function readHowLongToBeatTimes(frontmatter: Record<string, unknown> | null | undefined): {
+    main: string | null;
+    mainPlusSides: string | null;
+    perfectionist: string | null;
+} {
+    const read = (key: string): string | null => {
+        const value = frontmatter?.[key];
+        if (value === undefined || value === null) return null;
+        const text = String(value).trim();
+        return text.length > 0 ? text : null;
+    };
+    return {
+        main: read('hltb-main'),
+        mainPlusSides: read('hltb-main-sides'),
+        perfectionist: read('hltb-perfectionist'),
+    };
+}
+
 type GameDlcRefresh = (existing: GameDlc[]) => Promise<GameDlc[] | null>;
 type NotesMode = 'description' | 'myNotes';
 
@@ -491,14 +514,14 @@ export class EditModal extends Modal {
 
         const releaseDateInput = this.qs<HTMLInputElement>(root, '[data-field="release-date"]');
         if (releaseDateInput) {
-            const releaseDateValue = this.releaseDate || this.getFrontmatterValue(frontmatter, ['releaseDate', 'release_date', 'released', 'release']) || '';
+            const releaseDateValue = this.releaseDate;
             releaseDateInput.value = this.normalizeDateInput(releaseDateValue);
             this.releaseDate = releaseDateInput.value;
         }
 
         const publisherInput = this.qs<HTMLInputElement>(root, '[data-field="publisher"]');
         if (publisherInput) {
-            const publisherValue = this.publisher || this.getFrontmatterValue(frontmatter, ['publisher', 'publishers']) || '';
+            const publisherValue = this.publisher;
             publisherInput.value = publisherValue;
             this.publisher = publisherValue;
         }
@@ -514,7 +537,7 @@ export class EditModal extends Modal {
 
         const developerInput = this.qs<HTMLInputElement>(root, '[data-field="developer"]');
         if (developerInput) {
-            const developerValue = this.developer || this.getFrontmatterValue(frontmatter, ['developer', 'developers']) || '';
+            const developerValue = this.developer;
             developerInput.value = developerValue;
             this.developer = developerValue;
         }
@@ -857,23 +880,10 @@ export class EditModal extends Modal {
     }
 
     private bindProgress(root: HTMLElement, frontmatter: Record<string, unknown> | null | undefined): void {
-        const main = this.getFrontmatterValue(frontmatter, ['main', 'main_story', 'mainStory']);
-        const mainPlusSides = this.getFrontmatterValue(frontmatter, [
-            'main_plus_sides',
-            'main_plus_extra',
-            'mainPlusSides',
-            'mainExtra',
-        ]);
-        const perfectionist = this.getFrontmatterValue(frontmatter, [
-            'perfectionist',
-            'completionist',
-            'comp_100',
-            'hundred_percent',
-        ]);
-
-        this.setProgressValue(root, '[data-role="progress-main"]', main);
-        this.setProgressValue(root, '[data-role="progress-main-plus-sides"]', mainPlusSides);
-        this.setProgressValue(root, '[data-role="progress-completionist"]', perfectionist);
+        const times = readHowLongToBeatTimes(frontmatter);
+        this.setProgressValue(root, '[data-role="progress-main"]', times.main);
+        this.setProgressValue(root, '[data-role="progress-main-plus-sides"]', times.mainPlusSides);
+        this.setProgressValue(root, '[data-role="progress-completionist"]', times.perfectionist);
     }
 
     private bindAdvanced(root: HTMLElement): void {
@@ -1388,19 +1398,6 @@ export class EditModal extends Modal {
     private updateCharCount(root: HTMLElement): void {
         const count = this.qs<HTMLElement>(root, '[data-role="char-count"]');
         if (count) count.textContent = `${this.getCurrentNotesValue().length} ${t('editCharsShort')}`;
-    }
-
-    private getFrontmatterValue(frontmatter: Record<string, unknown> | null | undefined, keys: string[]): string | null {
-        if (!frontmatter) return null;
-        for (const key of keys) {
-            const value = frontmatter[key];
-            if (value === undefined || value === null) continue;
-            const normalized = Array.isArray(value)
-                ? value.map(item => String(item).trim()).filter(Boolean).join(', ')
-                : String(value).trim();
-            if (normalized.length > 0) return normalized;
-        }
-        return null;
     }
 
     private normalizeTag(value: string): string | null {
