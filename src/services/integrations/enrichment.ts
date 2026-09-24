@@ -38,7 +38,7 @@ function readSnapshotField(current: Record<string, unknown>): unknown {
 
 // Maps provider field names (the shape IntegrationService emits) to the canonical
 // note YAML key. Each list is a single entry after the Stage 5 legacy cleanup.
-const FIELD_ALIASES: Record<string, string[]> = {
+export const FIELD_ALIASES: Record<string, string[]> = {
     name: ['title'],
     poster: ['poster'],
     poster_b: ['poster-b'],
