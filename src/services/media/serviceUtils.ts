@@ -205,7 +205,7 @@ export function hasAllValues(values: string[] | undefined, required: readonly st
 
 /** The six Lorebase media types. Used to validate frontmatter `type` values. */
 const MEDIA_TYPES: ReadonlySet<string> = new Set([
-    'game', 'anime', 'movie', 'series', 'book', 'manga',
+    'game', 'anime', 'movie', 'tv', 'book', 'manga',
 ]);
 
 /** Type guard: returns true when `value` is a valid Lorebase MediaType string. */
@@ -221,7 +221,7 @@ export interface FolderTypeEntry {
 /**
  * Resolves a file's media type by preferring frontmatter `type` over folder-based inference.
  *
- * When multiple media types share the same folder (e.g. games, movies, series, and books
+ * When multiple media types share the same folder (e.g. games, movies, TV, and books
  * all in `Library/`), folder-based `find()` always returns the first entry. This function
  * checks frontmatter first, falling back to the folder match only when frontmatter is
  * absent or not a valid MediaType.

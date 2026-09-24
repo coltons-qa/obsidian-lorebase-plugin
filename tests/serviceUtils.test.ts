@@ -86,12 +86,12 @@ describe('mapInFrameBatches', () => {
 });
 
 describe('resolveMediaType', () => {
-    // Mirrors the real vault: games, movies, series, and books all point at Library.
+    // Mirrors the real vault: games, movies, TV, and books all point at Library.
     const sharedFolders: FolderTypeEntry[] = [
         { type: 'game', folderPath: 'Library' },
         { type: 'anime', folderPath: 'Anime' },
         { type: 'movie', folderPath: 'Library' },
-        { type: 'series', folderPath: 'Library' },
+        { type: 'tv', folderPath: 'Library' },
         { type: 'book', folderPath: 'Library' },
         { type: 'manga', folderPath: 'Manga' },
     ];
@@ -99,7 +99,7 @@ describe('resolveMediaType', () => {
     it('uses frontmatter type when file is in a shared folder', () => {
         expect(resolveMediaType('Library/The Matrix.md', 'movie', sharedFolders)).toBe('movie');
         expect(resolveMediaType('Library/Dune.md', 'book', sharedFolders)).toBe('book');
-        expect(resolveMediaType('Library/The Witcher.md', 'series', sharedFolders)).toBe('series');
+        expect(resolveMediaType('Library/The Witcher.md', 'tv', sharedFolders)).toBe('tv');
         expect(resolveMediaType('Library/Halo Infinite.md', 'game', sharedFolders)).toBe('game');
     });
 
