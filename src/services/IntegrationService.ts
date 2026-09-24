@@ -44,6 +44,7 @@ import {
     normalizeCommunityRating,
     sourceIdentity,
     toAnimePartsFrontmatter,
+    toDlcFrontmatter,
     toMangaPartsFrontmatter,
     toVideoPartsFrontmatter,
 } from './integrations/enrichment';
@@ -204,7 +205,7 @@ export class IntegrationService {
                 perfectionist: built.perfectionist,
             };
             const dlc = await this.fetchDlcForSource(source);
-            if (dlc?.length) values.dlc = dlc;
+            if (dlc?.length) values.dlc = toDlcFrontmatter(dlc);
         } else if (kind === 'anime' && this.isAnimeDetails(details)) {
             const built = this.buildAnimeValues(details, {
                 provider: source.provider,

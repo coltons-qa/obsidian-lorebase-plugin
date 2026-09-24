@@ -6,6 +6,7 @@ import type {
     MediaSourceSelection,
     ProviderId,
 } from './types';
+import type { GameDlc } from '../../types';
 
 export interface EnrichmentMergeResult {
     values: Record<string, unknown>;
@@ -214,6 +215,21 @@ export function synchronizeProviderMetadata(
         result.patch[SOURCE_SNAPSHOT_FIELD] = nextSnapshot;
     }
     return result;
+}
+
+/**
+ * Provider DLC in the note's shape, matching GameService's serializer: `image`, not
+ * `imageUrl`. Personal fields (`user-rating`, `owned`) are left out, since a provider has
+ * nothing to say about them and the merge must keep the note's own values.
+ */
+export function toDlcFrontmatter(items: GameDlc[] | undefined): Record<string, unknown>[] {
+    return (items ?? []).map((item) => ({
+        id: item.id,
+        provider: item.provider,
+        title: item.title,
+        image: item.imageUrl || null,
+        url: item.url || null,
+    }));
 }
 
 export function toVideoPartsFrontmatter(parts: IntegrationVideoPart[] | undefined): Record<string, unknown>[] {
