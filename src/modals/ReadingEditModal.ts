@@ -1170,7 +1170,9 @@ export class ReadingEditModal extends Modal {
         }
 
         if (this.coverChangedByPicker) {
-            (updates as Record<string, unknown>).cm_poster = true;
+            // The chosen cover's URL, not a flag: cm_poster outranks poster for display
+            // and stops a source refresh from replacing the cover.
+            (updates as Record<string, unknown>).cm_poster = this.poster;
         }
 
         await this.onSave(updates);

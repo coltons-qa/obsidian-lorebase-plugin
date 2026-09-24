@@ -686,6 +686,23 @@ export function ensureIntegrationSourceFrontmatter(
     return `${frontmatterMatch[1]}${bodyLines.join('\n')}${frontmatterMatch[3]}${content.slice(frontmatterMatch[0].length)}`;
 }
 
+/**
+ * Sets one quoted string field in rendered note content, replacing the line if the key
+ * is already there and appending it to the frontmatter otherwise. For values a template
+ * has no placeholder for.
+ */
+export function setFrontmatterField(content: string, key: string, value: string): string {
+    const line = `${key}: "${escapeYaml(value.trim())}"`;
+    const frontmatterMatch = content.match(/^(\uFEFF?[ \t]*---[ \t]*\r?\n)([\s\S]*?)(\r?\n---[ \t]*(?:\r?\n|$))/);
+    if (!frontmatterMatch) return `---\n${line}\n---\n${content}`;
+
+    const bodyLines = frontmatterMatch[2].split(/\r?\n/);
+    const index = bodyLines.findIndex((candidate) => new RegExp(`^\\s*${key}\\s*:`).test(candidate));
+    if (index >= 0) bodyLines[index] = line;
+    else bodyLines.push(line);
+    return `${frontmatterMatch[1]}${bodyLines.join('\n')}${frontmatterMatch[3]}${content.slice(frontmatterMatch[0].length)}`;
+}
+
 export function sanitizeFileName(name: string): string {
     return name.replace(/[*\\/<>:|?"]/g, '').replace(/\s+/g, ' ').trim();
 }

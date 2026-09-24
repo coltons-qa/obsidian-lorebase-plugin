@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { buildSimpleTemplate, ensureIntegrationSourceFrontmatter, getEffectiveSimpleTemplateFields, renderTemplate, sanitizeFileName } from '../src/services/integrations/templateUtils';
+import { buildSimpleTemplate, ensureIntegrationSourceFrontmatter, getEffectiveSimpleTemplateFields, renderTemplate, sanitizeFileName, setFrontmatterField } from '../src/services/integrations/templateUtils';
 import { renderMangaPartsYaml } from '../src/services/integrations/shared';
 
 describe('templateUtils', () => {
@@ -229,6 +229,21 @@ describe('templateUtils', () => {
         expect(result).toContain('integration-id: "4242"');
         expect(result).not.toContain('integration_provider');
         expect(result).not.toContain('integration_id');
+    });
+
+    it('adds a frontmatter field the template has no placeholder for', () => {
+        // An Apple Books cover is locked by writing its URL to cm_poster, which no
+        // template emits, so the import has to add it after rendering.
+        const rendered = `---\ntype: "book"\nposter: "https://apple.example/a.jpg"\n---\n\nBody`;
+        const result = setFrontmatterField(rendered, 'cm_poster', 'https://apple.example/a.jpg');
+
+        expect(result).toBe(`---\ntype: "book"\nposter: "https://apple.example/a.jpg"\ncm_poster: "https://apple.example/a.jpg"\n---\n\nBody`);
+    });
+
+    it('replaces a frontmatter field that is already present', () => {
+        const rendered = `---\ncm_poster: true\ntitle: "Dune"\n---`;
+        expect(setFrontmatterField(rendered, 'cm_poster', 'https://apple.example/b.jpg'))
+            .toBe(`---\ncm_poster: "https://apple.example/b.jpg"\ntitle: "Dune"\n---`);
     });
 
     it('escapes multiline MangaUpdates descriptions inside quoted yaml values', () => {

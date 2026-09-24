@@ -12,7 +12,7 @@ import { CoverPickerModal, coverSearchErrorKey } from '../modals/CoverPickerModa
 import { searchAppleBookCovers } from './integrations/providers/appleBooks';
 import { AddModeModal, ManualCreateModal, type ManualCreateDraft } from '../modals/ManualCreateModal';
 import { AnimeDetails, BookDetails, GameDetails, IntegrationAnimePart, IntegrationMangaPart, IntegrationVideoPart, MangaDetails, MediaEnrichmentPatch, MediaKind, MediaSourceSelection, ProviderId, SearchResult, VideoDetails } from './integrations/types';
-import { buildSimpleTemplate, ensureIntegrationSourceFrontmatter, getDefaultTemplateFields, getEffectiveSimpleTemplateFields, renderTemplate, sanitizeFileName } from './integrations/templateUtils';
+import { buildSimpleTemplate, ensureIntegrationSourceFrontmatter, getDefaultTemplateFields, getEffectiveSimpleTemplateFields, renderTemplate, sanitizeFileName, setFrontmatterField } from './integrations/templateUtils';
 import { getAniListDetails, getAniListMangaDetails, searchAniList, searchAniListManga } from './integrations/providers/anilist';
 import { getJikanDetails, getLegacyJikanMangaDetails, searchJikan } from './integrations/providers/jikan';
 import { getGoogleBooksDetails, searchGoogleBooks } from './integrations/providers/googlebooks';
@@ -504,7 +504,10 @@ export class IntegrationService {
                                 if (appleUrl) {
                                     values.Poster = appleUrl;
                                     values.PosterHorizontal = appleUrl;
-                                    values.cm_poster = true;
+                                    // cm_poster holds the chosen cover's URL. It outranks
+                                    // poster for display and stops a source refresh from
+                                    // replacing the cover.
+                                    values.cm_poster = appleUrl;
                                 }
                             }
                         } else if (kind === 'manga') {
@@ -539,6 +542,10 @@ export class IntegrationService {
                             content = `${renderTemplate(fallbackTemplate, renderedValues)}\n\n${content.trim()}`;
                         }
                         content = ensureIntegrationSourceFrontmatter(content, itemProviderId, item.id, kind);
+                        if (typeof values.cm_poster === 'string' && values.cm_poster) {
+                            // No template emits cm_poster, so it is added after rendering.
+                            content = setFrontmatterField(content, 'cm_poster', values.cm_poster);
+                        }
                         const folderPath = this.getFolderPath(settings, kind);
                         let pathChoice = this.resolveCreatePath(folderPath, title, {
                             preferYear: (selectedTitleCounts.get(this.titleKey(item.title)) ?? 0) > 1,
