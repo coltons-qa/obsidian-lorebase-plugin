@@ -233,7 +233,7 @@ export type TranslationKey =
     | 'promptRateLimitTitle' | 'promptRateLimitBody'
     | 'promptFileExistsTitle' | 'promptFileExistsBody' | 'promptFileExistsUpdate' | 'promptFileExistsSeparate' | 'promptFileExistsSkip'
     | 'coverPickerTitle' | 'coverPickerKeepCurrent' | 'coverPickerShowMore' | 'coverPickerNoResults'
-    | 'editRefreshCover' | 'coverPickerRateLimited'
+    | 'editRefreshCover' | 'coverPickerRateLimited' | 'coverPickerFailed'
     | 'coverPickerSearchPlaceholder' | 'coverPickerSearch'
     | 'commonOk' | 'commonRetry' | 'commonCancel' | 'commonBack';
 
@@ -924,6 +924,7 @@ const EN: Record<TranslationKey, string> = {
     coverPickerNoResults: 'No covers found',
     editRefreshCover: 'Refresh Cover',
     coverPickerRateLimited: 'Too many requests, try again shortly',
+    coverPickerFailed: 'Could not search Apple Books for covers',
     coverPickerSearchPlaceholder: 'Edit search terms…',
     coverPickerSearch: 'Search',
     commonOk: 'OK',
@@ -1616,6 +1617,7 @@ const RU: Record<TranslationKey, string> = {
     coverPickerNoResults: 'Обложки не найдены',
     editRefreshCover: 'Обновить обложку',
     coverPickerRateLimited: 'Слишком много запросов, попробуйте позже',
+    coverPickerFailed: 'Не удалось найти обложки в Apple Books',
     coverPickerSearchPlaceholder: 'Изменить поисковый запрос…',
     coverPickerSearch: 'Поиск',
     commonOk: 'ОК',
@@ -2305,6 +2307,7 @@ const UK: Record<TranslationKey, string> = {
     coverPickerNoResults: 'Обкладинки не знайдено',
     editRefreshCover: 'Оновити обкладинку',
     coverPickerRateLimited: 'Забагато запитів, спробуйте пізніше',
+    coverPickerFailed: 'Не вдалося знайти обкладинки в Apple Books',
     coverPickerSearchPlaceholder: 'Змінити пошуковий запит…',
     coverPickerSearch: 'Пошук',
     commonOk: 'ОК',

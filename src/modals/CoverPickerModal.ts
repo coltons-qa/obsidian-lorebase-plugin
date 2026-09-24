@@ -3,8 +3,9 @@
  * Presents a grid of cover images from Apple Books for the user to choose from.
  */
 
-import { App, Modal, setIcon } from 'obsidian';
-import { t } from '../localization';
+import { App, Modal, Notice, setIcon } from 'obsidian';
+import { t, type TranslationKey } from '../localization';
+import { isRateLimitError } from '../services/integrations/shared';
 import type { AppleBooksCoverResult } from '../services/integrations/providers/appleBooks';
 
 /** Number of covers shown per page in the grid. */
@@ -12,6 +13,11 @@ const PAGE_SIZE = 3;
 
 /** Callback to re-search Apple Books with a custom query. */
 export type CoverSearchFn = (query: string) => Promise<AppleBooksCoverResult[]>;
+
+/** The notice for a failed Apple Books search: rate limits get their own message. */
+export function coverSearchErrorKey(error: unknown): TranslationKey {
+    return isRateLimitError(error) ? 'coverPickerRateLimited' : 'coverPickerFailed';
+}
 
 export class CoverPickerModal extends Modal {
     private results: AppleBooksCoverResult[];
@@ -98,8 +104,14 @@ export class CoverPickerModal extends Modal {
                     this.searchQuery = query;
                     this.visibleCount = PAGE_SIZE;
                     this.render();
+                } catch (error) {
+                    console.warn('[LOREBASE] Apple Books cover search failed:', error);
+                    new Notice(t(coverSearchErrorKey(error)));
                 } finally {
                     this.searching = false;
+                    // A successful search re-renders; a failed one must re-enable this button.
+                    searchBtn.removeClass('is-loading');
+                    searchBtn.disabled = false;
                 }
             };
 
