@@ -1412,6 +1412,7 @@ export default class LorebasePlugin extends Plugin {
     private getFileImage(file: TFile): string {
         const raw = this.getFrontmatterValue(file, 'image')
             ?? this.getFrontmatterValue(file, 'poster')
+            ?? this.getFrontmatterValue(file, 'poster-b')
             ?? this.getFrontmatterValue(file, 'image_b')
             ?? this.getFrontmatterValue(file, 'poster_b');
         return this.metadataService?.getImageUrl(raw, this.getFrontmatterValue(file, 'cm_poster')) ?? DEFAULT_COVER;
