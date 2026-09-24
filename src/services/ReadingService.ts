@@ -549,9 +549,15 @@ export class ReadingService {
         keys: string[],
         value: unknown
     ): void {
-        const key = this.preferredKey(frontmatter, keys);
+        // keys[0] is the canonical spelling. Always write it rather than preserving
+        // whichever legacy alias the note happened to have, and clear any other alias
+        // present, so saving converges a note instead of leaving two spellings.
+        const key = keys[0];
         const normalized = value === null || value === undefined ? '' : String(value).trim();
         updates[key] = normalized || null;
+        for (const alias of keys.slice(1)) {
+            if (this.hasKey(frontmatter, alias)) updates[alias] = null;
+        }
     }
 
     private updateDisplayListField(

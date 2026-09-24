@@ -353,4 +353,53 @@ describe('ReadingService', () => {
         });
 
     });
+
+    describe('writes converge on the kebab keys', () => {
+        // updateTextField used to keep whichever alias a note already had, so a stray
+        // legacy key (three books carry `poster_b` beside `poster-b`) was never cleaned
+        // up, and a legacy-only note kept being written in the legacy spelling.
+        async function saveHorizontalPoster(frontmatter: Record<string, unknown>, url: string) {
+            const file = createMockFile('Library/Abhorsen.md', 'Abhorsen');
+            const app = {
+                metadataCache: { getFileCache: () => ({ frontmatter }) },
+                vault: {
+                    getAbstractFileByPath: (path: string) => (path === file.path ? file : null),
+                    getFiles: () => [],
+                    getResourcePath: () => '',
+                },
+                fileManager: {
+                    async processFrontMatter(_file: TFile, handler: (fm: Record<string, unknown>) => void) {
+                        handler(frontmatter);
+                    },
+                },
+            } as unknown as App;
+            const service = new ReadingService(app, 'book', 'Library', createMetadataService(app));
+            const book = service.parseFromCache(file);
+            await service.updateItem(book!, { horizontalImageUrl: url });
+            return frontmatter;
+        }
+
+        it('clears a stray legacy key when the canonical one is present', async () => {
+            const result = await saveHorizontalPoster({
+                type: 'book',
+                title: 'Abhorsen',
+                'poster-b': 'https://hardcover.example/old.jpg',
+                poster_b: 'https://apple.example/new.jpg',
+            }, 'https://apple.example/new.jpg');
+
+            expect(result['poster-b']).toBe('https://apple.example/new.jpg');
+            expect(result).not.toHaveProperty('poster_b');
+        });
+
+        it('moves a legacy-only value to the canonical key', async () => {
+            const result = await saveHorizontalPoster({
+                type: 'book',
+                title: 'Abhorsen',
+                poster_b: 'https://apple.example/new.jpg',
+            }, 'https://apple.example/newer.jpg');
+
+            expect(result['poster-b']).toBe('https://apple.example/newer.jpg');
+            expect(result).not.toHaveProperty('poster_b');
+        });
+    });
 });
