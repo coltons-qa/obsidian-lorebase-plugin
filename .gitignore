@@ -30,3 +30,6 @@ Thumbs.db
 .obsidian/workspace.json
 .obsidian/workspace-mobile.json
 .obsidian/cache/
+
+# Personal vault path for npm run deploy
+.deploy-target
