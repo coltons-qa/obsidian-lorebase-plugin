@@ -16,6 +16,7 @@ import { RelatedMediaEditor } from './RelatedMediaEditor';
 import type { RelatedItemClickHandler } from './RelatedMediaEditor';
 import { splitNameList } from '../services/media/parsers';
 import { renderSeriesCombobox } from '../components/SeriesCombobox';
+import { bindManualFields, manualFieldInputsHtml, repeatableSwitchHtml } from './manualFields';
 import { HierarchicalDatePicker, validateDatePickers } from './HierarchicalDatePicker';
 
 /**
@@ -253,6 +254,7 @@ export class EditModal extends Modal {
                                     <span class="lorebase-editmode-switch-label">${t('editFavorite')}</span>
                                     <button type="button" class="lorebase-editmode-switch lorebase-editmode-switch-favorite" data-toggle="favorite" aria-label="${t('editFavorite')}" aria-pressed="false"><span class="lorebase-editmode-switch-thumb"></span></button>
                                 </label>
+                                ${repeatableSwitchHtml(t('editRepeatGame'))}
                             </div>
                         </section>
 
@@ -436,10 +438,7 @@ export class EditModal extends Modal {
                                 <label class="lorebase-editmode-field"><span class="lorebase-editmode-field-label">${t('editPublisher')}</span><input class="lorebase-editmode-input" data-field="publisher" type="text" placeholder="${t('editPublisher')}" /></label>
                                 <label class="lorebase-editmode-field"><span class="lorebase-editmode-field-label">${t('editDeveloper')}</span><input class="lorebase-editmode-input" data-field="developer" type="text" placeholder="${t('editDeveloper')}" /></label>
                                 <label class="lorebase-editmode-field"><span class="lorebase-editmode-field-label">${t('templateFieldMyPlatform')}</span><input class="lorebase-editmode-input" data-field="my-platform" type="text" placeholder="${t('templateFieldMyPlatform')}" /></label>
-                                <label class="lorebase-editmode-field"><span class="lorebase-editmode-field-label">${t('templateFieldOwned')}</span><input class="lorebase-editmode-input" data-field="owned" type="text" placeholder="no / wishlist / physical / digital" list="lorebase-owned-options" /></label>
-                                <datalist id="lorebase-owned-options"><option value="no"></option><option value="wishlist"></option><option value="physical"></option><option value="digital"></option></datalist>
-                                <label class="lorebase-editmode-field"><span class="lorebase-editmode-field-label">${t('templateFieldCount')}</span><input class="lorebase-editmode-input" data-field="count" type="number" min="0" step="1" /></label>
-                                <label class="lorebase-editmode-field"><span class="lorebase-editmode-field-label">${t('editRepeatGame')}</span><input class="lorebase-editmode-input" data-field="repeatable" type="checkbox" /></label>
+                                ${manualFieldInputsHtml({ ownedOptions: ['no', 'wishlist', 'physical', 'digital'], listId: 'lorebase-owned-options' })}
                                 <div class="lorebase-editmode-path-row">
                                     <span class="lorebase-editmode-field-label">${t('editLocalPath')}</span>
                                     <code class="lorebase-editmode-local-path" data-role="local-path"></code>
@@ -530,12 +529,11 @@ export class EditModal extends Modal {
 
         const myPlatformField = this.qs<HTMLInputElement>(root, '[data-field="my-platform"]');
         if (myPlatformField) myPlatformField.value = this.myPlatform;
-        const ownedField = this.qs<HTMLInputElement>(root, '[data-field="owned"]');
-        if (ownedField) ownedField.value = this.owned;
-        const countField = this.qs<HTMLInputElement>(root, '[data-field="count"]');
-        if (countField) countField.value = this.count === null ? '' : String(this.count);
-        const repeatableInput = this.qs<HTMLInputElement>(root, '[data-field="repeatable"]');
-        if (repeatableInput) repeatableInput.checked = this.repeatable;
+        bindManualFields(root, { owned: this.owned, count: this.count, repeatable: this.repeatable }, (values) => {
+            this.owned = values.owned;
+            this.count = values.count;
+            this.repeatable = values.repeatable;
+        });
 
         const developerInput = this.qs<HTMLInputElement>(root, '[data-field="developer"]');
         if (developerInput) {
@@ -913,18 +911,6 @@ export class EditModal extends Modal {
 
         const myPlatformInput = this.qs<HTMLInputElement>(root, '[data-field="my-platform"]');
         myPlatformInput?.addEventListener('input', () => { this.myPlatform = myPlatformInput.value; });
-
-        const ownedInput = this.qs<HTMLInputElement>(root, '[data-field="owned"]');
-        ownedInput?.addEventListener('input', () => { this.owned = ownedInput.value; });
-
-        const countInput = this.qs<HTMLInputElement>(root, '[data-field="count"]');
-        countInput?.addEventListener('input', () => {
-            const parsed = Number.parseInt(countInput.value, 10);
-            this.count = Number.isFinite(parsed) ? parsed : null;
-        });
-
-        const repeatableToggle = this.qs<HTMLInputElement>(root, '[data-field="repeatable"]');
-        repeatableToggle?.addEventListener('change', () => { this.repeatable = repeatableToggle.checked; });
 
         const platformInput = this.qs<HTMLInputElement>(root, '[data-field="new-platform"]');
         const addPlatform = (): void => {

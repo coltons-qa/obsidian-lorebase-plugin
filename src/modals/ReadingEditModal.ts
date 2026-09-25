@@ -11,6 +11,7 @@ import { extractMarkdownSection } from '../services/markdownSections';
 import { RelatedMediaEditor } from './RelatedMediaEditor';
 import type { RelatedItemClickHandler } from './RelatedMediaEditor';
 import { renderSeriesCombobox } from '../components/SeriesCombobox';
+import { bindManualFields, manualFieldInputsHtml, repeatableSwitchHtml } from './manualFields';
 import { HierarchicalDatePicker, validateDatePickers } from './HierarchicalDatePicker';
 import { normalizeProgress, stepProgress } from '../utils/progress';
 
@@ -247,7 +248,8 @@ export class ReadingEditModal extends Modal {
                                 ${isBook ? `<label class="lorebase-editmode-switch-row">
                                     <span class="lorebase-editmode-switch-label">${t('editAudiobook')}</span>
                                     <button type="button" class="lorebase-editmode-switch" data-toggle="audiobook" aria-label="${t('editAudiobook')}" aria-pressed="false"><span class="lorebase-editmode-switch-thumb"></span></button>
-                                </label>` : ''}
+                                </label>
+                                ${repeatableSwitchHtml(t('editRepeatBook'))}` : ''}
                             </div>
                         </section>
                     </aside>
@@ -373,19 +375,8 @@ export class ReadingEditModal extends Modal {
                                     <span class="lorebase-editmode-field-label">${t('templateFieldIllustrator')}</span>
                                     <input class="lorebase-editmode-input" data-field="illustrator" type="text" placeholder="${t('templateFieldIllustrator')}" />
                                 </label>
+                                ${manualFieldInputsHtml({ ownedOptions: ['no', 'physical', 'digital'], listId: 'lorebase-reading-owned-options', wide: true })}
                                 <label class="lorebase-editmode-field is-wide">
-                                    <span class="lorebase-editmode-field-label">${t('templateFieldOwned')}</span>
-                                    <input class="lorebase-editmode-input" data-field="owned" type="text" placeholder="no / physical / digital" list="lorebase-reading-owned-options" />
-                                </label>
-                                <datalist id="lorebase-reading-owned-options"><option value="no"></option><option value="physical"></option><option value="digital"></option></datalist>
-                                <label class="lorebase-editmode-field is-wide">
-                                    <span class="lorebase-editmode-field-label">${t('templateFieldCount')}</span>
-                                    <input class="lorebase-editmode-input" data-field="count" type="number" min="0" step="1" />
-                                </label>
-                                <label class="lorebase-editmode-field is-wide">
-                                    <span class="lorebase-editmode-field-label">${t('editRepeatBook')}</span>
-                                    <input class="lorebase-editmode-input" data-field="repeatable" type="checkbox" />
-                                </label>                                <label class="lorebase-editmode-field is-wide">
                                     <span class="lorebase-editmode-field-label">${t('editPublisher')}</span>
                                     <input class="lorebase-editmode-input" data-field="publisher" type="text" placeholder="Publisher A, Publisher B" />
                                 </label>
@@ -474,10 +465,11 @@ export class ReadingEditModal extends Modal {
         this.setInput(root, '[data-field="finished-date"]', this.finished);
         this.setInput(root, '[data-field="authors"]', this.authors.join(', '));
         this.setInput(root, '[data-field="illustrator"]', this.illustrator);
-        this.setInput(root, '[data-field="owned"]', this.owned);
-        this.setInput(root, '[data-field="count"]', this.count === null ? '' : String(this.count));
-        const repeatableInput = this.qs<HTMLInputElement>(root, '[data-field="repeatable"]');
-        if (repeatableInput) repeatableInput.checked = this.repeatable;
+        bindManualFields(root, { owned: this.owned, count: this.count, repeatable: this.repeatable }, (values) => {
+            this.owned = values.owned;
+            this.count = values.count;
+            this.repeatable = values.repeatable;
+        });
         this.qs<HTMLImageElement>(root, '[data-role="poster"]')?.setAttr('src', this.poster || DEFAULT_COVER);
 
         if (this.item.type === 'book') {
@@ -491,14 +483,6 @@ export class ReadingEditModal extends Modal {
         this.bindNumber(root, '[data-field="year"]', (value) => this.year = value);
         this.bindText(root, '[data-field="authors"]', (value) => this.authors = this.splitList(value));
         this.bindText(root, '[data-field="illustrator"]', (value) => { this.illustrator = value; });
-        this.bindText(root, '[data-field="owned"]', (value) => { this.owned = value; });
-        this.bindText(root, '[data-field="count"]', (value) => {
-            const parsed = Number.parseInt(value, 10);
-            this.count = Number.isFinite(parsed) ? parsed : null;
-        });
-        this.qs<HTMLInputElement>(root, '[data-field="repeatable"]')?.addEventListener('change', (event) => {
-            this.repeatable = (event.currentTarget as HTMLInputElement).checked;
-        });
         if (this.item.type === 'book') {
             this.renderSeriesCombobox(root);
             this.bindText(root, '[data-field="publisher"]', (value) => this.publisher = value);
