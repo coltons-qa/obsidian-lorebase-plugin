@@ -12,6 +12,7 @@ import { splitNameList } from '../services/media/parsers';
 import { mediaTypeLabel } from '../media/mediaTypes';
 import { bindManualFields, manualFieldInputsHtml, repeatableSwitchHtml } from './manualFields';
 import { removeModalCloseButton } from './modalChrome';
+import { decrementEpisode, incrementEpisode, setPartStatus } from '../utils/progress';
 import { HierarchicalDatePicker, validateDatePickers } from './HierarchicalDatePicker';
 import type { RelatedItemClickHandler } from './RelatedMediaEditor';
 import { reconcileRelatedTypes } from './RelatedMediaEditor';
@@ -590,21 +591,13 @@ export class VideoEditModal extends Modal {
         this.qs<HTMLButtonElement>(root, '[data-action="episode-dec"]')?.addEventListener('click', () => {
             const part = this.getActivePart();
             if (!part) return;
-            part.episodeCurrent = Math.max(0, (part.episodeCurrent ?? 0) - 1);
-            if (part.status === 'completed' && part.episodeTotal && part.episodeCurrent < part.episodeTotal) {
-                part.status = 'watching';
-            }
+            decrementEpisode(part);
             this.refreshPartsUi(root);
         });
         this.qs<HTMLButtonElement>(root, '[data-action="episode-inc"]')?.addEventListener('click', () => {
             const part = this.getActivePart();
             if (!part) return;
-            part.episodeCurrent = (part.episodeCurrent ?? 0) + 1;
-            if (part.episodeTotal && part.episodeCurrent > part.episodeTotal) {
-                part.episodeCurrent = part.episodeTotal;
-            }
-            if (part.status === 'planned') part.status = 'watching';
-            if (part.episodeTotal && part.episodeCurrent >= part.episodeTotal) part.status = 'completed';
+            incrementEpisode(part);
             if (this.selectedStatus === 'planned') this.selectedStatus = 'watching';
             this.refreshPartsUi(root);
             this.updateStatusUI(root);
@@ -620,10 +613,7 @@ export class VideoEditModal extends Modal {
                 const part = this.getActivePart();
                 const status = btn.dataset.status as VideoStatus | undefined;
                 if (!part || !status) return;
-                part.status = status;
-                if (status === 'completed' && part.episodeTotal && (part.episodeCurrent ?? 0) < part.episodeTotal) {
-                    part.episodeCurrent = part.episodeTotal;
-                }
+                setPartStatus(part, status);
                 this.refreshPartsUi(root);
             });
         });

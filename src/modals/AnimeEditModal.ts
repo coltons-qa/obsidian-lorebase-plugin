@@ -15,6 +15,7 @@ import { setupMobileEditor } from './mobileEditor';
 import { extractMarkdownSection } from '../services/markdownSections';
 import { mediaTypeLabel } from '../media/mediaTypes';
 import { removeModalCloseButton } from './modalChrome';
+import { decrementEpisode, incrementEpisode, setPartStatus } from '../utils/progress';
 import { HierarchicalDatePicker, validateDatePickers } from './HierarchicalDatePicker';
 import type { RelatedItemClickHandler } from './RelatedMediaEditor';
 import { reconcileRelatedTypes } from './RelatedMediaEditor';
@@ -586,10 +587,7 @@ export class AnimeEditModal extends Modal {
         this.qs<HTMLButtonElement>(root, '[data-action="episode-dec"]')?.addEventListener('click', () => {
             const part = this.getActivePart();
             if (!part) return;
-            part.episodeCurrent = Math.max(0, (part.episodeCurrent ?? 0) - 1);
-            if (part.status === 'completed' && part.episodeTotal && part.episodeCurrent < part.episodeTotal) {
-                part.status = 'watching';
-            }
+            decrementEpisode(part);
             this.renderActivePartEditor(root);
             this.renderPartStrip(root);
             this.updateProgressSummary(root);
@@ -598,12 +596,7 @@ export class AnimeEditModal extends Modal {
         this.qs<HTMLButtonElement>(root, '[data-action="episode-inc"]')?.addEventListener('click', () => {
             const part = this.getActivePart();
             if (!part) return;
-            part.episodeCurrent = (part.episodeCurrent ?? 0) + 1;
-            if (part.episodeTotal && part.episodeCurrent > part.episodeTotal) {
-                part.episodeCurrent = part.episodeTotal;
-            }
-            if (part.status === 'planned') part.status = 'watching';
-            if (part.episodeTotal && part.episodeCurrent >= part.episodeTotal) part.status = 'completed';
+            incrementEpisode(part);
             if (this.selectedStatus === 'planned') this.selectedStatus = 'watching';
             this.renderActivePartEditor(root);
             this.renderPartStrip(root);
@@ -799,10 +792,7 @@ export class AnimeEditModal extends Modal {
             button.addEventListener('click', () => {
                 const part = this.getActivePart();
                 if (!part) return;
-                part.status = option.status;
-                if (option.status === 'completed' && part.episodeTotal && (part.episodeCurrent ?? 0) < part.episodeTotal) {
-                    part.episodeCurrent = part.episodeTotal;
-                }
+                setPartStatus(part, option.status);
                 this.renderPartStatusSegments(root);
                 this.renderPartStrip(root);
                 this.updateProgressSummary(root);
