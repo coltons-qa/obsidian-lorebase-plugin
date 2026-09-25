@@ -1,6 +1,6 @@
 /**
  * LOREBASE - Main Plugin Entry Point
- * v3.0.1
+ * v100.0.0
  */
 
 import { Plugin, WorkspaceLeaf, Menu, Notice, addIcon, parseYaml, TFile, Keymap, type Command } from 'obsidian';
