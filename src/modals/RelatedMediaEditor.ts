@@ -4,15 +4,43 @@ import { t } from '../localization';
 import type { RelatedMediaLink } from '../types';
 import { MEDIA_TYPES, mediaTypeLabel } from '../media/mediaTypes';
 
-/** Callback for clicking a related media card. Mirrors the library card click convention. */
-export type RelatedItemClickHandler = (item: RelatedMediaLink, event: MouseEvent) => void;
+/**
+ * Opens a clicked related media card, mirroring the library card click convention. It
+ * receives `closeEditor` to close the editor the card sits in once it knows it will
+ * navigate, so the caller needs no reference to that editor.
+ */
+export type RelatedItemClickHandler = (item: RelatedMediaLink, event: MouseEvent, closeEditor: () => void) => void;
+
+/** A related media click with the editor already bound. */
+export type RelatedItemClick = (item: RelatedMediaLink, event: MouseEvent) => void;
+
+/** Binds a handler to the editor that owns it. */
+export function bindEditorToRelatedClick(
+    handler: RelatedItemClickHandler | undefined,
+    closeEditor: () => void
+): RelatedItemClick | undefined {
+    return handler ? (item, event) => handler(item, event, closeEditor) : undefined;
+}
+
+/**
+ * Makes a related media row open its item on click. Clicks on the row's own buttons
+ * (reorder, remove) are left alone.
+ */
+export function bindRelatedItemClick(row: HTMLElement, item: RelatedMediaLink, onClick: RelatedItemClick | undefined): void {
+    if (!onClick) return;
+    row.setCssStyles({ cursor: 'pointer' });
+    row.addEventListener('click', (event) => {
+        if ((event.target as HTMLElement | null)?.closest('button')) return;
+        onClick(item, event);
+    });
+}
 
 export class RelatedMediaEditor {
     private values: RelatedMediaLink[];
     private candidates: RelatedMediaLink[];
     private incoming: RelatedMediaLink[];
     private draggedPath: string | null = null;
-    private onItemClick?: RelatedItemClickHandler;
+    private onItemClick?: RelatedItemClick;
 
     constructor(
         private app: App,
@@ -20,7 +48,7 @@ export class RelatedMediaEditor {
         values: RelatedMediaLink[] = [],
         candidates: RelatedMediaLink[] = [],
         incoming: RelatedMediaLink[] = [],
-        onItemClick?: RelatedItemClickHandler
+        onItemClick?: RelatedItemClick
     ) {
         this.onItemClick = onItemClick;
         this.values = normalizeRelatedMedia(values);
@@ -92,15 +120,7 @@ export class RelatedMediaEditor {
             },
         });
         if (!readonly) this.bindDrag(row, item.path, root);
-        if (this.onItemClick) {
-            row.setCssStyles({ cursor: 'pointer' });
-            const handler = this.onItemClick;
-            row.addEventListener('click', (event) => {
-                // Let button clicks (order/remove) bubble without triggering navigation.
-                if ((event.target as HTMLElement | null)?.closest('button')) return;
-                handler(item, event);
-            });
-        }
+        bindRelatedItemClick(row, item, this.onItemClick);
         const image = row.createDiv({ cls: 'lorebase-editmode-related-image' });
         image.setCssStyles({
             backgroundImage: `url("${imageUrl.replace(/"/g, '\\"')}")`,

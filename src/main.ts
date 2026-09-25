@@ -748,20 +748,16 @@ export default class LorebasePlugin extends Plugin {
 
     /**
      * Build a click handler for related media cards. Plain click opens the target item's
-     * editor; mod-click (Cmd/Ctrl) opens its note—mirroring the library card convention
-     * from `ed72b40`. The returned handler closes `modalRef.current` before navigating;
-     * use a ref object so the handler can be passed to a constructor whose `modal` variable
-     * hasn't been assigned yet.
+     * editor; mod-click (Cmd/Ctrl) opens its note, mirroring the library card convention
+     * from `ed72b40`. The editor the card sits in is closed once the target is known to
+     * exist.
      */
-    private makeRelatedItemClickHandler(
-        modalRef: { current: { close(): void } | null },
-        onSave: () => void
-    ): RelatedItemClickHandler {
-        return (relatedItem: RelatedMediaLink, event: MouseEvent) => {
+    private makeRelatedItemClickHandler(onSave: () => void): RelatedItemClickHandler {
+        return (relatedItem: RelatedMediaLink, event: MouseEvent, closeEditor: () => void) => {
             const file = this.app.vault.getAbstractFileByPath(relatedItem.path);
             if (!(file instanceof TFile)) return;
 
-            modalRef.current?.close();
+            closeEditor();
 
             const modHeld = Keymap.isModifier(event, 'Mod');
             const opensEditor = this.settings.cardClickAction === 'edit';
@@ -800,7 +796,6 @@ export default class LorebasePlugin extends Plugin {
     showEditModal(item: MediaItem, onSave: () => void, onBeforeSave?: () => void): void {
         if (item.type === 'anime') {
             const animeItem = item;
-            const modalRef: { current: AnimeEditModal | null } = { current: null };
             const modal: AnimeEditModal = new AnimeEditModal(
                 this.app,
                 animeItem,
@@ -867,16 +862,14 @@ export default class LorebasePlugin extends Plugin {
                     onSave,
                     () => modal.saveBeforeSourceRefresh()
                 ),
-                this.makeRelatedItemClickHandler(modalRef, onSave)
+                this.makeRelatedItemClickHandler(onSave)
             );
-            modalRef.current = modal;
             modal.open();
             return;
         }
 
         if (item.type === 'movie' || item.type === 'tv') {
             const service = item.type === 'movie' ? this.movieService : this.tvService;
-            const modalRef: { current: VideoEditModal | null } = { current: null };
             const modal: VideoEditModal = new VideoEditModal(
                 this.app,
                 item,
@@ -908,9 +901,8 @@ export default class LorebasePlugin extends Plugin {
                     onSave,
                     () => modal.saveBeforeSourceRefresh()
                 ),
-                this.makeRelatedItemClickHandler(modalRef, onSave)
+                this.makeRelatedItemClickHandler(onSave)
             );
-            modalRef.current = modal;
             modal.open();
             return;
         }
@@ -918,7 +910,6 @@ export default class LorebasePlugin extends Plugin {
         if (item.type === 'book' || item.type === 'manga') {
             const service = item.type === 'book' ? this.bookService : this.mangaService;
             const readingItem = item;
-            const modalRef: { current: ReadingEditModal | null } = { current: null };
             const modal: ReadingEditModal = new ReadingEditModal(
                 this.app,
                 readingItem,
@@ -952,7 +943,7 @@ export default class LorebasePlugin extends Plugin {
                     onSave,
                     () => modal.saveBeforeSourceRefresh()
                 ),
-                this.makeRelatedItemClickHandler(modalRef, onSave),
+                this.makeRelatedItemClickHandler(onSave),
                 item.type === 'book' ? this.bookService?.getSeriesList() ?? [] : [],
                 item.type === 'book' ? async (): Promise<boolean> => {
                     if (!this.integrationService) return false;
@@ -966,14 +957,12 @@ export default class LorebasePlugin extends Plugin {
                     return false;
                 } : undefined
             );
-            modalRef.current = modal;
             modal.open();
             return;
         }
 
         const gameItem = item;
         const seriesOptions = this.gameService?.getSeriesList() ?? [];
-        const modalRef: { current: EditModal | null } = { current: null };
         const modal: EditModal = new EditModal(
             this.app,
             gameItem,
@@ -1009,9 +998,8 @@ export default class LorebasePlugin extends Plugin {
                 onSave,
                 () => modal.saveBeforeSourceRefresh()
             ),
-            this.makeRelatedItemClickHandler(modalRef, onSave)
+            this.makeRelatedItemClickHandler(onSave)
         );
-        modalRef.current = modal;
         modal.open();
     }
 

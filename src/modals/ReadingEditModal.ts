@@ -9,7 +9,7 @@ import { setupMobileEditor } from './mobileEditor';
 import { bindSourceUrlButton } from './sourceUrlButton';
 import { extractMarkdownSection } from '../services/markdownSections';
 import { RelatedMediaEditor } from './RelatedMediaEditor';
-import type { RelatedItemClickHandler } from './RelatedMediaEditor';
+import { bindEditorToRelatedClick, type RelatedItemClickHandler } from './RelatedMediaEditor';
 import { renderSeriesCombobox } from '../components/SeriesCombobox';
 import { bindManualFields, manualFieldInputsHtml, repeatableSwitchHtml } from './manualFields';
 import { removeModalCloseButton } from './modalChrome';
@@ -148,7 +148,7 @@ export class ReadingEditModal extends Modal {
             item.relatedMedia ?? [],
             relatedCandidates,
             incomingRelated,
-            onRelatedItemClick
+            bindEditorToRelatedClick(onRelatedItemClick, () => this.close())
         );
     }
 

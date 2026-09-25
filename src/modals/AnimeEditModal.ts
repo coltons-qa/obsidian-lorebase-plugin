@@ -17,7 +17,7 @@ import { mediaTypeLabel } from '../media/mediaTypes';
 import { removeModalCloseButton } from './modalChrome';
 import { decrementEpisode, incrementEpisode, setPartStatus } from '../utils/progress';
 import { HierarchicalDatePicker, validateDatePickers } from './HierarchicalDatePicker';
-import type { RelatedItemClickHandler } from './RelatedMediaEditor';
+import { bindEditorToRelatedClick, bindRelatedItemClick, type RelatedItemClickHandler } from './RelatedMediaEditor';
 import { reconcileRelatedTypes } from './RelatedMediaEditor';
 
 type PartDraft = AnimePart;
@@ -922,14 +922,7 @@ export class AnimeEditModal extends Modal {
                 this.reorderRelatedMedia(item.path);
                 this.renderRelatedMedia(root);
             });
-            if (this.onRelatedItemClick) {
-                row.setCssStyles({ cursor: 'pointer' });
-                const handler = this.onRelatedItemClick;
-                row.addEventListener('click', (event) => {
-                    if ((event.target as HTMLElement | null)?.closest('button')) return;
-                    handler(item, event);
-                });
-            }
+            bindRelatedItemClick(row, item, bindEditorToRelatedClick(this.onRelatedItemClick, () => this.close()));
             const image = row.createDiv({ cls: 'lorebase-editmode-related-image' });
             image.setCssStyles({
                 backgroundImage: `url("${imageUrl.replace(/"/g, '\\"')}")`,

@@ -13,7 +13,7 @@ import { MediaSourceAction, renderMediaSourcePanel } from './MediaSourcePanel';
 import { extractMarkdownSection } from '../services/GameService';
 import { normalizeObsidianTag } from '../settings/settingsNormalization';
 import { RelatedMediaEditor } from './RelatedMediaEditor';
-import type { RelatedItemClickHandler } from './RelatedMediaEditor';
+import { bindEditorToRelatedClick, type RelatedItemClickHandler } from './RelatedMediaEditor';
 import { splitNameList } from '../services/media/parsers';
 import { renderSeriesCombobox } from '../components/SeriesCombobox';
 import { bindManualFields, manualFieldInputsHtml, repeatableSwitchHtml } from './manualFields';
@@ -154,7 +154,7 @@ export class EditModal extends Modal {
             game.relatedMedia ?? [],
             relatedCandidates,
             incomingRelated,
-            onRelatedItemClick
+            bindEditorToRelatedClick(onRelatedItemClick, () => this.close())
         );
     }
 
