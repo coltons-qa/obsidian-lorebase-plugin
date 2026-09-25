@@ -5,6 +5,7 @@
 
 import { App, Modal, Notice, setIcon } from 'obsidian';
 import { t, type TranslationKey } from '../localization';
+import { removeModalCloseButton } from './modalChrome';
 import { isRateLimitError } from '../services/integrations/shared';
 import type { AppleBooksCoverResult } from '../services/integrations/providers/appleBooks';
 
@@ -53,10 +54,7 @@ export class CoverPickerModal extends Modal {
 
     onOpen(): void {
         this.modalEl.addClass('lorebase-cover-picker-container');
-        this.modalEl.querySelector('.modal-close-button, .modal-header-button')?.remove();
-        setTimeout(() => {
-            this.modalEl.querySelector('.modal-close-button, .modal-header-button')?.remove();
-        }, 0);
+        removeModalCloseButton(this.modalEl);
         this.render();
     }
 

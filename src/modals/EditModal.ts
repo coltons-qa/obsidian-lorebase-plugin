@@ -17,6 +17,7 @@ import type { RelatedItemClickHandler } from './RelatedMediaEditor';
 import { splitNameList } from '../services/media/parsers';
 import { renderSeriesCombobox } from '../components/SeriesCombobox';
 import { bindManualFields, manualFieldInputsHtml, repeatableSwitchHtml } from './manualFields';
+import { removeModalCloseButton } from './modalChrome';
 import { HierarchicalDatePicker, validateDatePickers } from './HierarchicalDatePicker';
 
 /**
@@ -163,8 +164,7 @@ export class EditModal extends Modal {
         contentEl.addClass('lorebase-edit-modal', 'lorebase-modal-root');
         this.modalEl.addClass('lorebase-edit-modal-container');
         this.modalEl.addClass('lorebase-editmode-modal-shell');
-        this.modalEl.querySelector('.modal-close-button, .modal-header-button')?.remove();
-        window.setTimeout(() => this.modalEl.querySelector('.modal-close-button, .modal-header-button')?.remove(), 0);
+        removeModalCloseButton(this.modalEl);
         this.modalEl.addEventListener('keydown', this.onKeydown);
 
         const root = contentEl.createDiv({ cls: 'lorebase-editmode-root lorebase-modal-panel' });
