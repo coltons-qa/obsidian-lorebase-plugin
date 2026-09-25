@@ -3,7 +3,7 @@ import type { App, TFile } from 'obsidian';
 import { TFolder } from 'obsidian';
 import { ReadingService } from '../src/services/ReadingService';
 import type { MangaItem } from '../src/types';
-import { createBaseFilter, createMetadataService, createMockApp, createMockFile } from './helpers/testHelpers';
+import { createBaseFilter, createMetadataService, createMockApp, createMockFile, createMockFolder } from './helpers/testHelpers';
 
 describe('ReadingService', () => {
     it('parses book notes without type and rejects explicit mismatched types', () => {
@@ -280,8 +280,7 @@ describe('ReadingService', () => {
 
     it('loads only notes from the configured reading folder', async () => {
         const file = createMockFile('Books/Folder Note.md', 'Folder Note');
-        const folder = new TFolder('Books') as TFolder & { children: TFile[] };
-        folder.children = [file];
+        const folder = createMockFolder('Books', [file]);
         const app = createMockApp({
             [file.path]: {
                 frontmatter: {

@@ -1,9 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { TFolder } from 'obsidian';
 import { extractMarkdownSection, GameService, upsertMarkdownSection } from '../src/services/GameService';
 import type { GameItem } from '../src/types';
 import { DEFAULT_SETTINGS } from '../src/constants';
-import { createMockApp, createBaseFilter, createMetadataService, createMockFile } from './helpers/testHelpers';
+import { createMockApp, createBaseFilter, createMetadataService, createMockFile, createMockFolder } from './helpers/testHelpers';
 import { getSortOptionsForMediaType, getStatusOptionsForMediaType } from '../src/views/library/viewOptions';
 
 describe('GameService', () => {
@@ -283,6 +282,10 @@ describe('GameService', () => {
         const options = getStatusOptionsForMediaType('game', {
             games: { completed: 'Cleared on easy' },
             anime: {},
+            movies: {},
+            tv: {},
+            books: {},
+            manga: {},
         });
 
         expect(options.find((option) => option.status === 'completed')).toEqual({
@@ -405,7 +408,7 @@ describe('GameService', () => {
         const filter = createBaseFilter();
         filter.tags = ['next-in-queue'];
 
-        const result = service.filterAndSort(games, filter, 'name', 'asc', true);
+        const result = service.filterAndSort(games, filter, 'name', 'asc');
 
         expect(result.map((item) => item.displayName)).toEqual(['Tagged']);
     });
@@ -678,7 +681,7 @@ describe('GameService', () => {
                 [halo.path]: { frontmatter: { type: 'game', title: 'Halo', series: 'Halo' } },
                 [orphan.path]: { frontmatter: { type: 'game', title: 'Untitled Goose Game' } },
             });
-            const folder = new TFolder('Library', [bg3, bg2, halo, orphan]);
+            const folder = createMockFolder('Library', [bg3, bg2, halo, orphan]);
             app.vault.getAbstractFileByPath = () => folder;
 
             const service = new GameService(app, createMetadataService(app));

@@ -13,9 +13,9 @@ import { DEFAULT_SETTINGS } from '../src/constants';
 describe('IntegrationService book series enrichment', () => {
     const buildService = () => {
         const settings = structuredClone(DEFAULT_SETTINGS);
-        settings.integrations.enabled = true;
-        settings.integrations.providers.hardcover.enabled = true;
-        settings.integrations.providers.hardcover.apiKey = 'test-key';
+        settings.integrations!.enabled = true;
+        settings.integrations!.providers.hardcover.enabled = true;
+        settings.integrations!.providers.hardcover.apiKey = 'test-key';
 
         const service = new IntegrationService(createMockApp({}), () => settings);
 

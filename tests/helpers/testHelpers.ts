@@ -1,4 +1,4 @@
-import { App, TFile } from 'obsidian';
+import { App, TAbstractFile, TFile, TFolder } from 'obsidian';
 import type { FilterState } from '../../src/types';
 import { MetadataService } from '../../src/services/MetadataService';
 
@@ -10,6 +10,15 @@ export function createMockFile(path: string, basename: string): TFile {
     file.extension = 'md';
     file.stat = { ctime: Date.now(), mtime: Date.now(), size: 0 };
     return file;
+}
+
+/** A folder with the given children, typed as Obsidian's TFolder (the mock accepts any). */
+export function createMockFolder(path: string, children: TAbstractFile[] = []): TFolder {
+    const folder = new TFolder();
+    folder.path = path;
+    folder.name = path.split('/').pop() ?? path;
+    folder.children = children;
+    return folder;
 }
 
 export function createMockApp(cacheByPath: Record<string, unknown>): App {

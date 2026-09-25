@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { TFile, TFolder } from 'obsidian';
+import { createMockFile, createMockFolder } from './helpers/testHelpers';
 import { DEFAULT_SETTINGS } from '../src/constants';
 import { NoteConversionService } from '../src/services/NoteConversionService';
 import type { LorebaseSettings, NoteImportSettings } from '../src/types';
@@ -124,9 +125,9 @@ describe('NoteConversionService', () => {
     });
 
     it('replace mode updates the note and moves it into the target library folder', async () => {
-        const file = new TFile('Legacy/Portal.md', 'Portal');
+        const file = createMockFile('Legacy/Portal.md', 'Portal');
         file.extension = 'md';
-        const folder = new TFolder('Legacy');
+        const folder = createMockFolder('Legacy');
         (folder as unknown as { children: TFile[] }).children = [file];
         let modified = '';
         let renamedTo = '';
@@ -177,9 +178,9 @@ describe('NoteConversionService', () => {
     });
 
     it('imports an auto-mode note without type after review assigns a media kind and source', async () => {
-        const file = new TFile('Excel/Gothic 1 Remake.md', 'Gothic 1 Remake');
+        const file = createMockFile('Excel/Gothic 1 Remake.md', 'Gothic 1 Remake');
         file.extension = 'md';
-        const folder = new TFolder('Excel');
+        const folder = createMockFolder('Excel');
         (folder as unknown as { children: TFile[] }).children = [file];
         let created = '';
         const app = {

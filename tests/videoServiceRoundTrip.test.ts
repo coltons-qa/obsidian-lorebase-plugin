@@ -97,7 +97,7 @@ const edits = {
     owned: 'physical',
     count: 2,
     repeatable: false,
-    integrationProvider: 'tmdb',
+    integrationProvider: 'tmdb' as const,
     integrationId: '95396',
     communityRating: 88,
     communityVotes: 3300,

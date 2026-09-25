@@ -1,15 +1,15 @@
 import { describe, expect, it } from 'vitest';
-import { TFolder } from './mocks/obsidian';
+import { createMockFolder } from './helpers/testHelpers';
 import { filterFolders } from '../src/components/folderSuggestUtils';
 
 describe('filterFolders', () => {
     it('sorts folders and filters by case-insensitive substring', () => {
         const folders = [
-            new TFolder('Games'),
-            new TFolder('Entertainment/Anime'),
-            new TFolder('archive/anime-old'),
-            new TFolder('Books'),
-            new TFolder(''),
+            createMockFolder('Games'),
+            createMockFolder('Entertainment/Anime'),
+            createMockFolder('archive/anime-old'),
+            createMockFolder('Books'),
+            createMockFolder(''),
         ];
 
         expect(filterFolders(folders, 'anime').map((folder) => folder.path)).toEqual([
@@ -20,9 +20,9 @@ describe('filterFolders', () => {
 
     it('returns sorted non-root folders for an empty query', () => {
         const folders = [
-            new TFolder('Zeta'),
-            new TFolder('Alpha'),
-            new TFolder(''),
+            createMockFolder('Zeta'),
+            createMockFolder('Alpha'),
+            createMockFolder(''),
         ];
 
         expect(filterFolders(folders, '   ').map((folder) => folder.path)).toEqual([

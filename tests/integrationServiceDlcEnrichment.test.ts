@@ -24,10 +24,10 @@ describe('IntegrationService DLC enrichment', () => {
 
     const buildService = () => {
         const settings = structuredClone(DEFAULT_SETTINGS);
-        settings.integrations.enabled = true;
-        settings.integrations.providers.igdb.enabled = true;
-        settings.integrations.providers.igdb.apiKey = 'client-id';
-        settings.integrations.providers.igdb.clientSecret = 'client-secret';
+        settings.integrations!.enabled = true;
+        settings.integrations!.providers.igdb.enabled = true;
+        settings.integrations!.providers.igdb.apiKey = 'client-id';
+        settings.integrations!.providers.igdb.clientSecret = 'client-secret';
         const service = new IntegrationService(createMockApp({}), () => settings);
         const fetchJson: JsonFetcher = async (url) => {
             if (url.includes('oauth2/token')) return { access_token: 'token' };

@@ -24,7 +24,7 @@ describe('provider compatibility matrix', () => {
             getProviderOptions(value: MediaKind): Array<{ id: ProviderId }>;
         }).getProviderOptions.bind(service);
 
-        expect(getProviderOptions(kind).map((provider) => provider.id)).toEqual(expected);
+        expect(getProviderOptions(kind).map((provider: { id: ProviderId }) => provider.id)).toEqual(expected);
     });
 
     it('keeps legacy Jikan manga support out of new manga searches', () => {

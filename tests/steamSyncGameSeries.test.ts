@@ -133,7 +133,7 @@ function mockSteamAndIgdb(options: SteamMockOptions): { igdbRequests: string[] }
 
     __setRequestUrlMock((request) => {
         const url = typeof request === 'string' ? request : request.url;
-        const body = typeof request === 'string' ? '' : (request.body ?? '');
+        const body = typeof request === 'string' || typeof request.body !== 'string' ? '' : request.body;
 
         if (url.includes('steamcommunity.com/id/MURcHIIK')) {
             return { json: {}, text: `<profile><steamID64>${TEST_STEAM_ID64}</steamID64></profile>` };

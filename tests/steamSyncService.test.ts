@@ -619,7 +619,7 @@ describe('SteamSyncService', () => {
         settings.steamSync.importWishlist = false;
         settings.integrations!.media.games.howLongToBeatEnabled = true;
         settings.integrations!.media.games.templateFields = [
-            ...settings.integrations!.media.games.templateFields,
+            ...(settings.integrations!.media.games.templateFields ?? []),
             'main',
             'main_plus_sides',
             'perfectionist',

@@ -50,7 +50,7 @@ function makeTvItem(overrides: Partial<TvItem> & { filePath: string; displayName
         summary: '',
         releaseDate: null,
         runtime: '',
-        director: '',
+        author: [],
         actors: '',
         seasons: null,
         episodeCurrent: null,
@@ -83,8 +83,6 @@ function makeTvItem(overrides: Partial<TvItem> & { filePath: string; displayName
         communityRatingProvider: null,
         started: null,
         finished: null,
-        dateAdded: Date.now(),
-        dateWatched: null,
         ...overrides,
     };
 }

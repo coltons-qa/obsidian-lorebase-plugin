@@ -539,9 +539,7 @@ describe('media enrichment merge', () => {
                 bookSeries: 'The Stormlight Archive',
                 seriesPosition: 1,
             };
-            const source = { provider: 'hardcover', id: '42' };
-
-            const result = mergeProviderMetadata(current, incoming, source);
+            const result = mergeProviderMetadata(current, incoming);
 
             expect(result.values.series).toBe('The Stormlight Archive');
             expect(result.values['series-position']).toBe(1);
@@ -563,7 +561,7 @@ describe('media enrichment merge', () => {
                 bookSeries: 'The Stormlight Archive',
                 seriesPosition: 1,
             };
-            const source = { provider: 'hardcover', id: '42' };
+            const source = { provider: 'hardcover' as const, id: '42' };
 
             const result = synchronizeProviderMetadata(current, incoming, source);
 

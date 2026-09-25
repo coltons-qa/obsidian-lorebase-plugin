@@ -17,7 +17,7 @@ describe('template output snapshots', () => {
     });
 
     it.each(KINDS)('%s: template for the default selection', (kind) => {
-        expect(buildSimpleTemplate(kind, DEFAULT_SETTINGS.integrations!.media[kind].templateFields)).toMatchSnapshot();
+        expect(buildSimpleTemplate(kind, DEFAULT_SETTINGS.integrations!.media[kind].templateFields ?? [])).toMatchSnapshot();
     });
 
     it('games: template with HowLongToBeat fields', () => {

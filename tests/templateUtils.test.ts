@@ -305,7 +305,7 @@ describe('default integration templates', () => {
     const media = DEFAULT_SETTINGS.integrations!.media;
 
     it.each(Object.keys(media) as MediaKind[])('%s default template is the generator output for its default fields', (kind) => {
-        expect(media[kind].template).toBe(buildSimpleTemplate(kind, media[kind].templateFields));
+        expect(media[kind].template).toBe(buildSimpleTemplate(kind, media[kind].templateFields ?? []));
     });
 
     it('includes the TV provider fields a movie default already has', () => {

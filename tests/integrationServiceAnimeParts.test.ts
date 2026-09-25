@@ -21,7 +21,6 @@ describe('IntegrationService anime parts values', () => {
             developers: ['Ubisoft'],
             publishers: ['Ubisoft'],
             rating: '',
-            metacritic: '77',
             released: 'May 27, 2014',
             year: '2014',
             url: 'https://store.steampowered.com/app/243470/',
@@ -101,6 +100,7 @@ describe('IntegrationService anime parts values', () => {
         } as never));
 
         const details: AnimeDetails = {
+            kind: 'anime',
             name: 'Series',
             description: 'Description',
             image: 'poster.jpg',
@@ -138,6 +138,7 @@ describe('IntegrationService anime parts values', () => {
         } as never));
 
         const details: AnimeDetails = {
+            kind: 'anime',
             name: 'Series',
             description: 'Description',
             image: 'poster.jpg',
@@ -180,6 +181,7 @@ describe('IntegrationService anime parts values', () => {
             integrations: undefined,
         } as never));
         const details: AnimeDetails = {
+            kind: 'anime',
             name: 'Series',
             description: '',
             image: '',
@@ -383,6 +385,7 @@ function createManualDraft(kind: ManualCreateDraft['kind']): ManualCreateDraft {
     return {
         kind,
         title: 'Manual',
+        bookSeries: '',
         year: '',
         released: '',
         status: 'planned',

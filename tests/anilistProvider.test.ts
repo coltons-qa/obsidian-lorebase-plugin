@@ -27,7 +27,8 @@ describe('AniList anime provider', () => {
         };
 
         const results = await searchAniList(fetchJson, 'fullmetal', { page: 3, pageSize: 7 });
-        const payload = JSON.parse(request?.body ?? '{}');
+        const sent = request as { body?: string } | null;
+        const payload = JSON.parse(sent?.body ?? '{}');
 
         expect(request).toMatchObject({ url: 'https://graphql.anilist.co', method: 'POST' });
         expect(payload.variables).toEqual({ search: 'fullmetal', page: 3, perPage: 7 });
